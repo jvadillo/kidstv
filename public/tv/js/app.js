@@ -675,7 +675,12 @@
         leave: function () { clearTimer('pinLock'); },
         action: function (action, arg) { if (action === 'pin') this.press(arg); },
         key: function (name, e) {
-            if (name === 'digit') { this.press(K.keyDigit(e)); return true; }
+            if (name === 'digit') {
+                this.press(K.keyDigit(e));
+                // Tras teclear con los números del mando, OK confirma el PIN.
+                Nav.focus(app.querySelector('.pin-ok'));
+                return true;
+            }
             if (name === 'back') {
                 if (this.digits.length) { this.press('del'); return true; }
                 show(this.from === 'catalog' && S.profile ? 'catalog' : 'profiles', {});
