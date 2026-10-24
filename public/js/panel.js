@@ -22,7 +22,7 @@
                 if (data.errors[key] && data.errors[key][0]) return data.errors[key][0];
             }
         }
-        return (data && data.message) || fallback;
+        return (data && (data.error || data.message)) || fallback;
     }
 
     function requestJson(method, url, body, headers) {

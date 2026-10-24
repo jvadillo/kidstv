@@ -385,3 +385,7 @@ input[type=file] { font: inherit; padding: .5rem 0; max-width: 100%; }
 .wizard-steps li { flex: 1; text-align: center; font-size: .85rem; font-weight: 700; color: var(--ink-2); padding-top: .6rem; border-top: 4px solid var(--line); }
 .wizard-steps li.current { color: var(--primary); border-color: var(--primary); }
 .wizard-steps li.done { color: var(--ok); border-color: var(--ok); }
+
+/* Los elementos de grid/flex no deben ensancharse por títulos largos o vídeos. */
+.content-list > li, .checklist > li, .card-list > li, .content-detail > *, .pair-layout > * { min-width: 0; }
+.content-preview { min-width: 0; }
