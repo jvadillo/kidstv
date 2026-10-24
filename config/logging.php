@@ -102,6 +102,15 @@ return [
             'processors' => [PsrLogMessageProcessor::class],
         ],
 
+        // Correos enviados con MAIL_MAILER=log (el transporte escribe con nivel debug).
+        'mail' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/mail.log'),
+            'level' => 'debug',
+            'days' => 7,
+            'replace_placeholders' => true,
+        ],
+
         'stderr' => [
             'driver' => 'monolog',
             'level' => env('LOG_LEVEL', 'debug'),
