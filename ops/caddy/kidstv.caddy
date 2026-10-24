@@ -1,0 +1,14 @@
+# Sitio para el Caddy compartido del VPS (projects/gateway/sites/).
+# Lo instala `bash ops/install-site.sh`. Caddy gestiona el certificado TLS.
+# La aplicación ya envía CSP y el resto de cabeceras de seguridad.
+kidstv.jonvadillo.com {
+	encode zstd gzip
+	header {
+		Strict-Transport-Security "max-age=31536000"
+		-Server
+	}
+	request_body {
+		max_size 12MB
+	}
+	reverse_proxy 127.0.0.1:8086
+}

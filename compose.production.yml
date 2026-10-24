@@ -1,0 +1,80 @@
+# Despliegue en el VPS compartido. Ver docs/despliegue.md.
+name: kidstv
+
+x-app: &app
+  image: kidstv-app:${KIDSTV_RELEASE:-local}
+  env_file: .env.production
+  pull_policy: never
+  environment:
+    APP_ENV: production
+    APP_DEBUG: "false"
+    DB_CONNECTION: sqlite
+    DB_DATABASE: /var/www/html/storage/database/kidstv.sqlite
+    SESSION_DRIVER: database
+    CACHE_STORE: database
+    QUEUE_CONNECTION: database
+    SESSION_SECURE_COOKIE: "true"
+    KIDSTV_ACCEL_REDIRECT: "true"
+    LOG_CHANNEL: stderr
+  volumes: [storage:/var/www/html/storage]
+  cap_drop: [ALL]
+  security_opt: [no-new-privileges:true]
+  restart: unless-stopped
+  logging: &logging
+    driver: json-file
+    options: {max-size: 10m, max-file: "3"}
+
+services:
+  app:
+    <<: *app
+    pull_policy: build
+    build:
+      context: .
+      dockerfile: ops/Dockerfile
+      target: application
+    mem_limit: 384m
+    cpus: 0.75
+    pids_limit: 64
+
+  worker:
+    <<: *app
+    command: ["php", "artisan", "queue:work", "--sleep=3", "--tries=1", "--timeout=900", "--max-time=3600", "--memory=192"]
+    mem_limit: 320m
+    cpus: 0.75
+    pids_limit: 64
+    depends_on: [app]
+
+  scheduler:
+    <<: *app
+    command: ["php", "artisan", "schedule:work"]
+    mem_limit: 128m
+    cpus: 0.2
+    pids_limit: 32
+    depends_on: [app]
+
+  web:
+    image: kidstv-web:${KIDSTV_RELEASE:-local}
+    build:
+      context: .
+      dockerfile: ops/Dockerfile
+      target: web
+    ports: ["127.0.0.1:${KIDSTV_PORT:-8086}:8080"]
+    volumes: [storage:/var/www/html/storage:ro]
+    read_only: true
+    tmpfs: ["/tmp:uid=101,gid=101,mode=1770,size=64m"]
+    mem_limit: 64m
+    cpus: 0.3
+    pids_limit: 64
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    restart: unless-stopped
+    depends_on: [app]
+    healthcheck:
+      test: [CMD, wget, -q, --spider, http://127.0.0.1:8080/up]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    logging: *logging
+
+volumes:
+  storage: {}

@@ -1,0 +1,38 @@
+<?php
+
+namespace App\Http\Middleware;
+
+use App\Models\Device;
+use Closure;
+use Illuminate\Http\Request;
+use Symfony\Component\HttpFoundation\Response;
+
+/**
+ * Autenticación de televisores mediante token de dispositivo. El token solo da acceso
+ * a la API de consulta y reproducción (/api/tv), nunca al panel de administración.
+ */
+class AuthenticateDevice
+{
+    public function handle(Request $request, Closure $next): Response
+    {
+        $token = $request->bearerToken();
+        $device = $token ? Device::with('family')->where('token_hash', hash('sha256', $token))->first() : null;
+
+        if (! $device) {
+            return response()->json([
+                'error' => $token ? 'device_revoked' : 'unauthenticated',
+                'message' => $token
+                    ? __('Este televisor ya no está vinculado a ninguna familia.')
+                    : __('Este televisor no está vinculado.'),
+            ], 401);
+        }
+
+        if (! $device->last_seen_at || $device->last_seen_at->lt(now()->subMinute())) {
+            $device->forceFill(['last_seen_at' => now()])->saveQuietly();
+        }
+
+        $request->attributes->set('device', $device);
+
+        return $next($request);
+    }
+}

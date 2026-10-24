@@ -1,0 +1,158 @@
+<?php
+
+namespace App\Http\Controllers\Auth;
+
+use App\Http\Controllers\Controller;
+use App\Models\LoginToken;
+use App\Models\User;
+use App\Services\AdultSessions;
+use App\Services\EmailVerification;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Crypt;
+use Illuminate\Support\Facades\RateLimiter;
+use Throwable;
+
+class LoginController extends Controller
+{
+    public function __construct(
+        private EmailVerification $verification,
+        private AdultSessions $sessions,
+    ) {}
+
+    public function show()
+    {
+        return view('auth.login', ['formToken' => Crypt::encryptString((string) now()->timestamp)]);
+    }
+
+    public function send(Request $request)
+    {
+        $data = $request->validate([
+            'email' => ['required', 'string', 'max:254', config('kidstv.email_dns_check') ? 'email:rfc,dns' : 'email:rfc'],
+        ], [
+            'email.required' => __('Escribe tu correo electrónico.'),
+            'email.email' => __('Esta dirección de correo no parece válida o su dominio no existe. Revísala.'),
+        ]);
+
+        $email = EmailVerification::normalize($data['email']);
+        $request->session()->put('login_email', $email);
+
+        // Protección básica contra registros automatizados: campo trampa y tiempo mínimo
+        // de cumplimentación. A un robot se le responde igual que a una persona.
+        if (! $this->looksHuman($request)) {
+            return redirect()->route('login.code');
+        }
+
+        $this->verification->send($email, LoginToken::PURPOSE_LOGIN, User::where('email', $email)->first(), $request->ip());
+
+        return redirect()->route('login.code');
+    }
+
+    public function showCode(Request $request)
+    {
+        $email = $request->session()->get('login_email');
+        if (! $email) {
+            return redirect()->route('login');
+        }
+
+        return view('auth.code', ['email' => $email]);
+    }
+
+    public function verifyCode(Request $request)
+    {
+        $email = $request->session()->get('login_email');
+        if (! $email) {
+            return redirect()->route('login')->withErrors(['email' => __('Vuelve a escribir tu correo para recibir un código.')]);
+        }
+
+        $request->validate(['code' => ['required', 'string', 'max:12']], [
+            'code.required' => __('Escribe el código de 6 cifras que te hemos enviado.'),
+        ]);
+
+        $token = $this->verification->verifyCode($email, LoginToken::PURPOSE_LOGIN, $request->input('code'));
+
+        return $this->complete($request, $token->email);
+    }
+
+    public function resend(Request $request)
+    {
+        $email = $request->session()->get('login_email');
+        if (! $email) {
+            return redirect()->route('login');
+        }
+
+        $key = 'resend:'.$email;
+        if (RateLimiter::tooManyAttempts($key, 1)) {
+            return back()->withErrors(['code' => __('Espera :seconds segundos antes de pedir otro código.', ['seconds' => RateLimiter::availableIn($key)])]);
+        }
+        RateLimiter::hit($key, 60);
+
+        $this->verification->send($email, LoginToken::PURPOSE_LOGIN, User::where('email', $email)->first(), $request->ip());
+
+        return back()->with('status', __('Te hemos enviado un código nuevo. El anterior ya no sirve.'));
+    }
+
+    /**
+     * El enlace del correo muestra primero una página de confirmación: así los
+     * escáneres antivirus que abren enlaces automáticamente no lo consumen.
+     */
+    public function showLink(string $token)
+    {
+        $loginToken = $this->verification->findLink($token);
+
+        if (! $loginToken) {
+            return response()->view('auth.link-invalid', [], 410);
+        }
+
+        return view('auth.link', ['token' => $token, 'email' => $loginToken->email]);
+    }
+
+    public function consumeLink(Request $request, string $token)
+    {
+        $loginToken = $this->verification->findLink($token);
+
+        if (! $loginToken || ! $this->verification->consumeLink($loginToken)) {
+            return response()->view('auth.link-invalid', [], 410);
+        }
+
+        return $this->complete($request, $loginToken->email);
+    }
+
+    public function logout(Request $request)
+    {
+        $this->sessions->terminate($request);
+
+        return redirect()->route('home')->with('status', __('Has cerrado la sesión en este navegador.'));
+    }
+
+    private function complete(Request $request, string $email)
+    {
+        $request->session()->forget('login_email');
+        $user = User::where('email', $email)->first();
+
+        if ($user) {
+            $this->sessions->start($request, $user);
+
+            return redirect()->intended(route('panel'));
+        }
+
+        // Correo verificado pero sin cuenta: falta aceptar las condiciones para crearla.
+        $request->session()->put('pending_registration', ['email' => $email, 'verified_at' => now()->timestamp]);
+
+        return redirect()->route('register');
+    }
+
+    private function looksHuman(Request $request): bool
+    {
+        if (filled($request->input('website'))) {
+            return false;
+        }
+
+        try {
+            $renderedAt = (int) Crypt::decryptString((string) $request->input('form_token'));
+        } catch (Throwable) {
+            return false;
+        }
+
+        return now()->timestamp - $renderedAt >= 2;
+    }
+}
