@@ -15,7 +15,9 @@ x-app: &app
     QUEUE_CONNECTION: database
     SESSION_SECURE_COOKIE: "true"
     KIDSTV_ACCEL_REDIRECT: "true"
-    LOG_CHANNEL: stderr
+    LOG_CHANNEL: stack
+    LOG_STACK: daily,stderr
+    LOG_DAILY_DAYS: "14"
   volumes: [storage:/var/www/html/storage]
   cap_drop: [ALL]
   security_opt: [no-new-privileges:true]
