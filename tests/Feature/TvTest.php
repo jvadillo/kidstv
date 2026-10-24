@@ -98,10 +98,19 @@ class TvTest extends TestCase
 
         $url = $this->tv($token)->getJson('/api/tv/contents/'.$video->id.'/play?profile='.$profile->id)->assertOk()->json('url');
         $this->assertStringContainsString('signature=', $url);
+        parse_str(parse_url($url, PHP_URL_QUERY), $query);
+        $ttl = config('kidstv.tv_media_url_ttl_minutes') * 60;
+        $this->assertGreaterThan(now()->timestamp + $ttl - 1, (int) $query['expires']);
+        $this->assertLessThanOrEqual(now()->timestamp + 2 * $ttl, (int) $query['expires']);
 
         $this->get($url)->assertOk()->assertHeader('Content-Type', 'video/mp4');
         $this->get(preg_replace('/signature=\w+/', 'signature=falsa', $url))->assertForbidden();
         $this->get(str_replace('/file?', '/cover?', $url))->assertForbidden();
+
+        // Caducada la URL, deja de servir aunque la tele siga vinculada.
+        $this->travel(2 * $ttl + 1)->seconds();
+        $this->get($url)->assertForbidden();
+        $this->travelBack();
 
         // Desvincular desde el panel: la TV pierde la API y los archivos.
         $this->actingAsAdult($user)->delete('/panel/televisores/'.$device->id)->assertRedirect('/panel/televisores');

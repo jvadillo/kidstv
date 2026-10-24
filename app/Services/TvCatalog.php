@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Content;
 use App\Models\Device;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\URL;
 
@@ -67,7 +68,8 @@ class TvCatalog
         $window = config('kidstv.tv_media_url_ttl_minutes') * 60;
         $expires = (intdiv(now()->timestamp, $window) + 2) * $window;
 
-        return URL::temporarySignedRoute('media.show', $expires, [
+        // Debe ser una fecha: un entero se interpretaría como «segundos a partir de ahora».
+        return URL::temporarySignedRoute('media.show', Carbon::createFromTimestamp($expires), [
             'content' => $content->id,
             'variant' => $variant,
             'd' => $device->id,
