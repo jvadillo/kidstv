@@ -206,8 +206,10 @@
             var ey = r.top + r.height / 2;
             var primary, secondary;
 
-            if (dir === 'left') { if (r.right > cr.left + 2 && ex >= cx - 2) continue; primary = cx - ex; secondary = Math.abs(ey - cy); }
-            else if (dir === 'right') { if (r.left < cr.right - 2 && ex <= cx + 2) continue; primary = ex - cx; secondary = Math.abs(ey - cy); }
+            // Izquierda/derecha solo dentro de la misma fila: al final de una fila no se salta a otra zona.
+            var sameRow = r.top < cr.bottom - 2 && r.bottom > cr.top + 2;
+            if (dir === 'left') { if (!sameRow || (r.right > cr.left + 2 && ex >= cx - 2)) continue; primary = cx - ex; secondary = Math.abs(ey - cy); }
+            else if (dir === 'right') { if (!sameRow || (r.left < cr.right - 2 && ex <= cx + 2)) continue; primary = ex - cx; secondary = Math.abs(ey - cy); }
             else if (dir === 'up') { if (r.bottom > cr.top + 2 && ey >= cy - 2) continue; primary = cy - ey; secondary = Math.abs(ex - cx); }
             else { if (r.top < cr.bottom - 2 && ey <= cy + 2) continue; primary = ey - cy; secondary = Math.abs(ex - cx); }
 
