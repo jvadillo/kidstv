@@ -1,58 +1,108 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# KidsTV · Videoteca familiar para Smart TV
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Aplicación web (Laravel 13) en la que una persona adulta se registra solo con su correo, crea perfiles infantiles y selecciona vídeos propios (MP4), audios (MP3/M4A) y vídeos de YouTube para que sus hijos los vean en la tele, con el mando a distancia y sin salir de lo aprobado.
 
-## About Laravel
+- **Producción:** https://kidstv.jonvadillo.com
+- **App de TV en el navegador:** https://kidstv.jonvadillo.com/tv/
+- **Paquete para LG webOS:** `public/downloads/kidstv-webos.ipk` (también descargable desde *Teles* en el panel)
+- **Requisitos funcionales de partida:** [`requisitos_videoteca_familiar_claude_code.md`](requisitos_videoteca_familiar_claude_code.md)
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## Documentación
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+| Documento | Contenido |
+|---|---|
+| [docs/despliegue.md](docs/despliegue.md) | Instalar, configurar, desplegar, administrar, actualizar y hacer copias en el VPS |
+| [docs/webos.md](docs/webos.md) | Generar, instalar, probar y actualizar la app en televisores LG webOS |
+| [docs/otras-plataformas.md](docs/otras-plataformas.md) | Cómo llevar la app de TV a Samsung Tizen, Android TV y otros |
+| [docs/limitaciones.md](docs/limitaciones.md) | Limitaciones conocidas (YouTube, navegadores de Smart TV, servidor) |
+| [docs/aceptacion.md](docs/aceptacion.md) | Estado de verificación de cada flujo de aceptación |
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+## Qué hace
 
-## Learning Laravel
+**Panel de adultos** (web, pensado para móvil):
+- Acceso sin contraseña: código de 6 cifras o enlace de un solo uso por correo; la sesión se mantiene en ese navegador (60 días, renovable) y se puede revocar desde *Cuenta*.
+- Asistente de primeros pasos: perfil infantil → primer contenido → probar en el navegador o conectar la tele.
+- Perfiles infantiles con apodo y avatar predefinido (sin datos personales del menor).
+- Biblioteca: pegar enlace de YouTube (comprobación de inserción vía oEmbed), subir MP4 o MP3/M4A por fragmentos con progreso, categorías, orden, portada, asignación por perfil, ocultar temporalmente, estados *Listo / Procesando / No disponible / Error*.
+- Televisores: vincular por código o QR, renombrar, desvincular. Botón «Probar modo TV» para usar el propio navegador como tele.
+- Cuenta: PIN parental, cambio de correo, sesiones abiertas, exportación en JSON y eliminación de la cuenta (con revalidación por correo).
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+**App de TV** (la misma en `/tv/` y en el paquete webOS):
+- Vinculación con código temporal + QR, sin escribir contraseñas en la tele.
+- Selección de perfil → catálogo por categorías con portadas grandes → reproductor.
+- Navegación completa con flechas, OK y Atrás (también puntero/ratón opcional), foco visible y restaurado al volver del reproductor.
+- Vídeo y audio propios a pantalla completa con pausa, avance/retroceso de 10 s; YouTube con el reproductor oficial (modo privacidad mejorada).
+- Al terminar vuelve al catálogo (reproducción automática solo si el adulto la activa).
+- Zona de adultos con PIN validado en el servidor, espera progresiva tras fallos y bloqueo por inactividad.
+- Pantallas para sin conexión, contenido retirado, error de reproducción y tele desvinculada.
 
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+## Arquitectura
 
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
-
-## Agentic Development
-
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
-
-```bash
-composer require laravel/boost --dev
-
-php artisan boost:install
+```
+                 Internet (HTTPS)
+                        │
+          Caddy compartido del VPS (TLS, kidstv.jonvadillo.com)
+                        │ 127.0.0.1:8086
+┌───────────────────────┴──────────────────────── docker compose "kidstv" ─┐
+│ web (nginx)  ── estáticos, /tv/, X-Accel-Redirect de archivos privados   │
+│     │ FastCGI                                                            │
+│ app (php-fpm 8.4, Laravel 13) ── panel, API /api/tv, URLs firmadas       │
+│ worker (queue:work) ── ffprobe/ffmpeg: validar, faststart, miniaturas     │
+│ scheduler (schedule:work) ── limpieza horaria y copia diaria de la BD     │
+│                                                                          │
+│ volumen "storage": SQLite (WAL), archivos privados, copias, logs         │
+└──────────────────────────────────────────────────────────────────────────┘
 ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+Decisiones con consecuencias para el producto:
 
-## Contributing
+- **Sin servicios externos de identidad, datos ni archivos.** Autenticación propia por correo (códigos con hash, un solo uso, 15 min, 5 intentos, límites por IP y correo), SQLite en el propio VPS y archivos en un volumen local. La única dependencia externa es el **envío** de correo (Resend, configurable por SMTP u otro transporte) y YouTube como fuente de contenido.
+- **SQLite en modo WAL** en lugar de un servidor de BD: suficiente para varias familias, sin un contenedor más en un VPS compartido con poca RAM, y copia de seguridad trivial. Cambiar a PostgreSQL solo requiere variables de entorno.
+- **Sin recodificar vídeo**: la CPU del VPS es compartida. Se validan los códecs con ffprobe, se reubica el índice MP4 (`+faststart`) para que empiece a reproducirse al momento y se avisa si el códec no es H.264.
+- **Archivos privados**: nunca están en la carpeta pública. La tele recibe URLs firmadas con caducidad (4–8 h) ligadas al dispositivo; en cada petición se vuelve a comprobar que la tele sigue vinculada a la familia propietaria. nginx los sirve con soporte de *Range*.
+- **Tele = dispositivo con token**, nunca sesión de adulto. Su API solo permite consultar perfiles/catálogo y reproducir; con PIN, además, ver el catálogo completo o desvincularse. Las rutas del panel no aceptan el token.
+- **App de TV en ES5 sin dependencias ni compilación** para funcionar en navegadores de televisores antiguos (webOS 3 / Chromium 38) y poder empaquetarse para otras plataformas con un `config.js` distinto.
+- **YouTube mediante página puente** (`/tv/youtube`) servida desde nuestro dominio: el reproductor oficial exige un origen web válido, que una app empaquetada (`file://`) no tiene.
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+## Estructura
 
-## Code of Conduct
+```
+app/Http/Controllers/Auth     Acceso por correo, alta, revalidación
+app/Http/Controllers/Panel    Panel de adultos (siempre consultando a través de la familia)
+app/Http/Controllers/Tv       API del televisor y página puente de YouTube
+app/Services                  Verificación por correo, sesiones, YouTube, almacenamiento, catálogo TV
+app/Jobs                      Procesado de vídeos/audios subidos
+public/tv                     App de TV (HTML/CSS/JS ES5)
+public/tv-bridge              Página puente del reproductor de YouTube
+tv-apps/                      Empaquetado por plataforma (webos/), build.mjs, iconos
+ops/                          Dockerfile, nginx, php, Caddy, scripts de despliegue y copias
+tests/Feature                 Tests de los flujos de aceptación, seguridad y aislamiento
+```
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+## Desarrollo local
 
-## Security Vulnerabilities
+Necesitas PHP 8.3+ con `pdo_sqlite`, Composer y (opcional) ffmpeg.
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+```bash
+composer install
+cp .env.example .env && php artisan key:generate
+touch database/database.sqlite && php artisan migrate --seed   # cuenta de ejemplo: familia@example.com
+php artisan serve                                              # http://localhost:8000
+php artisan kidstv:login-link familia@example.com              # enlace de acceso sin enviar correo
+```
 
-## License
+Con `MAIL_MAILER=log`, los correos (códigos) se escriben en `storage/logs/`. La app de TV en local se abre desde el panel con «Probar modo TV».
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+Sin PHP local, con Docker:
+
+```bash
+docker run --rm -it -v "$PWD":/app -w /app composer:2 sh -c "composer install && php artisan test"
+```
+
+## Tests
+
+```bash
+php artisan test
+```
+
+39 tests / 417 aserciones cubren alta y acceso por correo, sesión persistente y revocación, aislamiento entre familias (panel, API de TV y archivos), vinculación de televisores, catálogo por perfil, URLs firmadas y su caducidad, PIN con espera progresiva, subida por fragmentos, YouTube, borrado de contenido y de cuenta. Además se hizo un recorrido end-to-end real contra producción con Chrome (ver [docs/aceptacion.md](docs/aceptacion.md)).
