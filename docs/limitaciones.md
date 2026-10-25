@@ -23,7 +23,7 @@
 
 ## Servidor y producto
 
-- **Correo.** El acceso depende de que el correo llegue. Hasta configurar `RESEND_API_KEY` (u otro transporte), los códigos solo quedan en el log del servidor. Los correos pueden caer en spam si el dominio remitente no tiene SPF/DKIM.
+- **Correo.** El acceso depende de que el correo llegue. Se envía con Resend desde `no-reply@kidstv.jonvadillo.com`; si Resend no está disponible o la clave se revoca, nadie podrá entrar desde un dispositivo nuevo (las sesiones ya abiertas siguen funcionando y `kidstv:login-link` sirve de emergencia).
 - **Espacio en disco.** El VPS es compartido y tiene poco espacio libre; por defecto 500 MB por vídeo, 3 GB por familia y un margen de 1,5 GB libres en el disco. Para muchas familias habría que ampliar disco o mover los archivos a un volumen dedicado.
 - **Copias de seguridad** automáticas de la base de datos en el mismo disco; los archivos solo se copian manualmente (`ops/backup.sh --media`).
 - **Una persona adulta por familia** en esta versión (el modelo de datos ya separa familia y usuario, para añadir más adultos en el futuro).

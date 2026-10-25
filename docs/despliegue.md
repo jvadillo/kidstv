@@ -71,7 +71,7 @@ RESEND_API_KEY=re_xxxxxxxx
 MAIL_FROM_ADDRESS=no-reply@kidstv.jonvadillo.com
 MAIL_FROM_NAME=KidsTV
 ```
-El dominio del remitente debe estar verificado en Resend (registros DNS SPF/DKIM que indica su panel). Puede usarse `jonvadillo.com` o un subdominio ya verificado.
+Configurado en producción el 25/10/2026 con una clave de Resend **solo de envío** autorizada para el dominio `kidstv.jonvadillo.com` (no sirve para `jonvadillo.com` ni para otros subdominios). La clave vive únicamente en `.env.production` del servidor; si se cambia, actualízala ahí y redespliega.
 
 **SMTP genérico:**
 ```env
