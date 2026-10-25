@@ -22,6 +22,13 @@ return [
         'key' => env('RESEND_API_KEY'),
     ],
 
+    // YouTube Data API v3: solo para el buscador del panel de adultos (la clave nunca llega al navegador).
+    'youtube' => [
+        'key' => env('YOUTUBE_API_KEY'),
+        'region' => env('YOUTUBE_REGION', 'ES'),
+        'language' => env('YOUTUBE_LANGUAGE', 'es'),
+    ],
+
     'ses' => [
         'key' => env('AWS_ACCESS_KEY_ID'),
         'secret' => env('AWS_SECRET_ACCESS_KEY'),

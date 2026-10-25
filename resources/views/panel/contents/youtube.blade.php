@@ -7,6 +7,10 @@
         <h1>{{ __('Añadir vídeo de YouTube') }}</h1>
     </div>
 
+    @if ($searchEnabled)
+        @include('panel.contents.youtube-tabs', ['active' => 'link'])
+    @endif
+
     <form method="POST" action="{{ route('contents.youtube.store') }}" enctype="multipart/form-data" class="stack card narrow"
           data-youtube-form data-preview-url="{{ route('contents.youtube.preview') }}">
         @csrf

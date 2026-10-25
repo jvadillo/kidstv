@@ -60,6 +60,7 @@ Route::middleware('auth')->group(function () {
 
         Route::get('/contenidos', [ContentController::class, 'index'])->name('contents.index');
         Route::get('/contenidos/nuevo/youtube', [ContentController::class, 'createYouTube'])->name('contents.youtube.create');
+        Route::get('/contenidos/buscar-youtube', [ContentController::class, 'searchYouTube'])->name('contents.youtube.search');
         Route::post('/contenidos/youtube/comprobar', [ContentController::class, 'previewYouTube'])->name('contents.youtube.preview');
         Route::post('/contenidos/youtube', [ContentController::class, 'storeYouTube'])->name('contents.youtube.store');
         Route::get('/contenidos/nuevo/{kind}', [ContentController::class, 'createUpload'])->whereIn('kind', ['video', 'audio'])->name('contents.upload.create');

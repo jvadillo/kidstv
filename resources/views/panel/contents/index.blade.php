@@ -10,7 +10,7 @@
     <div class="page-head">
         <h1>{{ __('Biblioteca') }}</h1>
         <div class="page-head-actions">
-            <a href="{{ route('contents.youtube.create') }}" class="btn btn-primary btn-sm">@include('partials.icon', ['name' => 'youtube']) {{ __('YouTube') }}</a>
+            <a href="{{ youtube_add_url() }}" class="btn btn-primary btn-sm">@include('partials.icon', ['name' => 'youtube']) {{ __('YouTube') }}</a>
             <a href="{{ route('contents.upload.create', 'video') }}" class="btn btn-primary btn-sm">@include('partials.icon', ['name' => 'video']) {{ __('Vídeo') }}</a>
             <a href="{{ route('contents.upload.create', 'audio') }}" class="btn btn-primary btn-sm">@include('partials.icon', ['name' => 'audio']) {{ __('Audio') }}</a>
         </div>
@@ -60,7 +60,7 @@
             @else
                 <p>{{ __('Tu biblioteca está vacía.') }}</p>
                 <p class="muted">{{ __('Empieza pegando un enlace de YouTube o sube un vídeo MP4 o un audio MP3 desde tu móvil u ordenador.') }}</p>
-                <a href="{{ route('contents.youtube.create') }}" class="btn btn-primary">{{ __('Añadir vídeo de YouTube') }}</a>
+                <a href="{{ youtube_add_url() }}" class="btn btn-primary">{{ __('Añadir vídeo de YouTube') }}</a>
             @endif
         </div>
     @else

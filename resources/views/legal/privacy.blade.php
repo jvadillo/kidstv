@@ -25,6 +25,7 @@
 
         <h2>{{ __('YouTube') }}</h2>
         <p>{{ __('Los vídeos de YouTube se reproducen con el reproductor oficial en modo de privacidad mejorada (youtube-nocookie.com). Al reproducirlos, el televisor se conecta directamente con YouTube (Google), que aplica su propia política de privacidad y puede mostrar elementos que no controlamos. Nunca descargamos ni copiamos esos vídeos.') }}</p>
+        <p>{{ __('Si usas el buscador de YouTube del panel, el texto que buscas se envía a YouTube (Google) desde nuestro servidor, sin ningún dato tuyo ni de tu familia, y los resultados se guardan en caché durante una hora. La tele nunca tiene buscador.') }}</p>
 
         <h2>{{ __('Cuánto tiempo') }}</h2>
         <p>{{ __('Mientras mantengas la cuenta. Los códigos de acceso caducan en minutos y se eliminan en 24 horas; las sesiones caducan tras :days días sin uso. Al eliminar la cuenta borramos de inmediato perfiles, contenidos y archivos; las copias de seguridad del servidor, si existen, se sobrescriben en un plazo máximo de 30 días.', ['days' => config('kidstv.auth_session_days')]) }}</p>

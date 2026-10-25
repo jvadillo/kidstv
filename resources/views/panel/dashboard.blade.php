@@ -8,7 +8,7 @@
     </div>
 
     <section class="actions-grid" aria-label="{{ __('Acciones rápidas') }}">
-        <a href="{{ route('contents.youtube.create') }}" class="action-tile tile-youtube">
+        <a href="{{ youtube_add_url() }}" class="action-tile tile-youtube">
             @include('partials.icon', ['name' => 'youtube'])
             <span>{{ __('Añadir vídeo de YouTube') }}</span>
         </a>
@@ -35,7 +35,7 @@
                     <span class="muted">{{ __('Solo un apodo y un avatar.') }}</span>
                 </li>
                 <li @class(['done' => $contentCount > 0])>
-                    <a href="{{ route('contents.youtube.create') }}">{{ __('Añade tu primer contenido') }}</a>
+                    <a href="{{ youtube_add_url() }}">{{ __('Añade tu primer contenido') }}</a>
                     <span class="muted">{{ __('Un enlace de YouTube es lo más rápido.') }}</span>
                 </li>
                 <li>

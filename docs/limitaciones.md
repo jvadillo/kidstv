@@ -7,6 +7,7 @@
 - **Interacción con el reproductor.** Con el mando normal la app controla reproducir/pausar/avanzar; los botones propios de YouTube (p. ej. «Saltar anuncio») solo son pulsables con el puntero del Magic Remote o el ratón.
 - **Autoplay.** Algunos navegadores bloquean el inicio automático con sonido; en ese caso basta pulsar OK.
 - **Disponibilidad de la API.** Si YouTube cambia las condiciones del reproductor insertado (como el requisito de origen web de 2025, resuelto con la página puente), puede requerir ajustes.
+- **Buscador del panel.** Usa la YouTube Data API v3 y requiere una clave de Google. Con la cuota gratuita da para unas 95 búsquedas al día en todo el servidor (con caché de 1 hora). Usa búsqueda segura estricta y solo muestra vídeos insertables, pero **no garantiza** que todo resultado sea adecuado para niños: el adulto debe revisarlos (hay vista previa) antes de añadirlos. El filtro «para niños» depende de cómo lo marque cada canal. Para un lanzamiento público hay que cumplir las [políticas de la API de YouTube](https://developers.google.com/youtube/terms/developer-policies) (atribución, y no conservar datos de la API más de 30 días salvo los del propio usuario).
 - **No se descargan ni se copian vídeos de YouTube** en el servidor, por diseño. Sin conexión no se pueden ver.
 - Antes de un lanzamiento público hay que revisar las [condiciones de la API de YouTube](https://developers.google.com/youtube/terms/api-services-terms-of-service) aplicables a servicios dirigidos a menores.
 

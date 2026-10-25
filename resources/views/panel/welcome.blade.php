@@ -25,10 +25,10 @@
             <p class="muted">{{ __('Perfiles creados: :names. ¿Qué quieres añadir?', ['names' => $profiles->pluck('name')->implode(', ')]) }}</p>
 
             <div class="actions-grid actions-grid-3">
-                <a href="{{ route('contents.youtube.create', ['from_welcome' => 1]) }}" class="action-tile tile-youtube">
+                <a href="{{ youtube_add_url(['from_welcome' => 1]) }}" class="action-tile tile-youtube">
                     @include('partials.icon', ['name' => 'youtube'])
                     <span>{{ __('Vídeo de YouTube') }}</span>
-                    <small>{{ __('Pega un enlace') }}</small>
+                    <small>{{ \App\Services\YouTubeSearch::enabled() ? __('Busca o pega un enlace') : __('Pega un enlace') }}</small>
                 </a>
                 <a href="{{ route('contents.upload.create', ['kind' => 'video', 'from_welcome' => 1]) }}" class="action-tile tile-video">
                     @include('partials.icon', ['name' => 'video'])

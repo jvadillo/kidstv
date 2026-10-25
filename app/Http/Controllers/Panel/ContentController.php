@@ -6,9 +6,13 @@ use App\Http\Controllers\Controller;
 use App\Models\Content;
 use App\Services\MediaLibrary;
 use App\Services\YouTube;
+use App\Services\YouTubeSearch;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
+use RuntimeException;
 
 class ContentController extends Controller
 {
@@ -43,7 +47,51 @@ class ContentController extends Controller
 
     public function createYouTube()
     {
-        return view('panel.contents.youtube', $this->formData());
+        return view('panel.contents.youtube', $this->formData() + ['searchEnabled' => YouTubeSearch::enabled()]);
+    }
+
+    /** Buscador de YouTube (solo panel de adultos; la tele nunca tiene buscador). */
+    public function searchYouTube(Request $request, YouTubeSearch $search)
+    {
+        $data = $request->validate([
+            'q' => ['nullable', 'string', 'max:100'],
+            'duracion' => ['nullable', Rule::in(YouTubeSearch::DURATIONS)],
+            'pagina' => ['nullable', 'string', 'max:100', 'regex:/^[A-Za-z0-9_-]+$/'],
+            'ninos' => ['nullable', 'boolean'],
+        ]);
+
+        $query = trim($data['q'] ?? '');
+        $results = null;
+        $error = null;
+
+        if ($query !== '' && YouTubeSearch::enabled()) {
+            $limiter = 'youtube-search:'.$request->user()->id;
+            if (RateLimiter::tooManyAttempts($limiter, 40)) {
+                $error = __('Has hecho muchas búsquedas seguidas. Espera unos minutos.');
+            } else {
+                RateLimiter::hit($limiter, 3600);
+                try {
+                    $results = $search->search($query, $data['duracion'] ?? 'any', $data['pagina'] ?? null);
+                    if ($request->boolean('ninos')) {
+                        $results['items'] = array_values(array_filter($results['items'], fn ($item) => $item['made_for_kids']));
+                    }
+                } catch (RuntimeException $e) {
+                    $error = $e->getMessage();
+                }
+            }
+        }
+
+        $ids = collect($results['items'] ?? [])->pluck('id');
+
+        return view('panel.contents.youtube-search', $this->formData() + [
+            'enabled' => YouTubeSearch::enabled(),
+            'query' => $query,
+            'duration' => $data['duracion'] ?? 'any',
+            'kidsOnly' => $request->boolean('ninos'),
+            'results' => $results,
+            'error' => $error,
+            'added' => $ids->isEmpty() ? [] : $this->family()->contents()->whereIn('youtube_id', $ids)->pluck('youtube_id')->all(),
+        ]);
     }
 
     /** Comprobación previa (AJAX) de un enlace de YouTube. */
@@ -76,6 +124,10 @@ class ContentController extends Controller
             throw ValidationException::withMessages(['url' => __('Este enlace no parece de un vídeo de YouTube.')]);
         }
 
+        if ($this->family()->contents()->where('youtube_id', $id)->exists()) {
+            throw ValidationException::withMessages(['url' => __('Este vídeo ya está en tu videoteca.')]);
+        }
+
         $info = $youtube->lookup($id);
         if (! $info['ok']) {
             throw ValidationException::withMessages(['url' => $info['error']]);
@@ -102,8 +154,17 @@ class ContentController extends Controller
             $content->update(['cover_path' => $this->library->storeCover($this->family(), $request->file('cover'))]);
         }
 
-        return redirect()->route($request->boolean('from_welcome') ? 'welcome' : 'contents.index')
-            ->with('status', __('«:title» añadido a la videoteca.', ['title' => $content->title]));
+        $message = __('«:title» añadido a la videoteca.', ['title' => $content->title]);
+
+        // Desde el buscador se añaden vídeos sin salir de los resultados.
+        if ($request->expectsJson()) {
+            return response()->json(['ok' => true, 'id' => $content->id, 'youtube_id' => $id, 'title' => $content->title, 'message' => $message], 201);
+        }
+        if ($request->boolean('from_search')) {
+            return back()->with('status', $message);
+        }
+
+        return redirect()->route($request->boolean('from_welcome') ? 'welcome' : 'contents.index')->with('status', $message);
     }
 
     public function createUpload(string $kind)

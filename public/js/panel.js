@@ -249,10 +249,85 @@
         });
     }
 
+    // Buscador de YouTube: vista previa en ventana y «Añadir» sin salir de los resultados.
+    function initYouTubeSearch() {
+        var dialog = document.querySelector('[data-yt-dialog]');
+        if (dialog && typeof dialog.showModal === 'function') {
+            var frame = dialog.querySelector('iframe');
+            var titleEl = dialog.querySelector('[data-yt-dialog-title]');
+            document.addEventListener('click', function (e) {
+                var thumb = e.target.closest('[data-preview]');
+                if (!thumb) return;
+                titleEl.textContent = thumb.dataset.title || '';
+                frame.src = 'https://www.youtube-nocookie.com/embed/' + encodeURIComponent(thumb.dataset.preview) + '?autoplay=1&rel=0';
+                dialog.showModal();
+            });
+            dialog.querySelector('[data-yt-dialog-close]').addEventListener('click', function () { dialog.close(); });
+            dialog.addEventListener('click', function (e) { if (e.target === dialog) dialog.close(); });
+            dialog.addEventListener('close', function () { frame.src = 'about:blank'; });
+        } else {
+            // Sin <dialog>: la miniatura abre el vídeo en YouTube.
+            document.addEventListener('click', function (e) {
+                var thumb = e.target.closest('[data-preview]');
+                if (thumb) window.open('https://www.youtube.com/watch?v=' + encodeURIComponent(thumb.dataset.preview), '_blank', 'noopener');
+            });
+        }
+
+        var form = document.querySelector('[data-yt-add-form]');
+        if (!form) return;
+        var errorBox = form.querySelector('[data-yt-add-error]');
+
+        form.addEventListener('submit', function (e) {
+            var button = e.submitter;
+            if (!button || !button.value) return;
+            e.preventDefault();
+            errorBox.hidden = true;
+
+            var body = new FormData(form);
+            body.set('url', button.value);
+            var original = button.innerHTML;
+            button.disabled = true;
+            button.textContent = 'Añadiendo…';
+
+            requestJson('POST', form.action, body).then(function (res) {
+                if (!res.ok) throw new Error(firstError(res.data, 'No se ha podido añadir el vídeo.'));
+                var done = document.createElement('span');
+                done.className = 'btn btn-sm btn-added';
+                done.setAttribute('aria-disabled', 'true');
+                done.textContent = '✓ Añadido';
+                button.replaceWith(done);
+                showFlash(res.data.message);
+            }).catch(function (err) {
+                button.disabled = false;
+                button.innerHTML = original;
+                errorBox.textContent = err.message;
+                errorBox.hidden = false;
+                button.closest('.yt-result').scrollIntoView({ behavior: 'smooth', block: 'center' });
+            });
+        });
+    }
+
+    // Aviso flotante y breve (el formulario de resultados no recarga la página).
+    function showFlash(message) {
+        if (!message) return;
+        var flash = document.querySelector('.flash-floating');
+        if (!flash) {
+            flash = document.createElement('div');
+            flash.className = 'flash flash-success flash-floating';
+            flash.setAttribute('role', 'status');
+            document.body.appendChild(flash);
+        }
+        flash.textContent = message;
+        clearTimeout(showFlash.timer);
+        flash.classList.add('visible');
+        showFlash.timer = setTimeout(function () { flash.classList.remove('visible'); }, 3500);
+    }
+
     onReady(function () {
         initConfirms();
         initCheckTools();
         initYouTubeForm();
         initUploadForm();
+        initYouTubeSearch();
     });
 })();

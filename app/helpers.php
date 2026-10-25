@@ -49,3 +49,11 @@ if (! function_exists('format_bytes')) {
         return number_format($bytes, $i >= 2 ? 1 : 0, ',', '.').' '.$units[$i];
     }
 }
+
+if (! function_exists('youtube_add_url')) {
+    /** Punto de entrada para añadir vídeos de YouTube: el buscador si está configurado; si no, pegar enlace. */
+    function youtube_add_url(array $parameters = []): string
+    {
+        return route(\App\Services\YouTubeSearch::enabled() ? 'contents.youtube.search' : 'contents.youtube.create', $parameters);
+    }
+}

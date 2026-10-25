@@ -89,6 +89,23 @@ docker exec kidstv-app-1 sh -c 'grep -h "digo: " storage/logs/mail-*.log | tail 
 
 Tras cambiar `.env.production`: `bash ops/deploy.sh --no-pull` (o `docker compose -f compose.production.yml up -d --force-recreate app worker scheduler`).
 
+## 3 bis. Buscador de YouTube (opcional)
+
+El panel incluye un buscador de YouTube que usa la **YouTube Data API v3** de Google. Sin clave, la función se oculta y los adultos añaden vídeos pegando el enlace.
+
+Obtener la clave (cuenta de Google, gratis):
+1. Entra en <https://console.cloud.google.com/>, crea un proyecto (p. ej. «KidsTV»).
+2. *APIs y servicios → Biblioteca* → busca **YouTube Data API v3** → **Habilitar**.
+3. *APIs y servicios → Credenciales → Crear credenciales → Clave de API*.
+4. Edita la clave y **restríngela**: *Restricciones de API* → solo «YouTube Data API v3»; *Restricciones de aplicación* → «Direcciones IP» → `2.28.118.113`.
+5. Añádela al servidor y redespliega:
+   ```bash
+   sed -i "s|^YOUTUBE_API_KEY=.*|YOUTUBE_API_KEY=AIza...|" .env.production || echo "YOUTUBE_API_KEY=AIza..." >> .env.production
+   bash ops/deploy.sh --no-pull
+   ```
+
+**Cuota:** el plan gratuito da 10 000 unidades diarias y cada búsqueda (o página de resultados) gasta unas 101, es decir, **unas 95 búsquedas al día** para todo el servidor. Los resultados se guardan en caché una hora y cada adulto puede hacer como máximo 40 búsquedas por hora. Si se agota, el panel lo explica y se puede seguir pegando enlaces; Google permite solicitar más cuota desde la consola.
+
 ## 4. Administración diaria
 
 Todos los comandos desde `~/projects/kidstv`; abrevia con `alias kc='docker compose -f compose.production.yml'`.

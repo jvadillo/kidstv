@@ -23,7 +23,7 @@ Aplicación web (Laravel 13) en la que una persona adulta se registra solo con s
 - Acceso sin contraseña: código de 6 cifras o enlace de un solo uso por correo; la sesión se mantiene en ese navegador (60 días, renovable) y se puede revocar desde *Cuenta*.
 - Asistente de primeros pasos: perfil infantil → primer contenido → probar en el navegador o conectar la tele.
 - Perfiles infantiles con apodo y avatar predefinido (sin datos personales del menor).
-- Biblioteca: pegar enlace de YouTube (comprobación de inserción vía oEmbed), subir MP4 o MP3/M4A por fragmentos con progreso, categorías, orden, portada, asignación por perfil, ocultar temporalmente, estados *Listo / Procesando / No disponible / Error*.
+- Biblioteca: **buscador de YouTube** con miniatura, duración, canal y visualizaciones, vista previa y «Añadir» en un clic (búsqueda segura estricta, solo vídeos insertables); o pegar el enlace (comprobación de inserción vía oEmbed); subir MP4 o MP3/M4A por fragmentos con progreso, categorías, orden, portada, asignación por perfil, ocultar temporalmente, estados *Listo / Procesando / No disponible / Error*.
 - Televisores: vincular por código o QR, renombrar, desvincular. Botón «Probar modo TV» para usar el propio navegador como tele.
 - Cuenta: PIN parental, cambio de correo, sesiones abiertas, exportación en JSON y eliminación de la cuenta (con revalidación por correo).
 
@@ -56,7 +56,7 @@ Aplicación web (Laravel 13) en la que una persona adulta se registra solo con s
 
 Decisiones con consecuencias para el producto:
 
-- **Sin servicios externos de identidad, datos ni archivos.** Autenticación propia por correo (códigos con hash, un solo uso, 15 min, 5 intentos, límites por IP y correo), SQLite en el propio VPS y archivos en un volumen local. La única dependencia externa es el **envío** de correo (Resend, configurable por SMTP u otro transporte) y YouTube como fuente de contenido.
+- **Sin servicios externos de identidad, datos ni archivos.** Autenticación propia por correo (códigos con hash, un solo uso, 15 min, 5 intentos, límites por IP y correo), SQLite en el propio VPS y archivos en un volumen local. La única dependencia externa es el **envío** de correo (Resend, configurable por SMTP u otro transporte) y YouTube como fuente de contenido (reproductor oficial y, para el buscador del panel, la YouTube Data API v3).
 - **SQLite en modo WAL** en lugar de un servidor de BD: suficiente para varias familias, sin un contenedor más en un VPS compartido con poca RAM, y copia de seguridad trivial. Cambiar a PostgreSQL solo requiere variables de entorno.
 - **Sin recodificar vídeo**: la CPU del VPS es compartida. Se validan los códecs con ffprobe, se reubica el índice MP4 (`+faststart`) para que empiece a reproducirse al momento y se avisa si el códec no es H.264.
 - **Archivos privados**: nunca están en la carpeta pública. La tele recibe URLs firmadas con caducidad (4–8 h) ligadas al dispositivo; en cada petición se vuelve a comprobar que la tele sigue vinculada a la familia propietaria. nginx los sirve con soporte de *Range*.
@@ -105,4 +105,4 @@ docker run --rm -it -v "$PWD":/app -w /app composer:2 sh -c "composer install &&
 php artisan test
 ```
 
-39 tests / 417 aserciones cubren alta y acceso por correo, sesión persistente y revocación, aislamiento entre familias (panel, API de TV y archivos), vinculación de televisores, catálogo por perfil, URLs firmadas y su caducidad, PIN con espera progresiva, subida por fragmentos, YouTube, borrado de contenido y de cuenta. Además se hizo un recorrido end-to-end real contra producción con Chrome (ver [docs/aceptacion.md](docs/aceptacion.md)).
+47 tests / 464 aserciones cubren alta y acceso por correo, sesión persistente y revocación, aislamiento entre familias (panel, API de TV y archivos), vinculación de televisores, catálogo por perfil, URLs firmadas y su caducidad, PIN con espera progresiva, subida por fragmentos, YouTube, borrado de contenido y de cuenta, y el buscador de YouTube (filtros, caché, duplicados, cuota agotada). Además se hizo un recorrido end-to-end real contra producción con Chrome (ver [docs/aceptacion.md](docs/aceptacion.md)).

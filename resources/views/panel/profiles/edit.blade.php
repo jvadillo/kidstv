@@ -15,7 +15,7 @@
         @if ($contents->isEmpty())
             <div class="empty-state">
                 <p>{{ __('Tu biblioteca está vacía. Añade contenidos y vuelve aquí para asignarlos.') }}</p>
-                <a href="{{ route('contents.youtube.create') }}" class="btn btn-primary">{{ __('Añadir vídeo de YouTube') }}</a>
+                <a href="{{ youtube_add_url() }}" class="btn btn-primary">{{ __('Añadir vídeo de YouTube') }}</a>
             </div>
         @else
             <form method="POST" action="{{ route('profiles.assign', $profile) }}" class="card">
