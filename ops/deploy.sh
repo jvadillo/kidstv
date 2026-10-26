@@ -21,8 +21,9 @@ echo "==> Migraciones"
 $COMPOSE run --rm --no-deps app php artisan migrate --force
 
 echo "==> Arrancando contenedores"
-$COMPOSE up -d --remove-orphans
-$COMPOSE exec -T worker php artisan queue:restart >/dev/null 2>&1 || true
+# --force-recreate: cada build genera una imagen nueva aunque el commit no cambie, y
+# Compose no siempre recrea los contenedores; así todos usan la imagen y el .env actuales.
+$COMPOSE up -d --remove-orphans --force-recreate
 
 echo "==> Comprobando salud"
 for i in $(seq 1 30); do
