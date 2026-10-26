@@ -339,6 +339,36 @@ input[type=file] { font: inherit; padding: .5rem 0; max-width: 100%; }
 .thumb-audio .thumb-type { display: none; }
 .thumb-youtube .thumb-type { background: var(--yt); }
 
+/* Menús desplegables (<details data-menu>) */
+.menu { position: relative; }
+.menu > summary, .add-placeholder > summary { list-style: none; }
+.menu > summary::-webkit-details-marker, .add-placeholder > summary::-webkit-details-marker { display: none; }
+.menu-panel {
+    position: absolute; top: calc(100% + .4rem); left: 0; z-index: 30;
+    display: flex; flex-direction: column; gap: .15rem;
+    min-width: 220px; max-width: calc(100vw - 2rem); padding: .4rem;
+    background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-sm); box-shadow: var(--shadow);
+}
+.menu-panel-end { left: auto; right: 0; }
+.menu-form { display: flex; flex-direction: column; gap: .5rem; padding: .4rem; min-width: 250px; }
+.menu-form label { font-weight: 700; }
+.menu-item { display: flex; align-items: center; gap: .6rem; min-height: 44px; padding: .55rem .7rem; border-radius: 8px; color: var(--ink); font-weight: 600; text-decoration: none; white-space: nowrap; }
+.menu-item:hover, .menu-item:focus-visible { background: var(--primary-soft); }
+.menu-item .icon { width: 20px; height: 20px; flex: none; color: var(--primary); }
+
+/* Biblioteca: un bloque por lista */
+.library-blocks { display: grid; gap: 1.75rem; margin-top: 1rem; }
+.library-block-head { display: flex; align-items: center; gap: .5rem; flex-wrap: wrap; margin-bottom: .6rem; }
+.library-block-head h2 { margin: 0; min-width: 0; overflow-wrap: anywhere; }
+.library-block-actions { margin-left: auto; }
+.library-block-actions .btn-icon { min-height: 34px; width: 34px; }
+.library-block-hint { margin-top: .5rem; }
+.add-placeholder { border: 2px dashed var(--line); border-radius: var(--radius); background: var(--surface-2); }
+.add-placeholder:hover, .add-placeholder[open] { border-color: var(--primary); }
+.add-placeholder > summary { display: flex; align-items: center; gap: .8rem; padding: .6rem; cursor: pointer; border-radius: var(--radius); }
+.add-placeholder .thumb .icon { width: 28px; height: 28px; }
+.add-placeholder-options { display: flex; flex-wrap: wrap; gap: .25rem; padding: 0 .4rem .4rem; }
+
 .filters { display: grid; grid-template-columns: 1fr 1fr; gap: .5rem; margin-bottom: .5rem; }
 .filters select { min-height: 42px; padding: .4rem .6rem; font-size: .92rem; }
 @media (min-width: 760px) { .filters { display: flex; flex-wrap: wrap; align-items: center; } .filters select { width: auto; } }

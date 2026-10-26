@@ -206,6 +206,50 @@ class LibraryTest extends TestCase
         $this->get('/panel/contenidos/'.$a->id)->assertSee('Oculto');
     }
 
+    public function test_library_groups_contents_by_list_and_new_lists_go_on_top(): void
+    {
+        $user = $this->adult();
+        $family = $user->family;
+        $this->actingAsAdult($user);
+
+        $this->post('/panel/listas', ['name' => 'Cuentos']);
+        $cuentos = $family->lists()->where('name', 'Cuentos')->first();
+        $this->youtubeContent($family, ['title' => 'Caperucita', 'list_id' => $cuentos->id]);
+        $this->youtubeContent($family, ['title' => 'Suelto']);
+        $this->post('/panel/listas', ['name' => 'Canciones'])->assertSessionHas('status');
+
+        $this->assertSame(['Canciones', 'Cuentos'], $family->lists()->pluck('name')->all());
+
+        // Bloques en el orden de las listas; la nueva, vacía, invita a añadir contenido; al final, «Sin lista».
+        $this->get('/panel/contenidos')->assertOk()
+            ->assertSeeInOrder(['Canciones', 'Añadir contenido', 'lista='.$family->lists()->first()->id, 'Cuentos', 'Caperucita', 'Sin lista', 'Suelto'], false);
+
+        $this->post('/panel/listas/'.$cuentos->id.'/mover', ['direction' => 'up']);
+        $this->assertSame(['Cuentos', 'Canciones'], $family->lists()->pluck('name')->all());
+    }
+
+    public function test_contents_move_within_their_list(): void
+    {
+        $user = $this->adult();
+        $family = $user->family;
+        $list = $family->lists()->create(['name' => 'Canciones']);
+        // Orden global (más reciente primero): C, B, A; B no está en la lista.
+        $a = $this->youtubeContent($family, ['title' => 'A', 'list_id' => $list->id]);
+        $this->youtubeContent($family, ['title' => 'B']);
+        $this->youtubeContent($family, ['title' => 'C', 'list_id' => $list->id]);
+        $this->actingAsAdult($user);
+
+        $titles = fn () => $family->contents()->ordered()->pluck('title')->all();
+        // Subir A la cambia por C, su vecina en la lista, no por B.
+        $this->post('/panel/contenidos/'.$a->id.'/mover', ['direction' => 'up']);
+        $this->assertSame(['A', 'B', 'C'], $titles());
+
+        // C sube saltándose B, que está en otra lista.
+        $c = $family->contents()->where('title', 'C')->first();
+        $this->post('/panel/contenidos/'.$c->id.'/mover', ['direction' => 'up']);
+        $this->assertSame(['C', 'B', 'A'], $titles());
+    }
+
     public function test_lists_and_profiles_are_managed(): void
     {
         $user = $this->adult();

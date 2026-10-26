@@ -30,7 +30,9 @@ class ListController extends Controller
     {
         $family = $this->family();
         $data = $this->validated($request);
-        $family->lists()->create($data + ['position' => (int) $family->lists()->max('position') + 1]);
+        // Las listas nuevas van arriba del todo, donde se ven en la biblioteca y en la tele.
+        VideoList::where('family_id', $family->id)->increment('position');
+        $family->lists()->create($data + ['position' => 0]);
 
         return back()->with('status', __('Lista «:name» creada.', ['name' => $data['name']]));
     }

@@ -49,6 +49,31 @@
         });
     }
 
+    // Menús desplegables (<details data-menu>): se cierran al pulsar fuera o con Escape.
+    function initMenus() {
+        function openMenus() { return document.querySelectorAll('details[data-menu][open]'); }
+
+        document.addEventListener('click', function (e) {
+            openMenus().forEach(function (menu) {
+                if (!menu.contains(e.target)) menu.open = false;
+            });
+        });
+        document.addEventListener('keydown', function (e) {
+            if (e.key !== 'Escape') return;
+            openMenus().forEach(function (menu) {
+                menu.open = false;
+                menu.querySelector('summary').focus();
+            });
+        });
+        // «toggle» no burbujea: se escucha en captura. Al abrir un menú con formulario, foco al campo.
+        document.addEventListener('toggle', function (e) {
+            var menu = e.target;
+            if (!menu.open || !menu.matches || !menu.matches('details[data-menu]')) return;
+            var input = menu.querySelector('input[type=text]');
+            if (input) input.focus();
+        }, true);
+    }
+
     // Marcar todos / ninguno en listas de casillas.
     function initCheckTools() {
         document.addEventListener('click', function (e) {
@@ -325,6 +350,7 @@
 
     onReady(function () {
         initConfirms();
+        initMenus();
         initCheckTools();
         initYouTubeForm();
         initUploadForm();

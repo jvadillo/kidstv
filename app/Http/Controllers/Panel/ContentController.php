@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Panel;
 
 use App\Http\Controllers\Controller;
 use App\Models\Content;
+use App\Models\VideoList;
 use App\Services\MediaLibrary;
 use App\Services\YouTube;
 use App\Services\YouTubeSearch;
@@ -35,11 +36,24 @@ class ContentController extends Controller
             ->when($filters['profile'] ?? null, fn ($q, $profile) => $q->whereHas('profiles', fn ($p) => $p->whereKey($profile)))
             ->ordered()
             ->get();
+        $filtered = array_filter($filters) !== [];
+
+        // Un bloque por lista, en el orden de las filas de la tele, y al final los contenidos sin lista.
+        $allLists = $family->lists()
+            ->with(['profiles:id', 'source' => fn ($q) => $q->withCount(['contents' => fn ($c) => $c->ready()])])
+            ->get();
+        $byList = $contents->groupBy(fn (Content $c) => $c->list_id ?? 0);
+        $blocks = $allLists->map(fn (VideoList $list) => ['list' => $list, 'contents' => $byList->get($list->id, collect())])
+            ->push(['list' => null, 'contents' => $byList->get(0, collect())])
+            ->filter(fn (array $block) => $block['contents']->isNotEmpty() || ($block['list'] && ! $filtered))
+            ->values();
 
         return view('panel.contents.index', [
             'contents' => $contents,
+            'blocks' => $blocks,
+            'allLists' => $allLists,
             'filters' => $filters,
-            'filtered' => array_filter($filters) !== [],
+            'filtered' => $filtered,
             'lists' => $family->ownLists,
             'profiles' => $family->profiles,
         ]);
@@ -233,14 +247,22 @@ class ContentController extends Controller
         return redirect()->route('contents.index')->with('status', __('«:title» eliminado. Desaparecerá de los televisores en cuanto actualicen el catálogo.', ['title' => $content->title]));
     }
 
+    /** Sube o baja un contenido dentro de su lista (el vecino más cercano de la misma lista). */
     public function move(Request $request, int $content)
     {
         $content = $this->findContent($content);
-        $list = $this->family()->contents()->ordered()->get(['id', 'position'])->values();
+        $list = $this->family()->contents()->ordered()->get(['id', 'list_id', 'position'])->values();
         $index = $list->search(fn (Content $c) => $c->id === $content->id);
-        $swap = $request->input('direction') === 'up' ? $index - 1 : $index + 1;
+        $up = $request->input('direction') === 'up';
+        $swap = null;
+        for ($i = $up ? $index - 1 : $index + 1; $i >= 0 && $i < $list->count(); $i += $up ? -1 : 1) {
+            if ($list[$i]->list_id === $list[$index]->list_id) {
+                $swap = $i;
+                break;
+            }
+        }
 
-        if ($swap >= 0 && $swap < $list->count()) {
+        if ($swap !== null) {
             $items = $list->all();
             [$items[$index], $items[$swap]] = [$items[$swap], $items[$index]];
             foreach ($items as $position => $item) {
