@@ -204,6 +204,7 @@
                     case 'left': case 'rw': send('seek', name === 'rw' ? -30 : -10); return true;
                     case 'right': case 'ff': send('seek', name === 'ff' ? 30 : 10); return true;
                     case 'up': case 'down':
+                        send('showControls');
                         notice.classList.add('visible');
                         clearTimeout(noticeTimer);
                         noticeTimer = setTimeout(function () { notice.classList.remove('visible'); }, 4000);

@@ -8,10 +8,14 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\Hash;
 
-#[Fillable(['name', 'autoplay_next'])]
+#[Fillable(['name', 'autoplay_next', 'youtube_controls'])]
 #[Hidden(['pin_hash'])]
 class Family extends Model
 {
+    public const YOUTUBE_CONTROLS = ['auto', 'always', 'hidden'];
+
+    protected $attributes = ['youtube_controls' => 'auto'];
+
     protected function casts(): array
     {
         return [

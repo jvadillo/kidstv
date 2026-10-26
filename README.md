@@ -39,6 +39,7 @@ Aplicación web (Laravel 13) en la que una persona adulta se registra solo con s
 - Informa del tiempo reproducido (por tele y contenido, sin perfil infantil) para las estadísticas de uso.
 - Navegación completa con flechas, OK y Atrás (también puntero/ratón opcional), foco visible y restaurado al volver del reproductor.
 - Vídeo y audio propios a pantalla completa con pausa, avance/retroceso de 10 s; YouTube con el reproductor oficial (modo privacidad mejorada).
+- Barra de pausa, avance y progreso para YouTube: automática, siempre visible u oculta, configurable para toda la familia desde *Cuenta → Preferencias*.
 - Al terminar vuelve al catálogo (reproducción automática solo si el adulto la activa).
 - Zona de adultos con PIN validado en el servidor, espera progresiva tras fallos y bloqueo por inactividad.
 - Pantallas para sin conexión, contenido retirado, error de reproducción y tele desvinculada.
@@ -110,6 +111,9 @@ docker run --rm -it -v "$PWD":/app -w /app composer:2 sh -c "composer install &&
 
 ```bash
 php artisan test
+node --test tests/JavaScript/youtube-player.test.cjs
 ```
+
+Las pruebas JavaScript comprueban los modos de visibilidad, progreso, mando y puntero con la API de YouTube simulada, sin acceso a la red.
 
 49 tests / 472 aserciones cubren alta y acceso por correo, sesión persistente y revocación, aislamiento entre familias (panel, API de TV y archivos), vinculación de televisores, catálogo por perfil, URLs firmadas y su caducidad, PIN con espera progresiva, subida por fragmentos, YouTube, borrado de contenido y de cuenta, y el buscador de YouTube (filtros, caché, duplicados, cuota agotada). Además se hizo un recorrido end-to-end real contra producción con Chrome (ver [docs/aceptacion.md](docs/aceptacion.md)).

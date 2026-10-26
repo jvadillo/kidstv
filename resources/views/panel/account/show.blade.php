@@ -28,6 +28,15 @@
                     <span class="hint block">{{ __('Desactivado (recomendado): al terminar un vídeo, la tele vuelve al catálogo.') }}</span>
                 </span>
             </label>
+            <div class="field">
+                <label for="youtube_controls">{{ __('Controles de YouTube en la tele') }}</label>
+                <select id="youtube_controls" name="youtube_controls" aria-describedby="youtube_controls_hint">
+                    <option value="auto" @selected(old('youtube_controls', $family->youtube_controls) === 'auto')>{{ __('Automáticos') }}</option>
+                    <option value="always" @selected(old('youtube_controls', $family->youtube_controls) === 'always')>{{ __('Siempre visibles') }}</option>
+                    <option value="hidden" @selected(old('youtube_controls', $family->youtube_controls) === 'hidden')>{{ __('Ocultos') }}</option>
+                </select>
+                <p id="youtube_controls_hint" class="hint">{{ __('La barra de KidsTV muestra pausa, avance y progreso debajo del vídeo. En automático aparece al usar el mando y se oculta tras unos segundos. Aunque la ocultes, el mando sigue funcionando. Se aplica en todas tus teles al abrir el siguiente vídeo.') }}</p>
+            </div>
             <div class="form-actions"><button class="btn btn-primary">{{ __('Guardar') }}</button></div>
         </form>
     </section>

@@ -79,7 +79,7 @@ class TvTest extends TestCase
         $this->tv($token)->getJson('/api/tv/contents/'.$forIker->id.'/play?profile='.$ane->id)->assertNotFound();
         $this->tv($token)->getJson('/api/tv/contents/'.$forAne->id.'/play?profile='.$ane->id)
             ->assertOk()->assertJson(['type' => 'youtube', 'youtube_id' => 'aqz-KE-bpKQ'])
-            ->assertJsonPath('youtube_player', route('tv.youtube', ['v' => 'aqz-KE-bpKQ']));
+            ->assertJsonPath('youtube_player', route('tv.youtube', ['v' => 'aqz-KE-bpKQ', 'controls' => 'auto']));
     }
 
     public function test_own_media_is_served_with_signed_urls_and_revocation_cuts_access(): void
@@ -214,10 +214,31 @@ class TvTest extends TestCase
         $this->get('/tv/youtube?v=aqz-KE-bpKQ')
             ->assertOk()
             ->assertSee('data-video-id="aqz-KE-bpKQ"', false)
+            ->assertSee('data-controls="auto"', false)
             ->assertHeaderMissing('X-Frame-Options')
             ->assertCookieMissing(config('session.cookie'));
 
         $this->get('/tv/youtube?v=<script>')->assertNotFound();
+    }
+
+    public function test_youtube_playback_uses_the_latest_family_controls_preference(): void
+    {
+        $family = $this->adult()->family;
+        $profile = $this->profile($family);
+        $content = $this->youtubeContent($family);
+        $content->profiles()->attach($profile);
+        [, $token] = $this->device($family);
+
+        foreach (['always', 'hidden', 'auto'] as $mode) {
+            $family->update(['youtube_controls' => $mode]);
+            $this->tv($token)->getJson('/api/tv/contents/'.$content->id.'/play?profile='.$profile->id)
+                ->assertOk()->assertJsonPath('youtube_player', route('tv.youtube', ['v' => $content->youtube_id, 'controls' => $mode]));
+            $this->get('/tv/youtube?v='.$content->youtube_id.'&controls='.$mode)
+                ->assertOk()->assertSee('data-controls="'.$mode.'"', false);
+        }
+
+        $this->get('/tv/youtube?v='.$content->youtube_id.'&controls=invalid')
+            ->assertOk()->assertSee('data-controls="auto"', false);
     }
 
     public function test_pairing_code_alphabet_is_unambiguous(): void

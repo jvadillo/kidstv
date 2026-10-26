@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Tv;
 
 use App\Http\Controllers\Controller;
+use App\Models\Family;
 use Illuminate\Http\Request;
 
 /**
@@ -17,6 +18,11 @@ class YouTubeBridgeController extends Controller
         $id = (string) $request->query('v');
         abort_unless(preg_match('/^[A-Za-z0-9_-]{11}$/', $id) === 1, 404);
 
-        return response()->view('tv.youtube', ['videoId' => $id]);
+        $controls = $request->query('controls', 'auto');
+
+        return response()->view('tv.youtube', [
+            'videoId' => $id,
+            'controls' => in_array($controls, Family::YOUTUBE_CONTROLS, true) ? $controls : 'auto',
+        ]);
     }
 }

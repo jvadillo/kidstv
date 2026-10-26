@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Panel;
 
 use App\Http\Controllers\Controller;
 use App\Models\Content;
+use App\Models\Family;
 use App\Models\LoginToken;
 use App\Models\User;
 use App\Services\AdultSessions;
@@ -35,12 +36,14 @@ class AccountController extends Controller
             'name' => ['nullable', 'string', 'max:60'],
             'family_name' => ['nullable', 'string', 'max:60'],
             'autoplay_next' => ['boolean'],
+            'youtube_controls' => ['sometimes', 'required', Rule::in(Family::YOUTUBE_CONTROLS)],
         ]);
 
         $request->user()->update(['name' => $data['name'] ?? null]);
         $request->user()->family->update([
             'name' => $data['family_name'] ?? null,
             'autoplay_next' => $request->boolean('autoplay_next'),
+            'youtube_controls' => $data['youtube_controls'] ?? $request->user()->family->youtube_controls,
         ]);
 
         return back()->with('status', __('Preferencias guardadas.'));
@@ -151,7 +154,10 @@ class AccountController extends Controller
                 'created_at' => $user->created_at?->toIso8601String(),
                 'terms_accepted_at' => $user->terms_accepted_at?->toIso8601String(),
             ],
-            'family' => ['name' => $family->name, 'autoplay_next' => $family->autoplay_next, 'pin_configured' => $family->hasPin()],
+            'family' => [
+                'name' => $family->name, 'autoplay_next' => $family->autoplay_next,
+                'youtube_controls' => $family->youtube_controls, 'pin_configured' => $family->hasPin(),
+            ],
             'profiles' => $family->profiles->map(fn ($p) => [
                 'id' => $p->id, 'name' => $p->name, 'avatar' => $p->avatar,
                 'content_ids' => $p->contents->pluck('id'),

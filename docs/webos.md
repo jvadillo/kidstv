@@ -50,6 +50,8 @@ ares-launch  --device salon com.jonvadillo.kidstv
 
 La app aparece entre las aplicaciones de la tele con el icono amarillo de KidsTV.
 
+La barra configurable de YouTube se sirve desde el servidor y funciona también con paquetes anteriores. Para que las flechas arriba/abajo la vuelvan a mostrar en modo automático, hay que generar e instalar el paquete actualizado; pausa y avance ya la muestran en los paquetes anteriores.
+
 ### Vincular la tele a una familia
 
 1. Al abrir KidsTV se muestra un código de 6 caracteres (p. ej. `MQ6 4RK`) y un QR.

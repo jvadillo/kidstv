@@ -71,7 +71,10 @@ class CatalogController extends Controller
             'url' => $content->isYouTube() ? null : $this->catalog->fileUrl($content, $device),
             'mime' => $content->mime,
             'youtube_id' => $content->youtube_id,
-            'youtube_player' => $content->isYouTube() ? route('tv.youtube', ['v' => $content->youtube_id]) : null,
+            'youtube_player' => $content->isYouTube() ? route('tv.youtube', [
+                'v' => $content->youtube_id,
+                'controls' => $device->family->youtube_controls,
+            ]) : null,
         ]);
     }
 

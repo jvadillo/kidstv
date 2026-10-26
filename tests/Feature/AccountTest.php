@@ -32,7 +32,7 @@ class AccountTest extends TestCase
             return $mail->hasTo('ana@example.com') && $mail->link === null;
         });
 
-        $this->post('/confirmar', ['code' => '000000' === $code ? '111111' : '000000'])->assertSessionHasErrors('code');
+        $this->post('/confirmar', ['code' => $code === '000000' ? '111111' : '000000'])->assertSessionHasErrors('code');
         $this->post('/confirmar', ['code' => $code])->assertRedirect('/panel/cuenta/pin');
 
         $this->put('/panel/cuenta/pin', ['pin' => '12', 'pin_confirmation' => '12'])->assertSessionHasErrors('pin');
@@ -85,8 +85,9 @@ class AccountTest extends TestCase
         $this->youtubeContent($user->family, ['title' => 'Mi vídeo']);
         $this->actingAsAdult($user);
 
-        $this->put('/panel/cuenta', ['name' => 'Ana', 'family_name' => 'La tele de casa', 'autoplay_next' => '1'])->assertSessionHas('status');
+        $this->put('/panel/cuenta', ['name' => 'Ana', 'family_name' => 'La tele de casa', 'autoplay_next' => '1', 'youtube_controls' => 'always'])->assertSessionHas('status');
         $this->assertTrue($user->family->fresh()->autoplay_next);
+        $this->assertSame('always', $user->family->fresh()->youtube_controls);
 
         $this->get('/panel/cuenta/exportar')->assertRedirect('/confirmar');
 
@@ -94,9 +95,35 @@ class AccountTest extends TestCase
         $json = json_decode($this->get('/panel/cuenta/exportar')->assertOk()->streamedContent(), true);
         $this->assertSame('ana@example.com', $json['account']['email']);
         $this->assertSame('La tele de casa', $json['family']['name']);
+        $this->assertSame('always', $json['family']['youtube_controls']);
         $this->assertSame('Ane', $json['profiles'][0]['name']);
         $this->assertSame('https://www.youtube.com/watch?v=aqz-KE-bpKQ', $json['contents'][0]['youtube_url']);
         $this->assertArrayNotHasKey('pin_hash', $json['family']);
+    }
+
+    public function test_youtube_controls_preferences_are_validated_and_isolated_per_family(): void
+    {
+        $user = $this->adult();
+        $other = $this->adult();
+        $this->actingAsAdult($user);
+
+        $this->get('/panel/cuenta')->assertOk()->assertSee('Controles de YouTube en la tele');
+        $this->assertSame('auto', $user->family->fresh()->youtube_controls);
+
+        foreach (['always', 'hidden', 'auto'] as $mode) {
+            $this->put('/panel/cuenta', ['youtube_controls' => $mode])->assertSessionHasNoErrors();
+            $this->assertSame($mode, $user->family->fresh()->youtube_controls);
+        }
+
+        $this->put('/panel/cuenta', ['youtube_controls' => 'hidden'])->assertSessionHasNoErrors();
+        $this->put('/panel/cuenta', ['name' => 'Ana'])->assertSessionHasNoErrors();
+        $this->assertSame('hidden', $user->family->fresh()->youtube_controls);
+        $this->assertSame('auto', $other->family->fresh()->youtube_controls);
+
+        foreach (['invalid', '', ['always']] as $invalid) {
+            $this->put('/panel/cuenta', ['youtube_controls' => $invalid])->assertSessionHasErrors('youtube_controls');
+            $this->assertSame('hidden', $user->family->fresh()->youtube_controls);
+        }
     }
 
     public function test_account_deletion_removes_family_profiles_content_files_and_devices(): void
