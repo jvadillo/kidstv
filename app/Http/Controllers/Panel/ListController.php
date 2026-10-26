@@ -14,15 +14,37 @@ use Illuminate\Validation\Rule;
  */
 class ListController extends Controller
 {
+    /** Las listas se ven y se ordenan en la biblioteca. */
     public function index()
     {
-        return view('panel.lists.index', [
-            'lists' => $this->family()->lists()
-                ->withCount('contents')
-                ->with(['profiles:id', 'source' => fn ($q) => $q->withCount(['contents' => fn ($c) => $c->ready()])])
-                ->get(),
-            'profiles' => $this->family()->profiles,
-            'publicCount' => $this->availablePublicLists()->count(),
+        return redirect()->route('contents.index');
+    }
+
+    /** Gestión de una lista: sus contenidos o, si es pública, quién la ve. */
+    public function show(int $list)
+    {
+        $list = $this->findList($list);
+
+        if ($list->isLinked()) {
+            return view('panel.lists.linked', [
+                'list' => $list->load('profiles:id'),
+                'contents' => $list->isAvailable() ? $list->source->contents()->ready()->ordered()->get() : collect(),
+                'profiles' => $this->family()->profiles,
+            ]);
+        }
+
+        return view('panel.lists.show', [
+            'list' => $list,
+            'contents' => $list->contents()->with('profiles')->ordered()->get(),
+        ]);
+    }
+
+    /** Los contenidos sin lista, que en la tele salen al final, en la fila «Otros». */
+    public function unlisted()
+    {
+        return view('panel.lists.show', [
+            'list' => null,
+            'contents' => $this->family()->contents()->whereNull('list_id')->with('profiles')->ordered()->get(),
         ]);
     }
 
@@ -32,9 +54,9 @@ class ListController extends Controller
         $data = $this->validated($request);
         // Las listas nuevas van arriba del todo, donde se ven en la biblioteca y en la tele.
         VideoList::where('family_id', $family->id)->increment('position');
-        $family->lists()->create($data + ['position' => 0]);
+        $list = $family->lists()->create($data + ['position' => 0]);
 
-        return back()->with('status', __('Lista «:name» creada.', ['name' => $data['name']]));
+        return redirect()->route('lists.show', $list)->with('status', __('Lista «:name» creada.', ['name' => $data['name']]));
     }
 
     public function update(Request $request, int $list)
@@ -70,10 +92,10 @@ class ListController extends Controller
         $list->delete();
 
         if ($list->isLinked()) {
-            return back()->with('status', __('Lista «:name» quitada de tu videoteca.', ['name' => $list->displayName()]));
+            return redirect()->route('contents.index')->with('status', __('Lista «:name» quitada de tu videoteca.', ['name' => $list->displayName()]));
         }
 
-        return back()->with('status', __('Lista eliminada. Sus contenidos quedan como «Sin lista».'));
+        return redirect()->route('contents.index')->with('status', __('Lista eliminada. Sus contenidos quedan como «Sin lista».'));
     }
 
     /** Qué perfiles ven una lista pública añadida. */
@@ -126,7 +148,7 @@ class ListController extends Controller
         ]);
         $link->profiles()->sync($profileIds);
 
-        return redirect()->route('lists.index')->with('status', $profileIds
+        return redirect()->route('lists.show', $link)->with('status', $profileIds
             ? __('Lista «:name» añadida a tu videoteca.', ['name' => $source->name])
             : __('Lista «:name» añadida. Elige qué perfiles la ven para que aparezca en la tele.', ['name' => $source->name]));
     }

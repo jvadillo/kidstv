@@ -356,13 +356,49 @@ input[type=file] { font: inherit; padding: .5rem 0; max-width: 100%; }
 .menu-item:hover, .menu-item:focus-visible { background: var(--primary-soft); }
 .menu-item .icon { width: 20px; height: 20px; flex: none; color: var(--primary); }
 
-/* Biblioteca: un bloque por lista */
-.library-blocks { display: grid; gap: 1.75rem; margin-top: 1rem; }
-.library-block-head { display: flex; align-items: center; gap: .5rem; flex-wrap: wrap; margin-bottom: .6rem; }
-.library-block-head h2 { margin: 0; min-width: 0; overflow-wrap: anywhere; }
-.library-block-actions { margin-left: auto; }
-.library-block-actions .btn-icon { min-height: 34px; width: 34px; }
-.library-block-hint { margin-top: .5rem; }
+/* Biblioteca: tarjetas de lista (la portada se apila cuando hay varios contenidos) */
+.library-actions { flex-wrap: nowrap; }
+.library-actions .btn { padding-left: .65rem; padding-right: .75rem; gap: .25rem; }
+/* Con el título y los botones en una fila, los menús se abren hacia dentro de la página. */
+@media (min-width: 520px) { .library-actions .menu-panel { left: auto; right: 0; } }
+.list-cards { list-style: none; padding: 0; margin: 0; display: grid; gap: .6rem; }
+.list-card-item { display: flex; align-items: center; gap: .5rem; min-width: 0; }
+.list-card {
+    flex: 1; min-width: 0; display: flex; align-items: center; gap: .8rem; padding: .6rem .5rem .6rem .6rem;
+    background: var(--surface); border-radius: var(--radius); box-shadow: var(--shadow);
+    color: inherit; text-decoration: none; transition: transform .12s ease;
+}
+.list-card:hover { transform: translateY(-1px); }
+.list-card:hover .list-card-go { color: var(--primary); transform: translateX(2px); }
+.list-thumb { position: relative; flex: none; padding-top: 8px; }
+.list-thumb .thumb { position: relative; z-index: 1; width: 96px; aspect-ratio: 16 / 9; }
+.list-thumb .thumb > .icon { width: 28px; height: 28px; }
+.list-thumb .thumb-type { display: none; }
+.list-thumb-stack::before, .list-thumb-stack::after {
+    content: ""; position: absolute; left: 50%; transform: translateX(-50%);
+    height: 12px; border-radius: 8px 8px 0 0; background: var(--primary);
+}
+.list-thumb-stack::before { top: 0; width: 76%; opacity: .2; }
+.list-thumb-stack::after { top: 4px; width: 88%; opacity: .38; }
+.list-card-meta { display: flex; flex-direction: column; gap: .1rem; min-width: 0; flex: 1; }
+.list-card-title { display: flex; align-items: center; gap: .4rem; min-width: 0; }
+.list-card-title strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+.list-card-meta .profiles-inline { margin-top: .15rem; }
+.list-card-go { flex: none; display: flex; color: var(--ink-2); transition: transform .12s ease, color .12s ease; }
+.list-card-go .icon { width: 22px; height: 22px; }
+.list-cards-hint { margin-top: .6rem; }
+.reorder[aria-hidden=true] { width: 34px; }
+.public-lists-link { margin: 1.25rem 0; }
+
+/* Gestión de una lista */
+.back-link { display: inline-flex; align-items: center; gap: .2rem; min-height: 40px; margin-left: -.3rem; font-weight: 700; color: var(--primary); text-decoration: none; }
+.back-link .icon { width: 20px; height: 20px; }
+.list-head-title { flex-wrap: wrap; gap: .5rem; min-width: 0; }
+.list-head-title h1 { overflow-wrap: anywhere; }
+.content-item > form .btn-icon { min-height: 34px; width: 34px; }
+.btn-icon-danger { color: var(--danger); border-color: var(--danger-soft); }
+.btn-icon-danger:hover { background: var(--danger-soft); }
+.menu-form + .menu-form { border-top: 1px solid var(--line); margin-top: .25rem; padding-top: .6rem; }
 .add-placeholder { border: 2px dashed var(--line); border-radius: var(--radius); background: var(--surface-2); }
 .add-placeholder:hover, .add-placeholder[open] { border-color: var(--primary); }
 .add-placeholder > summary { display: flex; align-items: center; gap: .8rem; padding: .6rem; cursor: pointer; border-radius: var(--radius); }
@@ -418,7 +454,6 @@ input[type=file] { font: inherit; padding: .5rem 0; max-width: 100%; }
 .list-profiles { display: flex; flex-direction: column; gap: .5rem; border-top: 1px solid var(--line); padding-top: .75rem; }
 .list-profiles .label { font-weight: 700; }
 .badge-public { background: var(--info-soft); color: var(--primary); }
-.public-lists-link { margin: 1rem 0; }
 .public-lists-link > .icon { width: 34px; height: 34px; padding: 6px; border-radius: 10px; box-sizing: content-box; background: var(--info-soft); color: var(--primary); flex: none; }
 .public-list { display: grid; gap: 1rem; }
 .public-list-thumbs { display: grid; grid-template-columns: repeat(4, 1fr); gap: .35rem; align-items: center; text-decoration: none; min-width: 0; }

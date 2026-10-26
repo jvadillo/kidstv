@@ -45,7 +45,7 @@
 
         <div class="form-actions">
             <button class="btn btn-primary">{{ __('Añadir a la videoteca') }}</button>
-            <a href="{{ route('contents.index') }}" class="btn btn-ghost">{{ __('Cancelar') }}</a>
+            <a href="{{ is_numeric(request('lista')) ? route('lists.show', request('lista')) : route('contents.index') }}" class="btn btn-ghost">{{ __('Cancelar') }}</a>
         </div>
     </form>
 @endsection

@@ -5,7 +5,7 @@
 @section('content')
     <div class="page-head">
         <h1>{{ __('Listas públicas') }}</h1>
-        <a href="{{ route('lists.index') }}" class="btn btn-ghost">{{ __('Volver a mis listas') }}</a>
+        <a href="{{ route('contents.index') }}" class="btn btn-ghost">{{ __('Volver a la biblioteca') }}</a>
     </div>
     <p class="muted">{{ __('Listas de vídeos preparadas por el equipo de KidsTV. Al añadir una, aparece en tu tele como una fila más y se mantiene al día sola: si se añaden o quitan vídeos, cambian también en tu videoteca.') }}</p>
 

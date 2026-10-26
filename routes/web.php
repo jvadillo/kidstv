@@ -77,6 +77,8 @@ Route::middleware('auth')->group(function () {
         Route::get('/listas/publicas/{list}', [ListController::class, 'showPublic'])->name('lists.public.show');
         Route::post('/listas/publicas/{list}', [ListController::class, 'subscribe'])->name('lists.public.subscribe');
         Route::get('/listas/publicas/{list}/portada/{content}', [ListController::class, 'publicCover'])->name('lists.public.cover');
+        Route::get('/listas/sin-lista', [ListController::class, 'unlisted'])->name('lists.unlisted');
+        Route::get('/listas/{list}', [ListController::class, 'show'])->whereNumber('list')->name('lists.show');
         Route::put('/listas/{list}', [ListController::class, 'update'])->name('lists.update');
         Route::put('/listas/{list}/perfiles', [ListController::class, 'profiles'])->name('lists.profiles');
         Route::post('/listas/{list}/mover', [ListController::class, 'move'])->name('lists.move');

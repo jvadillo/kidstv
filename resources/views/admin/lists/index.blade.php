@@ -56,7 +56,7 @@
                         </p>
                         <div class="form-actions">
                             @if ($mine)
-                                <a href="{{ route('contents.index', ['list' => $list->id]) }}" class="btn btn-sm btn-primary">{{ __('Gestionar vídeos') }}</a>
+                                <a href="{{ route('lists.show', $list) }}" class="btn btn-sm btn-primary">{{ __('Gestionar vídeos') }}</a>
                             @endif
                             <form method="POST" action="{{ route('admin.lists.unpublish', $list) }}"
                                   data-confirm="{{ trans_choice('¿Dejar de publicar «:name»? Desaparecerá de :count videoteca que la usa. La lista y sus vídeos siguen en la biblioteca de su dueño.|¿Dejar de publicar «:name»? Desaparecerá de las :count videotecas que la usan. La lista y sus vídeos siguen en la biblioteca de su dueño.', $list->links_count, ['name' => $list->name]) }}">

@@ -21,41 +21,33 @@ class ContentController extends Controller
 
     public function __construct(private MediaLibrary $library) {}
 
-    public function index(Request $request)
+    /** Biblioteca: las listas de la familia, en el orden de las filas de la tele. */
+    public function index()
     {
         $family = $this->family();
-        $filters = $request->only(['type', 'list', 'profile', 'status']);
+        $profiles = $family->profiles;
+        $byList = $family->contents()->with('profiles:id')->ordered()->get()
+            ->groupBy(fn (Content $c) => $c->list_id ?? 0);
 
-        $contents = $family->contents()
-            ->with(['list', 'profiles'])
-            ->when($filters['type'] ?? null, fn ($q, $type) => $q->where('type', $type))
-            ->when($filters['status'] ?? null, fn ($q, $status) => $q->where('status', $status))
-            ->when($filters['list'] ?? null, fn ($q, $list) => $list === 'none'
-                ? $q->whereNull('list_id')
-                : $q->where('list_id', $list))
-            ->when($filters['profile'] ?? null, fn ($q, $profile) => $q->whereHas('profiles', fn ($p) => $p->whereKey($profile)))
-            ->ordered()
-            ->get();
-        $filtered = array_filter($filters) !== [];
+        $cards = $family->lists()
+            ->with(['profiles:id', 'source.contents' => fn ($q) => $q->ready()->ordered()])
+            ->get()
+            ->map(function (VideoList $list) use ($byList, $profiles) {
+                // Una lista pública añadida decide quién la ve; en las propias, cada contenido.
+                $items = $list->isLinked()
+                    ? ($list->isAvailable() ? $list->source->contents : collect())
+                    : $byList->get($list->id, collect());
+                $profileIds = $list->isLinked() ? $list->profiles->pluck('id') : $items->flatMap->profiles->pluck('id');
 
-        // Un bloque por lista, en el orden de las filas de la tele, y al final los contenidos sin lista.
-        $allLists = $family->lists()
-            ->with(['profiles:id', 'source' => fn ($q) => $q->withCount(['contents' => fn ($c) => $c->ready()])])
-            ->get();
-        $byList = $contents->groupBy(fn (Content $c) => $c->list_id ?? 0);
-        $blocks = $allLists->map(fn (VideoList $list) => ['list' => $list, 'contents' => $byList->get($list->id, collect())])
-            ->push(['list' => null, 'contents' => $byList->get(0, collect())])
-            ->filter(fn (array $block) => $block['contents']->isNotEmpty() || ($block['list'] && ! $filtered))
-            ->values();
+                return ['list' => $list] + $this->summary($items, $profiles->whereIn('id', $profileIds));
+            });
+
+        $unlisted = $byList->get(0, collect());
 
         return view('panel.contents.index', [
-            'contents' => $contents,
-            'blocks' => $blocks,
-            'allLists' => $allLists,
-            'filters' => $filters,
-            'filtered' => $filtered,
-            'lists' => $family->ownLists,
-            'profiles' => $family->profiles,
+            'cards' => $cards,
+            'unlisted' => $unlisted->isEmpty() ? null : $this->summary($unlisted, $profiles->whereIn('id', $unlisted->flatMap->profiles->pluck('id'))),
+            'publicCount' => VideoList::public()->where('family_id', '!=', $family->id)->count(),
         ]);
     }
 
@@ -189,7 +181,11 @@ class ContentController extends Controller
             return back()->with('status', $message);
         }
 
-        return redirect()->route($request->boolean('from_welcome') ? 'welcome' : 'contents.index')->with('status', $message);
+        if ($request->boolean('from_welcome')) {
+            return redirect()->route('welcome')->with('status', $message);
+        }
+
+        return redirect($this->listUrl($content->list_id))->with('status', $message);
     }
 
     public function createUpload(string $kind)
@@ -244,7 +240,12 @@ class ContentController extends Controller
         $content = $this->findContent($content);
         $content->delete();
 
-        return redirect()->route('contents.index')->with('status', __('«:title» eliminado. Desaparecerá de los televisores en cuanto actualicen el catálogo.', ['title' => $content->title]));
+        // De vuelta a su lista; si era el último contenido sin lista, a la biblioteca.
+        $url = $content->list_id || $this->family()->contents()->whereNull('list_id')->exists()
+            ? $this->listUrl($content->list_id)
+            : route('contents.index');
+
+        return redirect($url)->with('status', __('«:title» eliminado. Desaparecerá de los televisores en cuanto actualicen el catálogo.', ['title' => $content->title]));
     }
 
     /** Sube o baja un contenido dentro de su lista (el vecino más cercano de la misma lista). */
@@ -315,6 +316,23 @@ class ContentController extends Controller
         abort_unless($content->file_path, 404);
 
         return $this->library->respond($content->file_path, $content->mime);
+    }
+
+    /** Lo que se enseña de una lista en la biblioteca: portada, recuento y quién la ve. */
+    private function summary($items, $profiles): array
+    {
+        return [
+            'first' => $items->first(),
+            'count' => $items->count(),
+            'audios' => $items->where('type', Content::TYPE_AUDIO)->count(),
+            'profiles' => $profiles->values(),
+        ];
+    }
+
+    /** Pantalla de gestión de una lista (o de los contenidos sin lista). */
+    private function listUrl(?int $listId): string
+    {
+        return $listId ? route('lists.show', $listId) : route('lists.unlisted');
     }
 
     private function findContent(int $id): Content

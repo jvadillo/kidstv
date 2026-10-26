@@ -5,7 +5,7 @@
 @php
     $nav = [
         ['panel', 'panel', __('Inicio'), 'home'],
-        ['contents.index', 'contents.*', __('Biblioteca'), 'library'],
+        ['contents.index', ['contents.*', 'lists.*'], __('Biblioteca'), 'library'],
         ['profiles.index', 'profiles.*', __('Perfiles'), 'kids'],
         ['devices.index', 'devices.*', __('Teles'), 'tv'],
         ['account.show', 'account.*', __('Cuenta'), 'user'],

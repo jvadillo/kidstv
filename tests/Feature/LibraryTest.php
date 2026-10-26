@@ -55,7 +55,7 @@ class LibraryTest extends TestCase
         $this->post('/panel/contenidos/youtube', [
             'url' => 'https://youtu.be/aqz-KE-bpKQ?si=abc',
             'profile_ids' => [$ane->id],
-        ])->assertRedirect('/panel/contenidos');
+        ])->assertRedirect('/panel/listas/sin-lista');
 
         $youtube = Content::where('type', 'youtube')->firstOrFail();
         $this->assertSame('aqz-KE-bpKQ', $youtube->youtube_id);
@@ -82,7 +82,8 @@ class LibraryTest extends TestCase
         $this->assertEqualsCanonicalizing([$youtube->id, $mp3->id], $ane->contents()->pluck('contents.id')->all());
         $this->assertEqualsCanonicalizing([$mp4->id, $mp3->id], $iker->contents()->pluck('contents.id')->all());
 
-        $this->get('/panel/contenidos')->assertOk()->assertSee('Paseo por el monte')->assertSee('Nana');
+        $this->get('/panel/contenidos')->assertOk()->assertSee('Sin lista')->assertSee('2 vídeos · 1 audio');
+        $this->get('/panel/listas/sin-lista')->assertOk()->assertSee('Paseo por el monte')->assertSee('Nana');
         $this->get('/panel/contenidos/'.$mp4->id.'/archivo')->assertOk();
     }
 
@@ -206,26 +207,60 @@ class LibraryTest extends TestCase
         $this->get('/panel/contenidos/'.$a->id)->assertSee('Oculto');
     }
 
-    public function test_library_groups_contents_by_list_and_new_lists_go_on_top(): void
+    public function test_library_shows_lists_in_order_and_new_lists_go_on_top(): void
     {
         $user = $this->adult();
         $family = $user->family;
+        $ane = $this->profile($family, 'Ane');
         $this->actingAsAdult($user);
 
         $this->post('/panel/listas', ['name' => 'Cuentos']);
         $cuentos = $family->lists()->where('name', 'Cuentos')->first();
-        $this->youtubeContent($family, ['title' => 'Caperucita', 'list_id' => $cuentos->id]);
+        $this->youtubeContent($family, ['title' => 'Caperucita', 'list_id' => $cuentos->id])->profiles()->attach($ane);
+        $this->youtubeContent($family, ['title' => 'Pinocho', 'list_id' => $cuentos->id]);
         $this->youtubeContent($family, ['title' => 'Suelto']);
-        $this->post('/panel/listas', ['name' => 'Canciones'])->assertSessionHas('status');
+        // Al crear una lista se entra en ella para llenarla.
+        $this->post('/panel/listas', ['name' => 'Canciones'])->assertSessionHas('status')
+            ->assertRedirect('/panel/listas/'.$family->lists()->where('name', 'Canciones')->value('id'));
 
         $this->assertSame(['Canciones', 'Cuentos'], $family->lists()->pluck('name')->all());
 
-        // Bloques en el orden de las listas; la nueva, vacía, invita a añadir contenido; al final, «Sin lista».
+        // Una tarjeta por lista, en el orden de la tele, con su recuento y quién la ve; al final, «Sin lista».
         $this->get('/panel/contenidos')->assertOk()
-            ->assertSeeInOrder(['Canciones', 'Añadir contenido', 'lista='.$family->lists()->first()->id, 'Cuentos', 'Caperucita', 'Sin lista', 'Suelto'], false);
+            ->assertSeeInOrder(['Tus listas', 'Canciones', 'Vacía', 'Cuentos', '2 vídeos', 'La ven: Ane', 'Sin lista', '1 vídeo'])
+            ->assertSee('list-thumb-stack', false)
+            ->assertDontSee('Caperucita');
 
         $this->post('/panel/listas/'.$cuentos->id.'/mover', ['direction' => 'up']);
         $this->assertSame(['Cuentos', 'Canciones'], $family->lists()->pluck('name')->all());
+    }
+
+    public function test_each_list_is_managed_on_its_own_screen(): void
+    {
+        $user = $this->adult();
+        $family = $user->family;
+        $cuentos = $family->lists()->create(['name' => 'Cuentos']);
+        $vacia = $family->lists()->create(['name' => 'Canciones']);
+        $caperucita = $this->youtubeContent($family, ['title' => 'Caperucita', 'list_id' => $cuentos->id]);
+        $this->youtubeContent($family, ['title' => 'Pinocho', 'list_id' => $cuentos->id]);
+        $this->youtubeContent($family, ['title' => 'Suelto']);
+        $this->actingAsAdult($user);
+
+        $this->get('/panel/listas/'.$cuentos->id)->assertOk()
+            ->assertSeeInOrder(['Pinocho', 'Caperucita'])
+            ->assertDontSee('Suelto')
+            ->assertSee('lista='.$cuentos->id, false);
+        $this->get('/panel/listas/'.$vacia->id)->assertOk()->assertSee('Añadir contenido')->assertSee('lista='.$vacia->id, false);
+        $this->get('/panel/listas/sin-lista')->assertOk()->assertSee('Suelto')->assertDontSee('Caperucita');
+
+        // Borrar un contenido desde la lista vuelve a la lista.
+        $this->delete('/panel/contenidos/'.$caperucita->id)->assertRedirect('/panel/listas/'.$cuentos->id);
+        $this->get('/panel/contenidos/'.$caperucita->id)->assertNotFound();
+
+        $this->put('/panel/listas/'.$cuentos->id, ['name' => 'Cuentos de siempre'])->assertSessionHas('status');
+        $this->delete('/panel/listas/'.$cuentos->id)->assertRedirect('/panel/contenidos');
+        $this->assertSame(['Canciones'], $family->lists()->pluck('name')->all());
+        $this->get('/panel/listas/'.$cuentos->id)->assertNotFound();
     }
 
     public function test_contents_move_within_their_list(): void

@@ -1,7 +1,7 @@
 {{-- Campos comunes de un contenido: título, lista, perfiles autorizados, descripción y portada. --}}
 @php
     $selectedProfiles = collect(old('profile_ids', isset($content) ? $content->profiles->pluck('id')->all() : $profiles->pluck('id')->all()))->map(fn ($id) => (int) $id);
-    // ?lista= preselecciona la lista al añadir desde la biblioteca filtrada por esa lista.
+    // ?lista= preselecciona la lista al añadir desde la pantalla de esa lista.
     $selectedList = old('list_id', $content->list_id ?? request('lista'));
 @endphp
 
@@ -20,7 +20,7 @@
             <option value="{{ $list->id }}" @selected((string) $selectedList === (string) $list->id)>{{ $list->name }}</option>
         @endforeach
     </select>
-    <p class="hint"><a href="{{ route('lists.index') }}">{{ __('Gestionar listas') }}</a></p>
+    <p class="hint"><a href="{{ route('contents.index') }}">{{ __('Gestionar listas') }}</a></p>
     @error('list_id')<p class="error">{{ $message }}</p>@enderror
 </div>
 

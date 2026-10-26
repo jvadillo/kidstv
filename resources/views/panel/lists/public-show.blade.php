@@ -11,7 +11,7 @@
 
     @if ($link)
         <div class="notice notice-info">
-            <p>{!! __('Esta lista ya está en tu videoteca. Elige qué perfiles la ven desde <a href=":url">Listas</a>.', ['url' => route('lists.index')]) !!}</p>
+            <p>{!! __('Esta lista ya está en tu videoteca. <a href=":url">Elige qué perfiles la ven</a>.', ['url' => route('lists.show', $link)]) !!}</p>
         </div>
     @else
         <form method="POST" action="{{ route('lists.public.subscribe', $list) }}" class="card stack">

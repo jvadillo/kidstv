@@ -31,13 +31,15 @@ class PublicListTest extends TestCase
         $iker = $this->profile($user->family, 'Iker');
         $this->actingAsAdult($user);
 
-        $this->get('/panel/listas')->assertOk()->assertSee('Listas públicas');
+        $this->get('/panel/contenidos')->assertOk()->assertSee('Listas públicas');
         $this->get('/panel/listas/publicas')->assertOk()->assertSee('Canciones en inglés')->assertSee('Para aprender jugando')->assertSee('1 vídeo');
         $this->get('/panel/listas/publicas/'.$list->id)->assertOk()->assertSee('Baby Shark')->assertDontSee('Oculto');
 
-        $this->post('/panel/listas/publicas/'.$list->id, ['profile_ids' => [$ane->id]])->assertRedirect('/panel/listas');
+        $response = $this->post('/panel/listas/publicas/'.$list->id, ['profile_ids' => [$ane->id]]);
         $link = $user->family->lists()->where('source_id', $list->id)->firstOrFail();
-        $this->get('/panel/listas')->assertSee('Canciones en inglés')->assertSee('Lista pública');
+        $response->assertRedirect('/panel/listas/'.$link->id);
+        $this->get('/panel/contenidos')->assertSee('Canciones en inglés')->assertSee('Lista pública')->assertSee('La ven: Ane');
+        $this->get('/panel/listas/'.$link->id)->assertOk()->assertSee('Baby Shark')->assertSee('¿Quién la ve?')->assertDontSee('Oculto');
 
         [, $token] = $this->device($user->family);
         $catalog = $this->tv($token)->getJson('/api/tv/profiles/'.$ane->id.'/catalog')->assertOk();
@@ -142,7 +144,7 @@ class PublicListTest extends TestCase
         $this->assertTrue($existing->fresh()->is_public);
 
         $this->get('/admin/listas')->assertOk()->assertSee('Ciencia')->assertSee('Dibujos')->assertSee('Gestionar vídeos');
-        $this->get('/panel/listas')->assertSee('Publicada');
+        $this->get('/panel/contenidos')->assertSee('Publicada');
         // Sus propias listas públicas ya están en su videoteca: no se ofrecen para añadir.
         $this->get('/panel/listas/publicas')->assertOk()->assertDontSee('Ciencia');
     }

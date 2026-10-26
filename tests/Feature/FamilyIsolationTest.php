@@ -42,6 +42,7 @@ class FamilyIsolationTest extends TestCase
         $this->post('/panel/contenidos/'.$content->id.'/visibilidad', ['action' => 'hide'])->assertNotFound();
         $this->delete('/panel/contenidos/'.$content->id)->assertNotFound();
 
+        $this->get('/panel/listas/'.$list->id)->assertNotFound();
         $this->put('/panel/listas/'.$list->id, ['name' => 'X'])->assertNotFound();
         $this->delete('/panel/listas/'.$list->id)->assertNotFound();
 

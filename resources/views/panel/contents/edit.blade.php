@@ -79,7 +79,7 @@
             @endif
             <div class="form-actions">
                 <button class="btn btn-primary">{{ __('Guardar cambios') }}</button>
-                <a href="{{ route('contents.index') }}" class="btn btn-ghost">{{ __('Volver') }}</a>
+                <a href="{{ $content->list_id ? route('lists.show', $content->list_id) : route('lists.unlisted') }}" class="btn btn-ghost">{{ __('Volver') }}</a>
             </div>
         </form>
     </div>
