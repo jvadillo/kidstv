@@ -32,6 +32,7 @@
 - **Listas públicas**: se añaden tal cual; las familias no pueden quitarles ni añadirles vídeos (sí quitarlas enteras). Son listas de la familia del administrador: si se elimina esa cuenta, desaparecen de todas las videotecas.
 - **Estadísticas de uso**: el tiempo visto lo envían las teles con la versión nueva de la app; un paquete webOS antiguo no lo envía hasta reinstalarlo. Se guarda por tele y contenido, nunca por perfil infantil, y se borra a los 12 meses.
 - **Idioma de los resultados de YouTube**: es una preferencia (`relevanceLanguage`), no un filtro; pueden aparecer vídeos en otros idiomas.
+- **Límite diario de tele**: se cuenta por tele, no por niño (no se registra qué perfil ve), así que los hermanos que comparten una tele comparten el tiempo. Se reinicia a medianoche (hora de Madrid); un vídeo empezado antes de medianoche cuenta para el día en que empezó. Los paquetes webOS anteriores a 1.3.0 no muestran el aviso ni la pantalla de descanso: el servidor rechaza reproducir y el vídeo simplemente no empieza.
 - **Sin buscador** en la tele (por diseño) ni control por horarios (fuera de alcance).
 - **Protección anti-abuso** básica (campo trampa, tiempo mínimo, límites por IP y correo); no hay CAPTCHA para no depender de servicios externos.
 - **Textos legales** (privacidad y condiciones) son una base razonable, pero deben revisarse legalmente antes de abrir el servicio al público, en particular por tratarse de un servicio usado por menores. Verificar un correo no acredita la patria potestad.

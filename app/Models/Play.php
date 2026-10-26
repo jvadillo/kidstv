@@ -10,13 +10,14 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * Una reproducción en un televisor y los segundos que se han visto (estadísticas de uso).
  * No guarda el perfil infantil activo: la política de privacidad lo descarta.
  */
-#[Fillable(['family_id', 'device_id', 'content_id', 'content_type', 'client_key', 'seconds'])]
+#[Fillable(['family_id', 'device_id', 'content_id', 'content_type', 'client_key', 'seconds', 'adult'])]
 class Play extends Model
 {
     protected function casts(): array
     {
         return [
             'seconds' => 'integer',
+            'adult' => 'boolean',
         ];
     }
 

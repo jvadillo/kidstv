@@ -37,6 +37,25 @@
                 </select>
                 <p id="youtube_controls_hint" class="hint">{{ __('La barra de KidsTV muestra pausa, avance y progreso debajo del vídeo. En automático aparece al usar el mando y se oculta tras unos segundos. Aunque la ocultes, el mando sigue funcionando. Se aplica en todas tus teles al abrir el siguiente vídeo.') }}</p>
             </div>
+            @php($limitOptions = \App\Models\Family::DAILY_LIMIT_OPTIONS)
+            @php($savedStep = array_search($family->daily_limit_minutes, $limitOptions, true))
+            @php($limitStep = (int) old('daily_limit_step', $savedStep === false ? array_search(60, $limitOptions, true) : $savedStep))
+            <div class="daily-limit">
+                <input type="hidden" name="daily_limit" value="0">
+                <label class="check">
+                    <input type="checkbox" name="daily_limit" value="1" class="daily-limit-toggle" @checked(old('daily_limit', $family->daily_limit_enabled))>
+                    <span>
+                        {{ __('Límite diario de tele') }}
+                        <span class="hint block">{{ __('Cuando quede poco tiempo, la tele avisa; al terminar, muestra una pantalla de descanso hasta el día siguiente. Se cuenta en cada tele por separado, y lo que veas desde la Zona de adultos no cuenta.') }}</span>
+                    </span>
+                </label>
+                <div class="field daily-limit-slider">
+                    <label for="daily_limit_step">{{ __('Tiempo al día') }}: <output for="daily_limit_step" class="daily-limit-value">{{ format_minutes($limitOptions[$limitStep]) }}</output></label>
+                    <input type="range" id="daily_limit_step" name="daily_limit_step" min="0" max="{{ count($limitOptions) - 1 }}" step="1" value="{{ $limitStep }}"
+                           data-minutes="{{ json_encode($limitOptions) }}" aria-valuetext="{{ format_minutes($limitOptions[$limitStep]) }}">
+                    <div class="range-scale" aria-hidden="true"><span>{{ format_minutes($limitOptions[0]) }}</span><span>{{ format_minutes(end($limitOptions)) }}</span></div>
+                </div>
+            </div>
             <div class="form-actions"><button class="btn btn-primary">{{ __('Guardar') }}</button></div>
         </form>
     </section>

@@ -262,3 +262,60 @@ p { font-size: 1.9rem; line-height: 1.35; margin: 0 0 1rem; }
     padding: 1.6rem 2rem; border-radius: 1.6rem; opacity: 0; transition: opacity 0.3s ease;
 }
 .toast.visible { opacity: 1; }
+
+/* ---------- Límite diario: aviso y pantalla de descanso ---------- */
+
+.limit-warning {
+    position: absolute; left: 50%; top: 4rem; z-index: 60; width: 72rem; margin-left: -36rem;
+    display: flex; align-items: center; padding: 2rem 3rem; border-radius: 2.4rem;
+    background: #ffc83d; color: #1e1a3f; box-shadow: 0 1.5rem 4rem rgba(0, 0, 0, 0.45);
+    opacity: 0; -webkit-transform: translateY(-2rem); transform: translateY(-2rem);
+    -webkit-transition: opacity 0.4s ease, -webkit-transform 0.4s ease; transition: opacity 0.4s ease, transform 0.4s ease;
+}
+.limit-warning.visible { opacity: 1; -webkit-transform: none; transform: none; }
+.limit-warning > .ico { font-size: 6rem; margin-right: 2.4rem; flex-shrink: 0; -webkit-animation: tilt 2s ease-in-out infinite; animation: tilt 2s ease-in-out infinite; }
+.limit-warning strong { display: block; font-size: 2.8rem; font-weight: 800; }
+.limit-warning span { display: block; font-size: 1.9rem; font-weight: 700; color: #4a4380; margin-top: 0.3rem; }
+
+.screen-timeup h1 { margin-bottom: 1rem; }
+.screen-timeup p { max-width: 70rem; }
+.timeup-art { position: relative; width: 44rem; height: 32rem; margin-bottom: 2.5rem; }
+.timeup-tv {
+    position: absolute; left: 7rem; bottom: 0; width: 30rem; height: 27.5rem;
+    -webkit-transform-origin: 50% 100%; transform-origin: 50% 100%;
+    -webkit-animation: breathe 3.2s ease-in-out infinite; animation: breathe 3.2s ease-in-out infinite;
+}
+.timeup-tv svg { width: 100%; height: 100%; display: block; }
+.timeup-z {
+    position: absolute; font-weight: 800; color: #d8d6f3; opacity: 0;
+    -webkit-animation: snooze 3.6s ease-out infinite; animation: snooze 3.6s ease-out infinite;
+}
+.timeup-z-1 { left: 36rem; top: 7rem; font-size: 4.2rem; }
+.timeup-z-2 { left: 39.5rem; top: 3.5rem; font-size: 3.2rem; -webkit-animation-delay: 1.2s; animation-delay: 1.2s; }
+.timeup-z-3 { left: 42rem; top: 0.5rem; font-size: 2.4rem; -webkit-animation-delay: 2.4s; animation-delay: 2.4s; }
+.timeup-star {
+    position: absolute; color: #ffd978;
+    -webkit-animation: twinkle 2.4s ease-in-out infinite; animation: twinkle 2.4s ease-in-out infinite;
+}
+.timeup-star svg { width: 100%; height: 100%; display: block; }
+.timeup-star-1 { left: 0; top: 4rem; width: 3rem; height: 3rem; }
+.timeup-star-2 { left: 4.5rem; top: 0; width: 2rem; height: 2rem; -webkit-animation-delay: 0.8s; animation-delay: 0.8s; }
+.timeup-star-3 { left: 2rem; top: 13rem; width: 1.8rem; height: 1.8rem; -webkit-animation-delay: 1.6s; animation-delay: 1.6s; }
+.timeup-star-4 { left: 41rem; top: 19rem; width: 2.2rem; height: 2.2rem; -webkit-animation-delay: 1.1s; animation-delay: 1.1s; }
+
+@-webkit-keyframes breathe { 0%, 100% { -webkit-transform: scale(1, 1); } 50% { -webkit-transform: scale(1.03, 0.97); } }
+@keyframes breathe { 0%, 100% { transform: scale(1, 1); } 50% { transform: scale(1.03, 0.97); } }
+@-webkit-keyframes snooze {
+    0% { opacity: 0; -webkit-transform: translate(0, 2rem); }
+    25% { opacity: 1; }
+    100% { opacity: 0; -webkit-transform: translate(2rem, -3rem); }
+}
+@keyframes snooze {
+    0% { opacity: 0; transform: translate(0, 2rem); }
+    25% { opacity: 1; }
+    100% { opacity: 0; transform: translate(2rem, -3rem); }
+}
+@-webkit-keyframes twinkle { 0%, 100% { opacity: 0.25; -webkit-transform: scale(0.8); } 50% { opacity: 1; -webkit-transform: scale(1.1); } }
+@keyframes twinkle { 0%, 100% { opacity: 0.25; transform: scale(0.8); } 50% { opacity: 1; transform: scale(1.1); } }
+@-webkit-keyframes tilt { 0%, 100% { -webkit-transform: rotate(-12deg); } 50% { -webkit-transform: rotate(12deg); } }
+@keyframes tilt { 0%, 100% { transform: rotate(-12deg); } 50% { transform: rotate(12deg); } }

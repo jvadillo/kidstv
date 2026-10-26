@@ -103,6 +103,26 @@
         });
     }
 
+    // Límite diario: el control deslizante va por posiciones; se muestran los minutos que corresponden.
+    function formatMinutes(minutes) {
+        var hours = Math.floor(minutes / 60);
+        var rest = minutes % 60;
+        if (!hours) return rest + ' min';
+        return rest ? hours + ' h ' + rest + ' min' : hours + ' h';
+    }
+
+    function initDailyLimit() {
+        var range = document.getElementById('daily_limit_step');
+        if (!range) return;
+        var minutes = JSON.parse(range.dataset.minutes);
+        var output = document.querySelector('.daily-limit-value');
+        range.addEventListener('input', function () {
+            var label = formatMinutes(minutes[range.value]);
+            output.textContent = label;
+            range.setAttribute('aria-valuetext', label);
+        });
+    }
+
     // Comprobación del enlace de YouTube mientras se escribe/pega.
     function initYouTubeForm() {
         var form = document.querySelector('[data-youtube-form]');
@@ -373,5 +393,6 @@
         initYouTubeForm();
         initUploadForm();
         initYouTubeSearch();
+        initDailyLimit();
     });
 })();

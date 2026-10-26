@@ -32,6 +32,12 @@ window.KIDSTV_I18N = {
         'player.ytFailed': 'YouTube no ha podido cargar en esta tele.',
         'player.ytFailedHint': 'El resto de la videoteca sigue funcionando.',
 
+        'limit.warn': '¡Quedan {n} minutos de tele!',
+        'limit.warnOne': '¡Queda 1 minuto de tele!',
+        'limit.warnHint': 'Cuando se acabe, la tele se irá a descansar.',
+        'limit.title': '¡Se acabó la tele por hoy!',
+        'limit.hint': 'La tele se ha ido a descansar. Mañana habrá más. ¿Jugamos a otra cosa?',
+
         'pin.title': 'Zona de adultos',
         'pin.prompt': 'Escribe el PIN parental',
         'pin.wrong': 'PIN incorrecto. Quedan {n} intentos.',

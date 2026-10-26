@@ -15,6 +15,27 @@
     var ICON_LOCK = '<svg viewBox="0 0 24 24" class="ico"><rect x="5" y="11" width="14" height="9" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3" fill="none" stroke="currentColor" stroke-width="2"/></svg>';
     var ICON_NOTE = '<svg viewBox="0 0 24 24" class="ico"><path d="M9 18V5l11-2v13" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="6" cy="18" r="3" fill="currentColor"/><circle cx="17" cy="16" r="3" fill="currentColor"/></svg>';
     var ICON_PLAY = '<svg viewBox="0 0 24 24" class="ico"><path d="M8 5v14l11-7z" fill="currentColor"/></svg>';
+    var ICON_HOURGLASS = '<svg viewBox="0 0 24 24" class="ico"><path d="M6 3h12M6 21h12M8 3v3c0 2.5 4 4 4 6s-4 3.5-4 6v3M16 3v3c0 2.5-4 4-4 6s4 3.5 4 6v3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M9.5 7h5L12 10zM9 20c0-1.8 3-2.6 3-3.6 0 1 3 1.8 3 3.6z" fill="currentColor"/></svg>';
+    var ICON_STAR = '<svg viewBox="0 0 24 24"><path d="M12 2l2.9 6.6 7.1.6-5.4 4.7 1.6 7L12 17.3 5.8 20.9l1.6-7L2 9.2l7.1-.6z" fill="currentColor"/></svg>';
+    // Pantalla de descanso: una tele dormida con estrellas y «zetas» (animado con CSS).
+    var TIMEUP_ART =
+        '<div class="timeup-art" aria-hidden="true">' +
+            '<span class="timeup-star timeup-star-1">' + ICON_STAR + '</span>' +
+            '<span class="timeup-star timeup-star-2">' + ICON_STAR + '</span>' +
+            '<span class="timeup-star timeup-star-3">' + ICON_STAR + '</span>' +
+            '<span class="timeup-star timeup-star-4">' + ICON_STAR + '</span>' +
+            '<div class="timeup-tv"><svg viewBox="0 0 240 220">' +
+                '<path d="M104 44L82 10M136 44l26-36" stroke="#ffc83d" stroke-width="7" stroke-linecap="round"/>' +
+                '<circle cx="80" cy="8" r="8" fill="#ff8fb1"/><circle cx="164" cy="6" r="8" fill="#8fd3ff"/>' +
+                '<rect x="62" y="186" width="18" height="24" rx="7" fill="#e0a92a"/><rect x="160" y="186" width="18" height="24" rx="7" fill="#e0a92a"/>' +
+                '<rect x="20" y="40" width="200" height="152" rx="38" fill="#ffc83d"/>' +
+                '<rect x="42" y="60" width="156" height="110" rx="26" fill="#2b2560"/>' +
+                '<path d="M76 110q15 13 30 0M134 110q15 13 30 0" fill="none" stroke="#ffd978" stroke-width="7" stroke-linecap="round"/>' +
+                '<circle cx="78" cy="132" r="9" fill="#ff8fb1" opacity="0.55"/><circle cx="162" cy="132" r="9" fill="#ff8fb1" opacity="0.55"/>' +
+                '<path d="M110 138q10 8 20 0" fill="none" stroke="#ffd978" stroke-width="6" stroke-linecap="round"/>' +
+            '</svg></div>' +
+            '<span class="timeup-z timeup-z-1">Z</span><span class="timeup-z timeup-z-2">z</span><span class="timeup-z timeup-z-3">z</span>' +
+        '</div>';
 
     var S = {
         token: null,
@@ -31,6 +52,8 @@
         player: null,
         playing: null,
         watch: null,
+        limit: null,
+        limitWarned: false,
         timers: {},
         lastKeyAt: new Date().getTime(),
         lastAdultPing: 0
@@ -202,8 +225,10 @@
         var w = S.watch;
         if (!w || !w.since) return;
         var now = new Date().getTime();
-        w.seconds += (now - w.since) / 1000;
+        var delta = (now - w.since) / 1000;
+        w.seconds += delta;
         w.since = now;
+        if (S.limit && !S.adultCatalog) S.limit.remaining -= delta;
     }
 
     function watchPlaying(playing) {
@@ -220,7 +245,10 @@
         var seconds = Math.floor(w.seconds);
         if (seconds < 5 || seconds - w.sent < 5) return;
         w.sent = seconds;
-        api('POST', '/plays', { key: w.key, content_id: w.content, seconds: seconds }, null, { silent: true });
+        api('POST', '/plays', { key: w.key, content_id: w.content, seconds: seconds }, function (status, data) {
+            // Lo visto desde que salió el aviso aún no lo sabe el servidor.
+            if (status === 200 && data && !S.adultCatalog) limitSync(data.screen_time, S.watch === w ? w.seconds - seconds : 0);
+        }, { silent: true });
     }
 
     function watchStop() {
@@ -230,6 +258,74 @@
         clearTimer('watch');
         S.watch = null;
     }
+
+    /* ---------- Límite diario de tele ---------- */
+
+    // El servidor dice cuánto queda en esta tele (sin contar la Zona de adultos);
+    // entre aviso y aviso, la tele lo descuenta mientras el vídeo avanza.
+    function limitSync(status, unsent) {
+        if (status === undefined) return;
+        S.limit = status ? { remaining: status.remaining_seconds - (unsent || 0), warn: status.warn_seconds } : null;
+        if (!S.limit || S.limit.remaining > S.limit.warn) S.limitWarned = false;
+    }
+
+    function timeIsUp() {
+        return !S.adultCatalog && !!S.limit && S.limit.remaining <= 0;
+    }
+
+    function timeUp() {
+        if (dialog && !offline.visible) closeDialog(true);
+        stopPlayer();
+        show('timeup');
+    }
+
+    function limitWarning() {
+        var minutes = Math.max(1, Math.round(S.limit.remaining / 60));
+        var el = document.createElement('div');
+        el.className = 'limit-warning';
+        el.innerHTML = ICON_HOURGLASS + '<div><strong>' + esc(t(minutes === 1 ? 'limit.warnOne' : 'limit.warn', { n: minutes })) + '</strong>' +
+            '<span>' + esc(t('limit.warnHint')) + '</span></div>';
+        document.body.appendChild(el);
+        setTimeout(function () { el.classList.add('visible'); }, 20);
+        setTimeout(function () {
+            el.classList.remove('visible');
+            setTimeout(function () { if (el.parentNode) el.parentNode.removeChild(el); }, 500);
+        }, 10000);
+    }
+
+    setInterval(function () {
+        if (S.screen !== 'player' || !S.limit || S.adultCatalog) return;
+        watchTick();
+        if (S.limit.remaining <= 0) { timeUp(); return; }
+        if (S.limit.remaining <= S.limit.warn && !S.limitWarned) {
+            S.limitWarned = true;
+            limitWarning();
+        }
+    }, 1000);
+
+    screens.timeup = {
+        enter: function () {
+            mount(
+                '<div class="screen screen-center screen-timeup">' + TIMEUP_ART +
+                    '<h1>' + esc(t('limit.title')) + '</h1>' +
+                    '<p class="muted">' + esc(t('limit.hint')) + '</p>' +
+                    '<div class="adult-corner"><div class="btn btn-quiet focusable autofocus" data-action="adult" data-key="adult">' + ICON_LOCK + '<span>' + esc(t('adult.button')) + '</span></div></div>' +
+                '</div>'
+            );
+            Nav.restore();
+            clearTimer('poll');
+            // Al día siguiente, o si un adulto amplía o quita el límite, la tele vuelve sola a los perfiles.
+            S.timers.poll = setInterval(function () {
+                loadSession(function () { if (S.screen === 'timeup' && !timeIsUp()) show('profiles'); }, true);
+            }, 60000);
+        },
+        leave: function () { clearTimer('poll'); },
+        action: function (action) { if (action === 'adult') openAdult(); },
+        key: function (name) {
+            if (name === 'back') { confirmExit(); return true; }
+            return false;
+        }
+    };
 
     function handleBlocked() {
         stopPlayer();
@@ -406,6 +502,7 @@
             if (status !== 200) return;
             var before = JSON.stringify(S.session);
             S.session = data;
+            limitSync(data.screen_time);
             callback(before !== JSON.stringify(data));
         }, { silent: !!silent });
     }
@@ -530,6 +627,10 @@
                 if (status !== 200) return;
                 var changed = !S.catalog || S.catalog.version !== data.version;
                 S.catalog = data;
+                if (!S.adultCatalog) {
+                    limitSync(data.screen_time);
+                    if (timeIsUp()) { show('timeup'); return; }
+                }
                 callback(changed);
             }, { silent: !!silent });
         },
@@ -666,7 +767,9 @@
                 openDialog({ kind: 'error', title: t('player.gone'), onClose: function () { show('catalog', { reload: true }); } });
                 return;
             }
+            if (status === 423 && data && data.error === 'time_up') { show('timeup'); return; }
             if (status !== 200) return;
+            if (!S.adultCatalog) limitSync(data.screen_time);
             show('player', data);
         });
     }
@@ -843,7 +946,7 @@
             }
             if (name === 'back') {
                 if (this.digits.length) { this.press('del'); return true; }
-                show(this.from === 'catalog' && S.profile ? 'catalog' : 'profiles', {});
+                show(this.from === 'catalog' && S.profile ? 'catalog' : this.from === 'timeup' ? 'timeup' : 'profiles', {});
                 return true;
             }
             return false;

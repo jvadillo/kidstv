@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Content;
 use App\Models\Device;
 use App\Models\Play;
+use App\Services\ScreenTime;
 use App\Services\TvCatalog;
 use Illuminate\Http\Request;
 
@@ -17,7 +18,7 @@ class CatalogController extends Controller
 
     private const REPORT_SLACK_SECONDS = 15;
 
-    public function __construct(private TvCatalog $catalog) {}
+    public function __construct(private TvCatalog $catalog, private ScreenTime $screenTime) {}
 
     public function session(Request $request)
     {
@@ -32,6 +33,7 @@ class CatalogController extends Controller
                 'autoplay_next' => $family->autoplay_next,
             ],
             'profiles' => $family->profiles->map(fn ($p) => ['id' => $p->id, 'name' => $p->name, 'avatar' => $p->avatar]),
+            'screen_time' => $this->screenTime->status($device),
             'adult_idle_seconds' => config('kidstv.adult_mode_idle_seconds'),
             'manage_url' => route('panel'),
         ]);
@@ -43,7 +45,8 @@ class CatalogController extends Controller
         $profile = $device->family->profiles()->findOrFail($profile);
 
         return response()->json(['profile' => ['id' => $profile->id, 'name' => $profile->name, 'avatar' => $profile->avatar]]
-            + $this->catalog->present($device, $profile));
+            + $this->catalog->present($device, $profile)
+            + ['screen_time' => $this->screenTime->status($device)]);
     }
 
     public function play(Request $request, int $content)
@@ -55,11 +58,16 @@ class CatalogController extends Controller
             return response()->json(['error' => 'content_unavailable', 'message' => __('Este contenido ya no está disponible.')], 404);
         }
 
-        // Fuera de la Zona de adultos, solo se reproduce lo autorizado para el perfil activo.
-        if (! AdultZoneController::isUnlocked($request, $device)) {
+        // Fuera de la Zona de adultos, solo se reproduce lo autorizado para el perfil activo
+        // y mientras quede tiempo del límite diario.
+        $adult = AdultZoneController::isUnlocked($request, $device);
+        if (! $adult) {
             $profile = $device->family->profiles()->find((int) $request->query('profile'));
             if (! $profile || ! $this->catalog->allowedFor($content, $device->family, $profile)) {
                 return response()->json(['error' => 'content_unavailable', 'message' => __('Este contenido ya no está disponible.')], 404);
+            }
+            if ($this->screenTime->isExhausted($device)) {
+                return response()->json(['error' => 'time_up', 'message' => __('Se ha acabado el tiempo de tele de hoy.')], 423);
             }
         }
 
@@ -75,6 +83,7 @@ class CatalogController extends Controller
                 'v' => $content->youtube_id,
                 'controls' => $device->family->youtube_controls,
             ]) : null,
+            'screen_time' => $adult ? null : $this->screenTime->status($device),
         ]);
     }
 
@@ -103,7 +112,8 @@ class CatalogController extends Controller
     /**
      * La TV informa periódicamente de cuántos segundos lleva vistos de una reproducción
      * (identificada por una clave aleatoria propia). Nunca se cuenta más tiempo del que
-     * ha pasado realmente entre dos avisos, aunque se manipule la petición.
+     * ha pasado realmente entre dos avisos, aunque se manipule la petición. Responde con
+     * el tiempo que queda del límite diario para que la tele corrija su cuenta atrás.
      */
     public function watched(Request $request)
     {
@@ -116,6 +126,8 @@ class CatalogController extends Controller
         ]);
 
         $content = $this->catalog->find($family, $data['content_id']) ?? abort(404);
+        // Con el token de adulto, cada aviso mantiene abierta la zona mientras se reproduce.
+        $adult = AdultZoneController::isUnlocked($request, $device);
 
         $play = Play::firstOrNew(['device_id' => $device->id, 'client_key' => $data['key']]);
         if ($play->exists) {
@@ -128,10 +140,11 @@ class CatalogController extends Controller
                 'content_id' => $content->id,
                 'content_type' => $content->type,
                 'seconds' => min($data['seconds'], self::FIRST_REPORT_MAX_SECONDS),
+                'adult' => $adult,
             ])->save();
         }
 
-        return response()->json(['ok' => true]);
+        return response()->json(['ok' => true, 'screen_time' => $play->adult ? null : $this->screenTime->status($device)]);
     }
 
     private function device(Request $request): Device

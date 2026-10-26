@@ -244,6 +244,14 @@ input[type=file] { font: inherit; padding: .5rem 0; max-width: 100%; }
 .check { display: flex; gap: .65rem; align-items: flex-start; cursor: pointer; }
 .check input { width: 22px; height: 22px; margin-top: .1rem; flex: none; accent-color: var(--primary); }
 
+/* Límite diario: el control deslizante solo aparece con el límite activado. */
+.daily-limit { display: flex; flex-direction: column; gap: .75rem; }
+.daily-limit:has(.daily-limit-toggle:not(:checked)) .daily-limit-slider { display: none; }
+.daily-limit-slider { padding-left: calc(22px + .65rem); }
+.daily-limit-value { color: var(--primary); }
+input[type=range] { width: 100%; min-height: 44px; margin: 0; accent-color: var(--primary); }
+.range-scale { display: flex; justify-content: space-between; font-size: .8rem; color: var(--ink-2); margin-top: -.35rem; }
+
 .inline-form { display: flex; gap: .5rem; align-items: flex-end; flex-wrap: wrap; }
 .inline-form input { flex: 1; min-width: 140px; }
 

@@ -37,13 +37,19 @@ class AccountController extends Controller
             'family_name' => ['nullable', 'string', 'max:60'],
             'autoplay_next' => ['boolean'],
             'youtube_controls' => ['sometimes', 'required', Rule::in(Family::YOUTUBE_CONTROLS)],
+            'daily_limit' => ['sometimes', 'boolean'],
+            // Posición del control deslizante dentro de Family::DAILY_LIMIT_OPTIONS.
+            'daily_limit_step' => ['sometimes', 'integer', 'between:0,'.(count(Family::DAILY_LIMIT_OPTIONS) - 1)],
         ]);
 
+        $family = $request->user()->family;
         $request->user()->update(['name' => $data['name'] ?? null]);
-        $request->user()->family->update([
+        $family->update([
             'name' => $data['family_name'] ?? null,
             'autoplay_next' => $request->boolean('autoplay_next'),
-            'youtube_controls' => $data['youtube_controls'] ?? $request->user()->family->youtube_controls,
+            'youtube_controls' => $data['youtube_controls'] ?? $family->youtube_controls,
+            'daily_limit_enabled' => $request->has('daily_limit') ? $request->boolean('daily_limit') : $family->daily_limit_enabled,
+            'daily_limit_minutes' => isset($data['daily_limit_step']) ? Family::DAILY_LIMIT_OPTIONS[$data['daily_limit_step']] : $family->daily_limit_minutes,
         ]);
 
         return back()->with('status', __('Preferencias guardadas.'));
@@ -157,6 +163,7 @@ class AccountController extends Controller
             'family' => [
                 'name' => $family->name, 'autoplay_next' => $family->autoplay_next,
                 'youtube_controls' => $family->youtube_controls, 'pin_configured' => $family->hasPin(),
+                'daily_limit_minutes' => $family->dailyLimit(),
             ],
             'profiles' => $family->profiles->map(fn ($p) => [
                 'id' => $p->id, 'name' => $p->name, 'avatar' => $p->avatar,
@@ -183,6 +190,7 @@ class AccountController extends Controller
                 'content_id' => $p->content_id,
                 'content_type' => $p->content_type,
                 'seconds' => $p->seconds,
+                'adult_zone' => $p->adult,
             ]),
         ];
 

@@ -13,7 +13,7 @@
             <li><strong>{{ __('Perfiles infantiles:') }}</strong> {{ __('solo un apodo y un avatar predefinido. No pedimos nombres completos, fechas de nacimiento ni fotografías.') }}</li>
             <li><strong>{{ __('Contenidos:') }}</strong> {{ __('los archivos que subes, sus portadas y datos (título, lista, descripción) y los enlaces de YouTube que añades.') }}</li>
             <li><strong>{{ __('Televisores:') }}</strong> {{ __('nombre que les pones, tipo de dispositivo y fecha de última conexión.') }}</li>
-            <li><strong>{{ __('Uso del servicio:') }}</strong> {{ __('cada tele informa de cuánto tiempo se reproduce cada contenido (fecha, tele, contenido y minutos), para conocer el uso del servicio y mejorar las listas públicas. Estos datos se conservan 12 meses.') }}</li>
+            <li><strong>{{ __('Uso del servicio:') }}</strong> {{ __('cada tele informa de cuánto tiempo se reproduce cada contenido (fecha, tele, contenido, minutos y si se vio desde la Zona de adultos), para conocer el uso del servicio, mejorar las listas públicas y aplicar el límite diario de tele si lo activas. Estos datos se conservan 12 meses.') }}</li>
         </ul>
         <p>{{ __('No registramos qué perfil infantil está viendo ni construimos perfiles de uso de los niños. No hay publicidad ni seguimiento comercial.') }}</p>
 

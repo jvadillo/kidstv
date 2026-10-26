@@ -57,3 +57,18 @@ if (! function_exists('youtube_add_url')) {
         return route(\App\Services\YouTubeSearch::enabled() ? 'contents.youtube.search' : 'contents.youtube.create', $parameters);
     }
 }
+
+if (! function_exists('format_minutes')) {
+    /** 45 → «45 min», 60 → «1 h», 75 → «1 h 15 min». */
+    function format_minutes(int $minutes): string
+    {
+        $hours = intdiv($minutes, 60);
+        $rest = $minutes % 60;
+
+        return match (true) {
+            $hours === 0 => $rest.' min',
+            $rest === 0 => $hours.' h',
+            default => $hours.' h '.$rest.' min',
+        };
+    }
+}
