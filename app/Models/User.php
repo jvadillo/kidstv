@@ -46,7 +46,8 @@ class User extends Authenticatable
 
     public function isAdmin(): bool
     {
-        return $this->is_admin;
+        // Recién creado, el modelo aún no tiene el valor por defecto de la base de datos.
+        return (bool) $this->is_admin;
     }
 
     public function isBlocked(): bool
