@@ -49,7 +49,7 @@ class UsageTest extends TestCase
 
         $this->tv($token)->postJson('/api/tv/plays', ['key' => 'clave12345', 'content_id' => $foreign->id, 'seconds' => 20])->assertNotFound();
         $this->tv($token)->postJson('/api/tv/plays', ['key' => 'no válida', 'content_id' => $foreign->id, 'seconds' => 20])->assertStatus(422);
-        $this->postJson('/api/tv/plays', ['key' => 'clave12345', 'content_id' => $foreign->id, 'seconds' => 20])->assertUnauthorized();
+        $this->flushHeaders()->postJson('/api/tv/plays', ['key' => 'clave12345', 'content_id' => $foreign->id, 'seconds' => 20])->assertUnauthorized();
         $this->assertSame(0, Play::count());
     }
 
