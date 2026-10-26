@@ -21,7 +21,9 @@
         session: null,
         profile: null,
         catalog: null,
-        tab: 'all',
+        rows: [],
+        rowMemory: {},
+        rowOffsets: {},
         adult: null,
         adultCatalog: false,
         screen: null,
@@ -341,7 +343,7 @@
         var profiles = (S.session && S.session.profiles) || [];
         for (var i = 0; i < profiles.length; i++) {
             if (profiles[i].id === id) {
-                if (!S.profile || S.profile.id !== id || S.adultCatalog) { S.tab = 'all'; S.memory.catalog = null; S.catalog = null; }
+                if (!S.profile || S.profile.id !== id || S.adultCatalog) { S.rowMemory = {}; S.rowOffsets = {}; S.memory.catalog = null; S.catalog = null; }
                 // Elegir un perfil infantil cierra la zona de adultos.
                 lockAdult(true);
                 S.profile = profiles[i];
@@ -352,20 +354,82 @@
         }
     }
 
-    /* ---------- Catálogo ---------- */
+    /* ---------- Catálogo: una fila por categoría, con carrusel horizontal ---------- */
 
     function catalogPath() {
         return S.adultCatalog ? '/adult/catalog' : '/profiles/' + S.profile.id + '/catalog';
     }
 
-    function visibleItems() {
-        var items = (S.catalog && S.catalog.items) || [];
-        if (S.tab === 'all') return items;
-        var out = [];
-        for (var i = 0; i < items.length; i++) {
-            if (String(items[i].category_id) === S.tab) out.push(items[i]);
+    /** Agrupa los contenidos en filas siguiendo el orden de categorías del adulto. */
+    function buildRows(catalog) {
+        var cats = catalog.categories || [];
+        var items = catalog.items || [];
+        var rows = [];
+        for (var c = 0; c < cats.length; c++) {
+            var row = { key: 'r-' + (cats[c].id === null ? 'otros' : cats[c].id), title: cats[c].name, items: [] };
+            for (var i = 0; i < items.length; i++) {
+                if (String(items[i].category_id) === String(cats[c].id)) row.items.push(items[i]);
+            }
+            if (row.items.length) rows.push(row);
         }
-        return out;
+        // Si nada tiene categoría, una única fila «Todo» en lugar de «Otros».
+        if (rows.length === 1 && rows[0].key === 'r-otros') rows[0].title = t('catalog.all');
+        return rows;
+    }
+
+    function rowsWithItem(id) {
+        for (var r = 0; r < S.rows.length; r++) {
+            for (var i = 0; i < S.rows[r].items.length; i++) {
+                if (S.rows[r].items[i].id === id) return { row: S.rows[r], index: i };
+            }
+        }
+        return null;
+    }
+
+    function setTranslate(el, x, y) {
+        var value = 'translate(' + Math.round(x) + 'px,' + Math.round(y) + 'px)';
+        el.style.webkitTransform = value;
+        el.style.transform = value;
+    }
+
+    function remPx() {
+        return parseFloat(window.getComputedStyle(document.documentElement).fontSize) || 16;
+    }
+
+    /** Desplaza la fila para que la tarjeta enfocada quede visible, asomando la siguiente. */
+    function slideRow(rowEl, card) {
+        var track = rowEl.querySelector('.row-track');
+        var viewport = rowEl.querySelector('.row-viewport');
+        var key = rowEl.getAttribute('data-row');
+        var offset = S.rowOffsets[key] || 0;
+        var margin = remPx() * 9;
+        var left = card.offsetLeft;
+        var right = left + card.offsetWidth;
+        var width = viewport.clientWidth;
+
+        if (right - offset > width - margin) offset = right - (width - margin);
+        if (left - offset < margin) offset = left - margin;
+        // Tope: la última tarjeta queda entera con el mismo margen que la primera (6rem).
+        var cards = track.querySelectorAll('.card');
+        var last = cards[cards.length - 1];
+        var max = Math.max(0, last.offsetLeft + last.offsetWidth + remPx() * 6 - width);
+        offset = Math.max(0, Math.min(offset, max));
+
+        S.rowOffsets[key] = offset;
+        track.setAttribute('data-offset', offset);
+        setTranslate(track, -offset, 0);
+        rowEl.classList.toggle('more-left', offset > 1);
+        rowEl.classList.toggle('more-right', offset < max - 1);
+    }
+
+    /** Desplaza la lista de filas para que la fila enfocada quede arriba. */
+    function slideRows(rowEl) {
+        var list = app.querySelector('.rows');
+        var inner = app.querySelector('.rows-inner');
+        if (!list || !inner) return;
+        var max = Math.max(0, inner.offsetHeight - list.clientHeight);
+        var offset = rowEl ? Math.max(0, Math.min(rowEl.offsetTop, max)) : 0;
+        setTranslate(inner, 0, -offset);
     }
 
     screens.catalog = {
@@ -399,37 +463,39 @@
             }, { silent: !!silent });
         },
         render: function (focusKey) {
-            var cats = S.catalog.categories || [];
-            var validTab = S.tab === 'all';
-            for (var c = 0; c < cats.length; c++) { if (String(cats[c].id) === S.tab) validTab = true; }
-            if (!validTab) S.tab = 'all';
+            S.rows = buildRows(S.catalog);
 
             var who = S.adultCatalog
                 ? '<div class="who focusable" data-action="adultMenu" data-key="who">' + ICON_LOCK + '<span>' + esc(t('adultMenu.title')) + '</span></div>'
                 : '<div class="who focusable" data-action="profiles" data-key="who"><img src="' + esc(K.avatar(S.profile.avatar)) + '" alt=""><span>' + esc(S.profile.name) + '</span><small>' + esc(t('catalog.change')) + '</small></div>';
 
-            var html = '<div class="screen screen-catalog">' +
+            var html = '<div class="screen screen-catalog' + (S.adultCatalog ? ' with-banner' : '') + '">' +
                 '<header class="catalog-header">' + who +
-                    '<div class="tabs scroll-x"><div class="tabs-inner">' + this.tabsHtml(cats) + '</div></div>' +
                     (S.adultCatalog ? '' : '<div class="btn btn-quiet btn-icon focusable" data-action="adult" data-key="adult" title="' + esc(t('adult.button')) + '">' + ICON_LOCK + '</div>') +
                 '</header>' +
                 (S.adultCatalog ? '<div class="adult-banner">' + esc(t('catalog.adultBanner')) + '</div>' : '') +
-                '<div class="grid scroll-y"><div class="grid-inner"></div></div>' +
+                '<div class="rows"><div class="rows-inner">' + this.rowsHtml() + '</div></div>' +
             '</div>';
 
             mount(html);
-            this.renderGrid();
 
-            var self = this;
+            // Cada fila recupera la posición en la que se dejó (sin animación al pintar).
+            var rowEls = app.querySelectorAll('.row');
+            app.querySelector('.screen-catalog').classList.add('no-anim');
+            for (var r = 0; r < rowEls.length; r++) {
+                var remembered = S.rowMemory[rowEls[r].getAttribute('data-row')];
+                var card = (remembered && rowEls[r].querySelector('[data-key="' + remembered + '"]')) || rowEls[r].querySelector('.card');
+                if (card) slideRow(rowEls[r], card);
+            }
+
             Nav.onFocus = function (el) {
-                if (el.getAttribute('data-action') === 'tab') {
-                    var tab = el.getAttribute('data-arg');
-                    if (tab !== S.tab) {
-                        S.tab = tab;
-                        var tabs = app.querySelectorAll('.tab');
-                        for (var i = 0; i < tabs.length; i++) tabs[i].classList.toggle('active', tabs[i] === el);
-                        self.renderGrid();
-                    }
+                var rowEl = K.closest(el, 'row');
+                if (rowEl) {
+                    S.rowMemory[rowEl.getAttribute('data-row')] = el.getAttribute('data-key');
+                    slideRow(rowEl, el);
+                    slideRows(rowEl);
+                } else {
+                    slideRows(null);
                 }
             };
 
@@ -437,37 +503,59 @@
                 var firstCard = app.querySelector('.card.focusable');
                 if (firstCard) Nav.focus(firstCard);
             }
+            setTimeout(function () {
+                var screen = app.querySelector('.screen-catalog');
+                if (screen) screen.classList.remove('no-anim');
+            }, 50);
         },
-        tabsHtml: function (cats) {
-            var html = '<div class="tab focusable' + (S.tab === 'all' ? ' active' : '') + '" data-action="tab" data-arg="all" data-key="tab-all">' + esc(t('catalog.all')) + '</div>';
-            for (var i = 0; i < cats.length; i++) {
-                var id = String(cats[i].id);
-                html += '<div class="tab focusable' + (S.tab === id ? ' active' : '') + '" data-action="tab" data-arg="' + esc(id) + '" data-key="tab-' + esc(id) + '">' + esc(cats[i].name) + '</div>';
+        rowsHtml: function () {
+            if (!S.rows.length) {
+                return '<div class="empty-catalog"><p class="empty-big">' + esc(t('catalog.empty')) + '</p><p class="muted">' + esc(t('catalog.emptyHint')) + '</p></div>';
+            }
+            var html = '';
+            for (var r = 0; r < S.rows.length; r++) {
+                var row = S.rows[r];
+                html += '<section class="row" data-row="' + esc(row.key) + '">' +
+                    '<h2 class="row-title">' + esc(row.title) + ' <span class="row-count">' + row.items.length + '</span></h2>' +
+                    '<div class="row-viewport"><div class="row-track">';
+                for (var i = 0; i < row.items.length; i++) {
+                    var it = row.items[i];
+                    var badge = it.type === 'youtube' ? '<span class="card-badge badge-yt">' + esc(t('type.youtube')) + '</span>'
+                        : it.type === 'audio' ? '<span class="card-badge badge-audio">' + ICON_NOTE + '</span>' : '';
+                    html += '<div class="card focusable card-' + it.type + '" data-action="play" data-arg="' + it.id + '" data-key="c-' + it.id + '">' +
+                        '<div class="card-cover">' +
+                            (it.cover ? '<img src="' + esc(it.cover) + '" alt="">' : '<div class="card-placeholder">' + (it.type === 'audio' ? ICON_NOTE : ICON_PLAY) + '</div>') +
+                            badge +
+                        '</div>' +
+                        '<div class="card-title">' + esc(it.title) + '</div>' +
+                    '</div>';
+                }
+                html += '</div></div></section>';
             }
             return html;
         },
-        renderGrid: function () {
-            var grid = app.querySelector('.grid-inner');
-            var items = visibleItems();
-            if (!items.length) {
-                grid.innerHTML = '<div class="empty-catalog"><p class="empty-big">' + esc(t('catalog.empty')) + '</p><p class="muted">' + esc(t('catalog.emptyHint')) + '</p></div>';
-                return;
+        /** Arriba/abajo saltan de fila en fila, volviendo a la última tarjeta usada en cada una. */
+        moveRow: function (dir) {
+            var rowEls = app.querySelectorAll('.row');
+            if (!rowEls.length) return false;
+            var current = Nav.current ? K.closest(Nav.current, 'row') : null;
+            var index = -1;
+            for (var r = 0; r < rowEls.length; r++) { if (rowEls[r] === current) index = r; }
+
+            var target = null;
+            if (index === -1) {
+                if (dir === 'down') target = rowEls[0];
+                else return false;
+            } else {
+                target = rowEls[index + (dir === 'down' ? 1 : -1)];
+                if (!target) {
+                    if (dir === 'up') Nav.focus(app.querySelector('.who'));
+                    return true;
+                }
             }
-            var html = '';
-            for (var i = 0; i < items.length; i++) {
-                var it = items[i];
-                var badge = it.type === 'youtube' ? '<span class="card-badge badge-yt">' + esc(t('type.youtube')) + '</span>'
-                    : it.type === 'audio' ? '<span class="card-badge badge-audio">' + ICON_NOTE + '</span>' : '';
-                html += '<div class="card focusable card-' + it.type + '" data-action="play" data-arg="' + it.id + '" data-key="c-' + it.id + '">' +
-                    '<div class="card-cover">' +
-                        (it.cover ? '<img src="' + esc(it.cover) + '" alt="">' : '<div class="card-placeholder">' + (it.type === 'audio' ? ICON_NOTE : ICON_PLAY) + '</div>') +
-                        badge +
-                    '</div>' +
-                    '<div class="card-title">' + esc(it.title) + '</div>' +
-                '</div>';
-            }
-            grid.innerHTML = html;
-            grid.parentNode.scrollTop = 0;
+            var remembered = S.rowMemory[target.getAttribute('data-row')];
+            Nav.focus((remembered && target.querySelector('[data-key="' + remembered + '"]')) || target.querySelector('.card'));
+            return true;
         },
         leave: function () { clearTimer('poll'); },
         action: function (action, arg) {
@@ -477,6 +565,7 @@
             else if (action === 'adultMenu') show('adultMenu');
         },
         key: function (name) {
+            if (name === 'up' || name === 'down') return this.moveRow(name);
             if (name === 'back') {
                 if (S.adultCatalog) show('adultMenu');
                 else show('profiles');
@@ -511,12 +600,10 @@
         });
     }
 
+    /** Con reproducción automática activada, el siguiente es el de la derecha en la misma fila. */
     function nextItem(currentId) {
-        var items = visibleItems();
-        for (var i = 0; i < items.length - 1; i++) {
-            if (items[i].id === currentId) return items[i + 1];
-        }
-        return null;
+        var found = rowsWithItem(currentId);
+        return found ? found.row.items[found.index + 1] || null : null;
     }
 
     screens.player = {
@@ -714,7 +801,8 @@
             if (action !== 'menu') return;
             if (arg === 'all') {
                 S.adultCatalog = true;
-                S.tab = 'all';
+                S.rowMemory = {};
+                S.rowOffsets = {};
                 S.memory.catalog = null;
                 show('catalog', { reload: true });
             } else if (arg === 'refresh') {

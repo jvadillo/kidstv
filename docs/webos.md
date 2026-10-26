@@ -64,7 +64,7 @@ Marca cada punto en una LG real tras instalar:
 - [ ] La vinculación desde el móvil funciona y aparecen los perfiles de la familia.
 - [ ] Flechas mueven el foco de forma predecible; OK selecciona; Atrás vuelve (perfiles ← catálogo ← reproductor).
 - [ ] En la pantalla de perfiles, Atrás pregunta si salir; «Salir» cierra la app.
-- [ ] Cada perfil ve solo sus contenidos; las pestañas de categoría cambian el catálogo.
+- [ ] Cada perfil ve solo sus contenidos, en una fila por categoría; izquierda/derecha recorren la fila hasta el último vídeo y arriba/abajo cambian de fila recordando la posición de cada una.
 - [ ] MP4 propio: se reproduce, OK pausa/reanuda, ← → retroceden/avanzan 10 s, al terminar vuelve al catálogo con el foco en ese vídeo.
 - [ ] MP3 propio: portada, barra de progreso y controles.
 - [ ] YouTube: se carga el reproductor oficial; Atrás vuelve al catálogo. Si un vídeo no permite inserción, aparece el aviso y se puede seguir navegando.

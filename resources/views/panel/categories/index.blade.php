@@ -7,7 +7,7 @@
         <h1>{{ __('Categorías') }}</h1>
         <a href="{{ route('contents.index') }}" class="btn btn-ghost">{{ __('Volver a la biblioteca') }}</a>
     </div>
-    <p class="muted">{{ __('En la tele, las categorías aparecen como pestañas en este orden.') }}</p>
+    <p class="muted">{{ __('En la tele, cada categoría es una fila de vídeos, en este orden. Dentro de cada fila, el orden es el de la biblioteca.') }}</p>
 
     <form method="POST" action="{{ route('categories.store') }}" class="inline-form card">
         @csrf

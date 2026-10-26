@@ -7,5 +7,5 @@ window.KIDSTV_CONFIG = {
     apiBase: '',
     platform: 'web',
     avatarBase: '/avatars/',
-    version: '1.0.0'
+    version: '1.1.0'
 };

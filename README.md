@@ -29,7 +29,7 @@ Aplicación web (Laravel 13) en la que una persona adulta se registra solo con s
 
 **App de TV** (la misma en `/tv/` y en el paquete webOS):
 - Vinculación con código temporal + QR, sin escribir contraseñas en la tele.
-- Selección de perfil → catálogo por categorías con portadas grandes → reproductor.
+- Selección de perfil → catálogo con una fila por categoría (carrusel horizontal, como en las plataformas de vídeo) → reproductor.
 - Navegación completa con flechas, OK y Atrás (también puntero/ratón opcional), foco visible y restaurado al volver del reproductor.
 - Vídeo y audio propios a pantalla completa con pausa, avance/retroceso de 10 s; YouTube con el reproductor oficial (modo privacidad mejorada).
 - Al terminar vuelve al catálogo (reproducción automática solo si el adulto la activa).
