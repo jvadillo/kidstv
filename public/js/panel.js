@@ -65,13 +65,31 @@
                 menu.querySelector('summary').focus();
             });
         });
-        // «toggle» no burbujea: se escucha en captura. Al abrir un menú con formulario, foco al campo.
+        // «toggle» no burbujea: se escucha en captura. Al abrir un menú, se mete en pantalla y,
+        // si lleva formulario, foco al campo.
         document.addEventListener('toggle', function (e) {
             var menu = e.target;
             if (!menu.open || !menu.matches || !menu.matches('details[data-menu]')) return;
+            fitMenu(menu);
             var input = menu.querySelector('input[type=text]');
             if (input) input.focus();
         }, true);
+        window.addEventListener('resize', function () { openMenus().forEach(fitMenu); });
+    }
+
+    // Desplaza el panel lo justo para que no se salga por los lados (p. ej. en el móvil,
+    // cuando los botones bajan a otra línea y el panel alineado a la derecha asoma por la izquierda).
+    function fitMenu(menu) {
+        var panel = menu.querySelector('.menu-panel');
+        if (!panel) return;
+        panel.style.transform = '';
+        var gutter = 8;
+        var viewport = document.documentElement.clientWidth;
+        var rect = panel.getBoundingClientRect();
+        var shift = 0;
+        if (rect.left < gutter) shift = gutter - rect.left;
+        else if (rect.right > viewport - gutter) shift = Math.max(gutter - rect.left, viewport - gutter - rect.right);
+        if (shift) panel.style.transform = 'translateX(' + Math.round(shift) + 'px)';
     }
 
     // Marcar todos / ninguno en listas de casillas.
