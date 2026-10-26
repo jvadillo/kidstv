@@ -105,4 +105,4 @@ docker run --rm -it -v "$PWD":/app -w /app composer:2 sh -c "composer install &&
 php artisan test
 ```
 
-47 tests / 464 aserciones cubren alta y acceso por correo, sesión persistente y revocación, aislamiento entre familias (panel, API de TV y archivos), vinculación de televisores, catálogo por perfil, URLs firmadas y su caducidad, PIN con espera progresiva, subida por fragmentos, YouTube, borrado de contenido y de cuenta, y el buscador de YouTube (filtros, caché, duplicados, cuota agotada). Además se hizo un recorrido end-to-end real contra producción con Chrome (ver [docs/aceptacion.md](docs/aceptacion.md)).
+49 tests / 472 aserciones cubren alta y acceso por correo, sesión persistente y revocación, aislamiento entre familias (panel, API de TV y archivos), vinculación de televisores, catálogo por perfil, URLs firmadas y su caducidad, PIN con espera progresiva, subida por fragmentos, YouTube, borrado de contenido y de cuenta, y el buscador de YouTube (filtros, caché, duplicados, cuota agotada). Además se hizo un recorrido end-to-end real contra producción con Chrome (ver [docs/aceptacion.md](docs/aceptacion.md)).

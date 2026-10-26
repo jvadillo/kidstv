@@ -57,7 +57,12 @@ Artisan::command('kidstv:backup {--keep=7}', function () {
         mkdir($dir, 0755, true);
     }
 
-    $target = $dir.'/kidstv-'.now()->format('Ymd-His').'.sqlite';
+    // VACUUM INTO falla si el archivo ya existe: dos copias en el mismo segundo no deben chocar.
+    $base = $dir.'/kidstv-'.now()->format('Ymd-His');
+    $target = $base.'.sqlite';
+    for ($i = 2; file_exists($target); $i++) {
+        $target = $base.'-'.$i.'.sqlite';
+    }
     DB::statement('VACUUM INTO ?', [$target]);
 
     $files = glob($dir.'/kidstv-*.sqlite');
@@ -70,5 +75,6 @@ Artisan::command('kidstv:backup {--keep=7}', function () {
 })->purpose('Copia de seguridad de la base de datos (conserva las últimas N)');
 
 Schedule::command('kidstv:prune')->hourly();
-Schedule::command('kidstv:backup')->dailyAt('03:40');
+// En UTC: con la hora de Madrid, el cambio de horario de octubre repite la franja de las 2-3 h.
+Schedule::command('kidstv:backup')->timezone('UTC')->dailyAt('01:40')->withoutOverlapping();
 Schedule::command('queue:prune-failed --hours=168')->daily();

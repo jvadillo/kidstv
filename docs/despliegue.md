@@ -118,7 +118,7 @@ Todos los comandos desde `~/projects/kidstv`; abrevia con `alias kc='docker comp
 | Logs de acceso HTTP | `kc logs -f web` |
 | Entrar sin correo (cuenta existente) | `kc exec app php artisan kidstv:login-link correo@ejemplo.com` |
 | Limpiar códigos/sesiones/subidas caducadas | `kc exec app php artisan kidstv:prune` (automático cada hora) |
-| Copia de la base de datos | `kc exec app php artisan kidstv:backup` (automático a las 03:40) |
+| Copia de la base de datos | `kc exec app php artisan kidstv:backup` (automático cada día a las 01:40 UTC) |
 | Trabajos fallidos | `kc exec app php artisan queue:failed` / `queue:retry all` |
 | Consola | `kc exec app php artisan tinker` |
 | Espacio usado por archivos | `kc exec app du -sh storage/app/private` |
@@ -144,7 +144,7 @@ El último protege a las demás aplicaciones del VPS: aunque una familia tenga c
 
 ## 5. Copias de seguridad y restauración
 
-- **Automática:** cada noche `kidstv:backup` crea `storage/backups/kidstv-<fecha>.sqlite` (copia consistente con `VACUUM INTO`) y conserva las 7 últimas. Está en el mismo disco: protege frente a errores, no frente a la pérdida del servidor.
+- **Automática:** cada noche (01:40 UTC) `kidstv:backup` crea `storage/backups/kidstv-<fecha>.sqlite` (copia consistente con `VACUUM INTO`) y conserva las 7 últimas. Está en el mismo disco: protege frente a errores, no frente a la pérdida del servidor.
 - **Manual / fuera del contenedor:**
   ```bash
   bash ops/backup.sh            # BD → ~/backups/kidstv/kidstv-<fecha>.sqlite
