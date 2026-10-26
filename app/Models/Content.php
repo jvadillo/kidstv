@@ -7,10 +7,11 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\Storage;
 
 #[Fillable([
-    'category_id', 'type', 'title', 'description', 'status', 'status_message',
+    'list_id', 'type', 'title', 'description', 'status', 'status_message',
     'file_path', 'mime', 'file_size', 'duration', 'cover_path', 'youtube_id', 'position',
 ])]
 class Content extends Model
@@ -56,14 +57,19 @@ class Content extends Model
         return $this->belongsTo(Family::class);
     }
 
-    public function category(): BelongsTo
+    public function list(): BelongsTo
     {
-        return $this->belongsTo(Category::class);
+        return $this->belongsTo(VideoList::class, 'list_id');
     }
 
     public function profiles(): BelongsToMany
     {
         return $this->belongsToMany(Profile::class);
+    }
+
+    public function plays(): HasMany
+    {
+        return $this->hasMany(Play::class);
     }
 
     public function scopeReady(Builder $query): void

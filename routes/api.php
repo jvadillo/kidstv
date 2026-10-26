@@ -17,6 +17,7 @@ Route::prefix('tv')->group(function () {
         Route::get('/profiles/{profile}/catalog', [CatalogController::class, 'catalog']);
         Route::get('/contents/{content}/play', [CatalogController::class, 'play']);
         Route::post('/contents/{content}/problem', [CatalogController::class, 'problem']);
+        Route::post('/plays', [CatalogController::class, 'watched']);
 
         Route::post('/adult/unlock', [AdultZoneController::class, 'unlock'])->middleware('throttle:tv-pin');
         Route::post('/adult/lock', [AdultZoneController::class, 'lock']);

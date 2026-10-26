@@ -1,7 +1,8 @@
-{{-- Campos comunes de un contenido: título, categoría, perfiles autorizados, descripción y portada. --}}
+{{-- Campos comunes de un contenido: título, lista, perfiles autorizados, descripción y portada. --}}
 @php
     $selectedProfiles = collect(old('profile_ids', isset($content) ? $content->profiles->pluck('id')->all() : $profiles->pluck('id')->all()))->map(fn ($id) => (int) $id);
-    $selectedCategory = old('category_id', $content->category_id ?? null);
+    // ?lista= preselecciona la lista al añadir desde la biblioteca filtrada por esa lista.
+    $selectedList = old('list_id', $content->list_id ?? request('lista'));
 @endphp
 
 <div class="field">
@@ -12,15 +13,15 @@
 </div>
 
 <div class="field">
-    <label for="category_id">{{ __('Categoría') }}</label>
-    <select id="category_id" name="category_id">
-        <option value="">{{ __('Sin categoría') }}</option>
-        @foreach ($categories as $category)
-            <option value="{{ $category->id }}" @selected((string) $selectedCategory === (string) $category->id)>{{ $category->name }}</option>
+    <label for="list_id">{{ __('Lista') }}</label>
+    <select id="list_id" name="list_id">
+        <option value="">{{ __('Sin lista') }}</option>
+        @foreach ($lists as $list)
+            <option value="{{ $list->id }}" @selected((string) $selectedList === (string) $list->id)>{{ $list->name }}</option>
         @endforeach
     </select>
-    <p class="hint"><a href="{{ route('categories.index') }}">{{ __('Gestionar categorías') }}</a></p>
-    @error('category_id')<p class="error">{{ $message }}</p>@enderror
+    <p class="hint"><a href="{{ route('lists.index') }}">{{ __('Gestionar listas') }}</a></p>
+    @error('list_id')<p class="error">{{ $message }}</p>@enderror
 </div>
 
 <fieldset class="field">

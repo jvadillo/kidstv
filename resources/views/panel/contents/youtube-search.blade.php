@@ -20,6 +20,9 @@
             @if (request('from_welcome'))
                 <input type="hidden" name="from_welcome" value="1">
             @endif
+            @if (request('lista'))
+                <input type="hidden" name="lista" value="{{ request('lista') }}">
+            @endif
             <div class="yt-search-row">
                 <label for="q" class="sr-only">{{ __('Buscar en YouTube') }}</label>
                 <input type="search" id="q" name="q" value="{{ $query }}" maxlength="100" placeholder="{{ __('Canciones infantiles, Peppa Pig, dinosaurios…') }}"
@@ -33,12 +36,24 @@
                         <option value="{{ $value }}" @selected($duration === $value)>{{ $label }}</option>
                     @endforeach
                 </select>
+                <label for="idioma" class="sr-only">{{ __('Idioma preferido') }}</label>
+                @php $mainCount = count(\App\Services\YouTubeSearch::MAIN_LANGUAGES); @endphp
+                <select id="idioma" name="idioma" title="{{ __('Idioma preferido de los vídeos') }}">
+                    @foreach (array_slice($languages, 0, $mainCount, true) as $code => $label)
+                        <option value="{{ $code }}" @selected($language === $code)>{{ $label }}</option>
+                    @endforeach
+                    <optgroup label="{{ __('Otros idiomas') }}">
+                        @foreach (array_slice($languages, $mainCount, null, true) as $code => $label)
+                            <option value="{{ $code }}" @selected($language === $code)>{{ $label }}</option>
+                        @endforeach
+                    </optgroup>
+                </select>
                 <label class="check check-inline">
                     <input type="checkbox" name="ninos" value="1" @checked($kidsOnly)>
                     <span>{{ __('Solo vídeos marcados «para niños»') }}</span>
                 </label>
             </div>
-            <p class="hint">{{ __('Búsqueda segura estricta y solo vídeos que se pueden ver fuera de YouTube. Aun así, revisa cada vídeo antes de añadirlo: puedes verlo aquí mismo pulsando su miniatura.') }}</p>
+            <p class="hint">{{ __('Búsqueda segura estricta y solo vídeos que se pueden ver fuera de YouTube. YouTube da prioridad a los vídeos en el idioma elegido, aunque puede mostrar alguno en otro. Revisa cada vídeo antes de añadirlo: puedes verlo aquí mismo pulsando su miniatura.') }}</p>
         </form>
 
         @if ($error)
@@ -74,12 +89,12 @@
                                 </div>
                             @endif
                         </div>
-                        <div class="field yt-add-category">
-                            <label for="category_id">{{ __('Categoría') }}</label>
-                            <select id="category_id" name="category_id">
-                                <option value="">{{ __('Sin categoría') }}</option>
-                                @foreach ($categories as $category)
-                                    <option value="{{ $category->id }}">{{ $category->name }}</option>
+                        <div class="field yt-add-list">
+                            <label for="list_id">{{ __('Lista') }}</label>
+                            <select id="list_id" name="list_id">
+                                <option value="">{{ __('Sin lista') }}</option>
+                                @foreach ($lists as $list)
+                                    <option value="{{ $list->id }}" @selected((string) request('lista') === (string) $list->id)>{{ $list->name }}</option>
                                 @endforeach
                             </select>
                         </div>
@@ -125,10 +140,10 @@
 
                 <nav class="pager" aria-label="{{ __('Más resultados') }}">
                     @if ($results['prev'])
-                        <a class="btn btn-ghost" href="{{ route('contents.youtube.search', array_filter(['q' => $query, 'duracion' => $duration, 'ninos' => $kidsOnly ?: null, 'pagina' => $results['prev'], 'from_welcome' => request('from_welcome')])) }}">{{ __('Anteriores') }}</a>
+                        <a class="btn btn-ghost" href="{{ route('contents.youtube.search', array_filter(['q' => $query, 'duracion' => $duration, 'idioma' => $language, 'ninos' => $kidsOnly ?: null, 'pagina' => $results['prev'], 'from_welcome' => request('from_welcome'), 'lista' => request('lista')])) }}">{{ __('Anteriores') }}</a>
                     @endif
                     @if ($results['next'])
-                        <a class="btn btn-ghost" href="{{ route('contents.youtube.search', array_filter(['q' => $query, 'duracion' => $duration, 'ninos' => $kidsOnly ?: null, 'pagina' => $results['next'], 'from_welcome' => request('from_welcome')])) }}">{{ __('Más resultados') }}</a>
+                        <a class="btn btn-ghost" href="{{ route('contents.youtube.search', array_filter(['q' => $query, 'duracion' => $duration, 'idioma' => $language, 'ninos' => $kidsOnly ?: null, 'pagina' => $results['next'], 'from_welcome' => request('from_welcome'), 'lista' => request('lista')])) }}">{{ __('Más resultados') }}</a>
                     @endif
                 </nav>
 

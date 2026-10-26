@@ -61,7 +61,7 @@ class AuthFlowTest extends TestCase
         $user = User::where('email', 'nueva@example.com')->firstOrFail();
         $this->assertAuthenticatedAs($user);
         $this->assertNotNull($user->terms_accepted_at);
-        $this->assertCount(count(config('kidstv.default_categories')), $user->family->categories);
+        $this->assertCount(count(config('kidstv.default_lists')), $user->family->lists);
         $this->get('/panel')->assertOk()->assertSee('Añadir vídeo de YouTube');
     }
 

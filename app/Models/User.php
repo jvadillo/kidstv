@@ -24,6 +24,8 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'terms_accepted_at' => 'datetime',
+            'is_admin' => 'boolean',
+            'blocked_at' => 'datetime',
         ];
     }
 
@@ -40,6 +42,16 @@ class User extends Authenticatable
     public function getAuthPassword(): string
     {
         return '';
+    }
+
+    public function isAdmin(): bool
+    {
+        return $this->is_admin;
+    }
+
+    public function isBlocked(): bool
+    {
+        return $this->blocked_at !== null;
     }
 
     public function displayName(): string

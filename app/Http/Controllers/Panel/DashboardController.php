@@ -15,7 +15,7 @@ class DashboardController extends Controller
         return view('panel.dashboard', [
             'family' => $family,
             'profiles' => $family->profiles()->withCount('contents')->get(),
-            'recent' => $family->contents()->with('category')->latest('id')->limit(6)->get(),
+            'recent' => $family->contents()->with('list')->latest('id')->limit(6)->get(),
             'contentCount' => $family->contents()->count(),
             'devices' => $family->devices()->latest('last_seen_at')->get(),
             'storageUsed' => $family->storageUsed(),

@@ -54,7 +54,7 @@ class AdultSessions
         if ($guard->check()) {
             $session = AuthSession::find($request->session()->get(self::SESSION_KEY));
 
-            if (! $session || $session->user_id !== $guard->id() || $session->isExpired()) {
+            if (! $session || $session->user_id !== $guard->id() || $session->isExpired() || $guard->user()->isBlocked()) {
                 $this->terminate($request);
 
                 return;
@@ -72,7 +72,7 @@ class AdultSessions
 
         $session = AuthSession::with('user')->where('token_hash', hash('sha256', $plain))->first();
 
-        if (! $session || $session->isExpired() || ! $session->user) {
+        if (! $session || $session->isExpired() || ! $session->user || $session->user->isBlocked()) {
             $session?->delete();
             Cookie::queue(Cookie::forget(config('kidstv.auth_cookie')));
 

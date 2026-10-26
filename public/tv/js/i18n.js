@@ -19,8 +19,6 @@ window.KIDSTV_I18N = {
         'catalog.empty': 'Aún no hay nada para ver aquí.',
         'catalog.emptyHint': 'Pide a un adulto que añada vídeos para ti.',
         'catalog.adultBanner': 'Modo adulto · todo el catálogo de la familia',
-        'type.audio': 'Audio',
-        'type.youtube': 'YouTube',
 
         'player.loading': 'Cargando…',
         'player.back': 'Pulsa Atrás para volver',
@@ -73,6 +71,8 @@ window.KIDSTV_I18N = {
         'error.generic': 'Algo no ha ido bien',
         'error.genericHint': 'Vuelve a intentarlo en un momento.',
         'error.server': 'El servidor no responde',
+        'error.blocked': 'Esta videoteca está suspendida',
+        'error.blockedHint': 'El adulto responsable puede escribir al soporte de KidsTV.',
 
         'family.default': 'Tu videoteca'
     }

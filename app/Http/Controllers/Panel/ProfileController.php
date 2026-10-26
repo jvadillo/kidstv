@@ -45,7 +45,7 @@ class ProfileController extends Controller
         return view('panel.profiles.edit', [
             'profile' => $profile,
             'avatars' => config('kidstv.avatars'),
-            'contents' => $family->contents()->with('category')->ordered()->get(),
+            'contents' => $family->contents()->with('list')->ordered()->get(),
             'assigned' => $profile->contents()->pluck('contents.id')->all(),
         ]);
     }

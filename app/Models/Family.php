@@ -19,6 +19,15 @@ class Family extends Model
         ];
     }
 
+    protected static function booted(): void
+    {
+        // Las listas se borran en cascada en la base de datos (sin eventos): antes se quitan
+        // los enlaces que otras familias tengan a las listas públicas de esta.
+        static::deleting(function (Family $family) {
+            VideoList::whereIn('source_id', VideoList::where('family_id', $family->id)->select('id'))->delete();
+        });
+    }
+
     public function users(): HasMany
     {
         return $this->hasMany(User::class);
@@ -29,9 +38,16 @@ class Family extends Model
         return $this->hasMany(Profile::class)->orderBy('position')->orderBy('id');
     }
 
-    public function categories(): HasMany
+    /** Listas de la familia, propias y públicas enlazadas, en el orden de la tele. */
+    public function lists(): HasMany
     {
-        return $this->hasMany(Category::class)->orderBy('position')->orderBy('id');
+        return $this->hasMany(VideoList::class)->orderBy('position')->orderBy('id');
+    }
+
+    /** Listas propias: las únicas en las que la familia puede poner sus contenidos. */
+    public function ownLists(): HasMany
+    {
+        return $this->lists()->whereNull('source_id');
     }
 
     public function contents(): HasMany
@@ -47,6 +63,17 @@ class Family extends Model
     public function uploads(): HasMany
     {
         return $this->hasMany(Upload::class);
+    }
+
+    public function plays(): HasMany
+    {
+        return $this->hasMany(Play::class);
+    }
+
+    /** Sin ningún adulto activo (cuenta bloqueada por un administrador), los televisores dejan de funcionar. */
+    public function isBlocked(): bool
+    {
+        return $this->users()->whereNull('blocked_at')->doesntExist();
     }
 
     public function hasPin(): bool

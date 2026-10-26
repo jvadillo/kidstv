@@ -91,9 +91,7 @@ class AdultZoneController extends Controller
             return $this->lockedZone();
         }
 
-        $contents = $device->family->contents()->ready()->ordered()->get();
-
-        return response()->json($catalog->present($contents, $device));
+        return response()->json($catalog->present($device));
     }
 
     /** Desvincular este mismo televisor (requiere PIN). */

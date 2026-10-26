@@ -16,7 +16,7 @@ Fuentes de evidencia:
 | 7 | YouTube no permitido → aviso sin romper; permitido → reproductor oficial | ✅ (navegador) · ⏳ LG | Test: errores 401/403/404 de oEmbed con mensaje claro; códigos 100/101/150 desde la tele marcan «No disponible». E2E prod: reproductor oficial cargado mediante la página puente (evento `ready`). |
 | 8 | Borrar en el móvil → desaparece de la tele | ✅ | Test (archivo borrado, catálogo y reproducción 404). E2E prod: borrado de «Barras de colores» y desaparece del catálogo de Iker. |
 | 9 | Revocar una tele → pierde el acceso | ✅ | Test (API 401 y URL firmada 403). E2E prod: la tele muestra «Esta tele se ha desvinculado». |
-| 10 | Dos cuentas no acceden a datos ajenos | ✅ | Test `FamilyIsolationTest`: 404 en todas las rutas del panel sobre perfiles, contenidos, archivos, categorías, teles y sesiones ajenas; validación impide asignar perfiles/categorías/contenidos ajenos; la API de TV y las URLs firmadas no sirven datos de otra familia, ni manipulando el parámetro de dispositivo. |
+| 10 | Dos cuentas no acceden a datos ajenos | ✅ | Test `FamilyIsolationTest`: 404 en todas las rutas del panel sobre perfiles, contenidos, archivos, listas, teles y sesiones ajenas; validación impide asignar perfiles/listas/contenidos ajenos; la API de TV y las URLs firmadas no sirven datos de otra familia, ni manipulando el parámetro de dispositivo. |
 | 11 | Instalar en un LG real, vincular, navegar y reproducir | 📦 Listo · ⏳ LG | Paquete `kidstv-webos.ipk` generado con `ares-package` (sin errores) y publicado. Falta la prueba física. |
 | 12 | Instrucciones de instalación/actualización LG y ampliación a otras plataformas | ✅ | [webos.md](webos.md), [otras-plataformas.md](otras-plataformas.md). |
 

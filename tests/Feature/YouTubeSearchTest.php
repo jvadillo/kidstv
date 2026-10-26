@@ -107,15 +107,17 @@ class YouTubeSearchTest extends TestCase
         $user = $this->adult();
         $family = $user->family;
         $ane = $this->profile($family, 'Ane');
-        $category = $family->categories()->create(['name' => 'Aprender']);
+        $list = $family->lists()->create(['name' => 'Aprender']);
         $this->actingAsAdult($user);
 
         $this->postJson('/panel/contenidos/youtube', [
-            'url' => 'aaaaaaaaaaa', 'from_search' => 1, 'profile_ids' => [$ane->id], 'category_id' => $category->id,
+            'url' => 'aaaaaaaaaaa', 'from_search' => 1, 'profile_ids' => [$ane->id], 'list_id' => $list->id,
         ])->assertCreated()->assertJson(['ok' => true, 'title' => 'Dinosaurios para niños']);
 
         $content = Content::where('youtube_id', 'aaaaaaaaaaa')->firstOrFail();
-        $this->assertSame($category->id, $content->category_id);
+        $this->assertSame($list->id, $content->list_id);
+        // La duración se guarda al añadirlo, para mostrarla en la tele.
+        $this->assertSame(3723, $content->duration);
         $this->assertSame([$ane->id], $content->profiles()->pluck('profiles.id')->all());
 
         $this->postJson('/panel/contenidos/youtube', ['url' => 'aaaaaaaaaaa', 'from_search' => 1])
@@ -126,6 +128,34 @@ class YouTubeSearchTest extends TestCase
             ->post('/panel/contenidos/youtube', ['url' => 'ccccccccccc', 'from_search' => 1])
             ->assertRedirect('/panel/contenidos/buscar-youtube?q=dinosaurios')
             ->assertSessionHas('status');
+    }
+
+    public function test_preferred_language_is_sent_offered_in_order_and_remembered(): void
+    {
+        $this->fakeApi();
+        $this->actingAsAdult($this->adult());
+
+        $page = $this->get('/panel/contenidos/buscar-youtube')->assertOk();
+        $page->assertSeeInOrder(['Español', 'Inglés', 'Euskera', 'Catalán', 'Otros idiomas', 'Alemán', 'Francés', 'Ucraniano']);
+
+        $this->get('/panel/contenidos/buscar-youtube?q=songs&idioma=en')->assertOk()->assertSee('idioma=en', false);
+        Http::assertSent(fn (Request $r) => str_contains($r->url(), '/search') && $r['relevanceLanguage'] === 'en');
+
+        // La siguiente búsqueda usa el idioma elegido aunque no venga en la dirección.
+        $this->get('/panel/contenidos/buscar-youtube?q=abesti')->assertOk()->assertSee('<option value="en" selected', false);
+        Http::assertSent(fn (Request $r) => str_contains($r->url(), '/search') && $r['q'] === 'abesti' && $r['relevanceLanguage'] === 'en');
+
+        $this->get('/panel/contenidos/buscar-youtube?q=x&idioma=klingon')->assertSessionHasErrors('idioma');
+    }
+
+    public function test_missing_youtube_durations_are_filled_by_command(): void
+    {
+        $this->fakeApi();
+        $family = $this->adult()->family;
+        $content = $this->youtubeContent($family, ['youtube_id' => 'ccccccccccc']);
+
+        $this->artisan('kidstv:youtube-durations')->assertSuccessful();
+        $this->assertSame(185, $content->fresh()->duration);
     }
 
     public function test_quota_and_configuration_errors_are_explained(): void

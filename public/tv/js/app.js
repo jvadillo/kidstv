@@ -30,6 +30,7 @@
         memory: {},
         player: null,
         playing: null,
+        watch: null,
         timers: {},
         lastKeyAt: new Date().getTime(),
         lastAdultPing: 0
@@ -55,6 +56,7 @@
         options = options || {};
         K.http(method, '/api/tv' + path, { body: body, headers: headers() }, function (status, data) {
             if (status === 401) { handleRevoked(); return; }
+            if (status === 403 && data && data.error === 'account_blocked') { handleBlocked(); return; }
             if (status === 0 || status >= 500) {
                 if (options.silent) { if (callback) callback(status, data); return; }
                 showOffline(status === 0 ? t('error.offline') : t('error.server'), function () { api(method, path, body, callback, options); });
@@ -175,9 +177,78 @@
     }
 
     function stopPlayer() {
+        watchStop();
         if (S.player) { S.player.destroy(); S.player = null; }
         S.playing = null;
     }
+
+    /* ---------- Tiempo de visionado (estadísticas de uso) ---------- */
+
+    // Solo cuenta mientras el vídeo avanza de verdad; se envía cada 30 s y al terminar.
+    // Sin el perfil activo: no se registra qué ve cada niño.
+    function watchStart(item) {
+        watchStop();
+        S.watch = {
+            key: Math.random().toString(36).slice(2, 12) + new Date().getTime().toString(36),
+            content: item.id,
+            seconds: 0,
+            since: 0,
+            sent: 0
+        };
+        S.timers.watch = setInterval(watchSend, 30000);
+    }
+
+    function watchTick() {
+        var w = S.watch;
+        if (!w || !w.since) return;
+        var now = new Date().getTime();
+        w.seconds += (now - w.since) / 1000;
+        w.since = now;
+    }
+
+    function watchPlaying(playing) {
+        var w = S.watch;
+        if (!w) return;
+        watchTick();
+        w.since = playing ? (w.since || new Date().getTime()) : 0;
+    }
+
+    function watchSend() {
+        var w = S.watch;
+        if (!w) return;
+        watchTick();
+        var seconds = Math.floor(w.seconds);
+        if (seconds < 5 || seconds - w.sent < 5) return;
+        w.sent = seconds;
+        api('POST', '/plays', { key: w.key, content_id: w.content, seconds: seconds }, null, { silent: true });
+    }
+
+    function watchStop() {
+        if (!S.watch) return;
+        watchPlaying(false);
+        watchSend();
+        clearTimer('watch');
+        S.watch = null;
+    }
+
+    function handleBlocked() {
+        stopPlayer();
+        if (S.screen !== 'blocked') show('blocked');
+    }
+
+    screens.blocked = {
+        enter: function () {
+            mount('<div class="screen screen-center"><h1>' + esc(t('error.blocked')) + '</h1><p class="muted">' + esc(t('error.blockedHint')) + '</p></div>');
+            clearTimer('poll');
+            // Si se reactiva la cuenta, la tele vuelve sola a los perfiles.
+            S.timers.poll = setInterval(function () { loadSession(function () { show('profiles'); }, true); }, 60000);
+        },
+        leave: function () { clearTimer('poll'); },
+        key: function (name) {
+            if (name === 'back') { confirmExit(); return true; }
+            return false;
+        }
+    };
 
     function handleRevoked() {
         stopPlayer();
@@ -354,25 +425,25 @@
         }
     }
 
-    /* ---------- Catálogo: una fila por categoría, con carrusel horizontal ---------- */
+    /* ---------- Catálogo: una fila por lista, con carrusel horizontal ---------- */
 
     function catalogPath() {
         return S.adultCatalog ? '/adult/catalog' : '/profiles/' + S.profile.id + '/catalog';
     }
 
-    /** Agrupa los contenidos en filas siguiendo el orden de categorías del adulto. */
+    /** Agrupa los contenidos en filas siguiendo el orden de listas del adulto. */
     function buildRows(catalog) {
-        var cats = catalog.categories || [];
+        var lists = catalog.lists || [];
         var items = catalog.items || [];
         var rows = [];
-        for (var c = 0; c < cats.length; c++) {
-            var row = { key: 'r-' + (cats[c].id === null ? 'otros' : cats[c].id), title: cats[c].name, items: [] };
+        for (var c = 0; c < lists.length; c++) {
+            var row = { key: 'r-' + (lists[c].id === null ? 'otros' : lists[c].id), title: lists[c].name, items: [] };
             for (var i = 0; i < items.length; i++) {
-                if (String(items[i].category_id) === String(cats[c].id)) row.items.push(items[i]);
+                if (String(items[i].list_id) === String(lists[c].id)) row.items.push(items[i]);
             }
             if (row.items.length) rows.push(row);
         }
-        // Si nada tiene categoría, una única fila «Todo» en lugar de «Otros».
+        // Si nada está en una lista, una única fila «Todo» en lugar de «Otros».
         if (rows.length === 1 && rows[0].key === 'r-otros') rows[0].title = t('catalog.all');
         return rows;
     }
@@ -520,8 +591,8 @@
                     '<div class="row-viewport"><div class="row-track">';
                 for (var i = 0; i < row.items.length; i++) {
                     var it = row.items[i];
-                    var badge = it.type === 'youtube' ? '<span class="card-badge badge-yt">' + esc(t('type.youtube')) + '</span>'
-                        : it.type === 'audio' ? '<span class="card-badge badge-audio">' + ICON_NOTE + '</span>' : '';
+                    // Como en YouTube: la duración abajo a la derecha (el tipo de contenido no le dice nada al peque).
+                    var badge = it.duration ? '<span class="card-duration">' + esc(K.formatTime(it.duration)) + '</span>' : '';
                     html += '<div class="card focusable card-' + it.type + '" data-action="play" data-arg="' + it.id + '" data-key="c-' + it.id + '">' +
                         '<div class="card-cover">' +
                             (it.cover ? '<img src="' + esc(it.cover) + '" alt="">' : '<div class="card-placeholder">' + (it.type === 'audio' ? ICON_NOTE : ICON_PLAY) + '</div>') +
@@ -613,7 +684,9 @@
             S.memory.catalog = 'c-' + item.id;
             mount('<div class="screen screen-player"></div>');
             var container = app.querySelector('.screen-player');
+            watchStart(item);
             var opts = {
+                onPlaying: watchPlaying,
                 onEnded: function () { self.ended(item); },
                 onExit: function () { self.exit(); },
                 onError: function (info) { self.error(item, info); }

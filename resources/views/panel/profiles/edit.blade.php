@@ -33,7 +33,7 @@
                                 @include('partials.content-thumb')
                                 <span class="content-meta">
                                     <strong>{{ $content->title }}</strong>
-                                    <span class="muted small">{{ $content->category?->name ?? __('Sin categoría') }}</span>
+                                    <span class="muted small">{{ $content->list?->name ?? __('Sin lista') }}</span>
                                 </span>
                                 @unless ($content->isReady())
                                     @include('partials.status-badge')

@@ -10,7 +10,7 @@
     <div class="page-head">
         <h1>{{ __('Biblioteca') }}</h1>
         <div class="page-head-actions">
-            <a href="{{ youtube_add_url() }}" class="btn btn-primary btn-sm">@include('partials.icon', ['name' => 'youtube']) {{ __('YouTube') }}</a>
+            <a href="{{ youtube_add_url(is_numeric($filters['list'] ?? null) ? ['lista' => $filters['list']] : []) }}" class="btn btn-primary btn-sm">@include('partials.icon', ['name' => 'youtube']) {{ __('YouTube') }}</a>
             <a href="{{ route('contents.upload.create', 'video') }}" class="btn btn-primary btn-sm">@include('partials.icon', ['name' => 'video']) {{ __('Vídeo') }}</a>
             <a href="{{ route('contents.upload.create', 'audio') }}" class="btn btn-primary btn-sm">@include('partials.icon', ['name' => 'audio']) {{ __('Audio') }}</a>
         </div>
@@ -23,12 +23,12 @@
             <option value="video" @selected(($filters['type'] ?? '') === 'video')>{{ __('Vídeos propios') }}</option>
             <option value="audio" @selected(($filters['type'] ?? '') === 'audio')>{{ __('Audios') }}</option>
         </select>
-        <select name="category" aria-label="{{ __('Categoría') }}">
-            <option value="">{{ __('Todas las categorías') }}</option>
-            @foreach ($categories as $category)
-                <option value="{{ $category->id }}" @selected(($filters['category'] ?? '') == $category->id)>{{ $category->name }}</option>
+        <select name="list" aria-label="{{ __('Lista') }}">
+            <option value="">{{ __('Todas las listas') }}</option>
+            @foreach ($lists as $list)
+                <option value="{{ $list->id }}" @selected(($filters['list'] ?? '') == $list->id)>{{ $list->name }}</option>
             @endforeach
-            <option value="none" @selected(($filters['category'] ?? '') === 'none')>{{ __('Sin categoría') }}</option>
+            <option value="none" @selected(($filters['list'] ?? '') === 'none')>{{ __('Sin lista') }}</option>
         </select>
         <select name="profile" aria-label="{{ __('Perfil') }}">
             <option value="">{{ __('Todos los perfiles') }}</option>
@@ -49,7 +49,7 @@
     </form>
 
     <p class="small muted">
-        <a href="{{ route('categories.index') }}">{{ __('Gestionar categorías') }}</a>
+        <a href="{{ route('lists.index') }}">{{ __('Gestionar listas') }}</a>
         @unless ($filtered) · {{ __('Usa las flechas para cambiar el orden en que aparecen en la tele.') }} @endunless
     </p>
 
@@ -72,7 +72,7 @@
                         <div class="content-meta">
                             <strong>{{ $content->title }}</strong>
                             <span class="muted small">
-                                {{ $content->category?->name ?? __('Sin categoría') }}
+                                {{ $content->list?->name ?? __('Sin lista') }}
                                 @if ($content->formattedDuration()) · {{ $content->formattedDuration() }} @endif
                             </span>
                             <span class="small profiles-inline">

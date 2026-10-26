@@ -141,7 +141,7 @@ class AccountController extends Controller
     public function export(Request $request)
     {
         $user = $request->user();
-        $family = $user->family->load(['profiles.contents:id', 'categories', 'contents.profiles:id', 'devices']);
+        $family = $user->family->load(['profiles.contents:id', 'profiles.lists:id', 'lists.source', 'contents.profiles:id', 'devices', 'plays.device:id,name']);
 
         $data = [
             'exported_at' => now()->toIso8601String(),
@@ -155,11 +155,12 @@ class AccountController extends Controller
             'profiles' => $family->profiles->map(fn ($p) => [
                 'id' => $p->id, 'name' => $p->name, 'avatar' => $p->avatar,
                 'content_ids' => $p->contents->pluck('id'),
+                'public_list_ids' => $p->lists->pluck('id'),
             ]),
-            'categories' => $family->categories->map(fn ($c) => ['id' => $c->id, 'name' => $c->name]),
+            'lists' => $family->lists->map(fn ($c) => ['id' => $c->id, 'name' => $c->displayName(), 'public_list_added' => $c->isLinked()]),
             'contents' => $family->contents->map(fn (Content $c) => [
                 'id' => $c->id, 'type' => $c->type, 'title' => $c->title, 'description' => $c->description,
-                'category_id' => $c->category_id, 'status' => $c->status,
+                'list_id' => $c->list_id, 'status' => $c->status,
                 'youtube_url' => $c->youtube_id ? 'https://www.youtube.com/watch?v='.$c->youtube_id : null,
                 'file_size' => $c->file_size, 'duration' => $c->duration,
                 'download_url' => $c->file_path ? route('contents.file', $c->id) : null,
@@ -169,6 +170,13 @@ class AccountController extends Controller
                 'name' => $d->name, 'platform' => $d->platform,
                 'linked_at' => $d->created_at?->toIso8601String(),
                 'last_seen_at' => $d->last_seen_at?->toIso8601String(),
+            ]),
+            'usage' => $family->plays->map(fn ($p) => [
+                'started_at' => $p->created_at?->toIso8601String(),
+                'device' => $p->device?->name,
+                'content_id' => $p->content_id,
+                'content_type' => $p->content_type,
+                'seconds' => $p->seconds,
             ]),
         ];
 

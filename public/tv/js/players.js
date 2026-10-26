@@ -48,6 +48,10 @@
         var durationEl = container.querySelector('.player-duration');
         var spinner = container.querySelector('.player-spinner');
 
+        function playing(value) {
+            if (!destroyed && opts.onPlaying) opts.onPlaying(value);
+        }
+
         function showControls() {
             controls.classList.add('visible');
             clearTimeout(hideTimer);
@@ -86,11 +90,12 @@
 
         media.addEventListener('timeupdate', update);
         media.addEventListener('loadedmetadata', update);
-        media.addEventListener('waiting', function () { spinner.classList.add('visible'); });
-        media.addEventListener('playing', function () { spinner.classList.remove('visible'); button.innerHTML = ICON_PAUSE; showControls(); });
-        media.addEventListener('pause', function () { button.innerHTML = ICON_PLAY; showControls(); });
-        media.addEventListener('ended', function () { if (!destroyed) opts.onEnded(); });
+        media.addEventListener('waiting', function () { spinner.classList.add('visible'); playing(false); });
+        media.addEventListener('playing', function () { spinner.classList.remove('visible'); button.innerHTML = ICON_PAUSE; showControls(); playing(true); });
+        media.addEventListener('pause', function () { button.innerHTML = ICON_PLAY; showControls(); playing(false); });
+        media.addEventListener('ended', function () { playing(false); if (!destroyed) opts.onEnded(); });
         media.addEventListener('error', function () {
+            playing(false);
             if (destroyed) return;
             spinner.classList.remove('visible');
             opts.onError({ media: media.error ? media.error.code : 0 });
@@ -173,8 +178,10 @@
                 ready = true;
                 clearTimeout(timeout);
                 spinner.classList.remove('visible');
-            } else if (data.event === 'state' && data.value === 0) {
-                opts.onEnded();
+            } else if (data.event === 'state') {
+                // Estados del reproductor de YouTube: 1 = reproduciendo, 0 = terminado.
+                if (opts.onPlaying) opts.onPlaying(data.value === 1);
+                if (data.value === 0) opts.onEnded();
             } else if (data.event === 'error') {
                 clearTimeout(timeout);
                 opts.onError({ youtube: data.value });

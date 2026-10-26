@@ -39,7 +39,7 @@ return [
         'name' => 'el nombre',
         'title' => 'el título',
         'description' => 'la descripción',
-        'category_id' => 'la categoría',
+        'list_id' => 'la lista',
         'profile_ids' => 'los perfiles',
         'profile_ids.*' => 'el perfil',
         'content_ids.*' => 'el contenido',

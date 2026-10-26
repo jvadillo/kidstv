@@ -23,15 +23,15 @@ class ContentController extends Controller
     public function index(Request $request)
     {
         $family = $this->family();
-        $filters = $request->only(['type', 'category', 'profile', 'status']);
+        $filters = $request->only(['type', 'list', 'profile', 'status']);
 
         $contents = $family->contents()
-            ->with(['category', 'profiles'])
+            ->with(['list', 'profiles'])
             ->when($filters['type'] ?? null, fn ($q, $type) => $q->where('type', $type))
             ->when($filters['status'] ?? null, fn ($q, $status) => $q->where('status', $status))
-            ->when($filters['category'] ?? null, fn ($q, $category) => $category === 'none'
-                ? $q->whereNull('category_id')
-                : $q->where('category_id', $category))
+            ->when($filters['list'] ?? null, fn ($q, $list) => $list === 'none'
+                ? $q->whereNull('list_id')
+                : $q->where('list_id', $list))
             ->when($filters['profile'] ?? null, fn ($q, $profile) => $q->whereHas('profiles', fn ($p) => $p->whereKey($profile)))
             ->ordered()
             ->get();
@@ -40,7 +40,7 @@ class ContentController extends Controller
             'contents' => $contents,
             'filters' => $filters,
             'filtered' => array_filter($filters) !== [],
-            'categories' => $family->categories,
+            'lists' => $family->ownLists,
             'profiles' => $family->profiles,
         ]);
     }
@@ -58,7 +58,14 @@ class ContentController extends Controller
             'duracion' => ['nullable', Rule::in(YouTubeSearch::DURATIONS)],
             'pagina' => ['nullable', 'string', 'max:100', 'regex:/^[A-Za-z0-9_-]+$/'],
             'ninos' => ['nullable', 'boolean'],
+            'idioma' => ['nullable', Rule::in(array_keys(YouTubeSearch::languages()))],
         ]);
+
+        // El idioma elegido se recuerda para las siguientes búsquedas de este adulto.
+        if (isset($data['idioma'])) {
+            $request->session()->put('youtube_language', $data['idioma']);
+        }
+        $language = $data['idioma'] ?? $request->session()->get('youtube_language', YouTubeSearch::defaultLanguage());
 
         $query = trim($data['q'] ?? '');
         $results = null;
@@ -71,7 +78,7 @@ class ContentController extends Controller
             } else {
                 RateLimiter::hit($limiter, 3600);
                 try {
-                    $results = $search->search($query, $data['duracion'] ?? 'any', $data['pagina'] ?? null);
+                    $results = $search->search($query, $data['duracion'] ?? 'any', $data['pagina'] ?? null, $language);
                     if ($request->boolean('ninos')) {
                         $results['items'] = array_values(array_filter($results['items'], fn ($item) => $item['made_for_kids']));
                     }
@@ -88,6 +95,8 @@ class ContentController extends Controller
             'query' => $query,
             'duration' => $data['duracion'] ?? 'any',
             'kidsOnly' => $request->boolean('ninos'),
+            'language' => $language,
+            'languages' => YouTubeSearch::languages(),
             'results' => $results,
             'error' => $error,
             'added' => $ids->isEmpty() ? [] : $this->family()->contents()->whereIn('youtube_id', $ids)->pluck('youtube_id')->all(),
@@ -115,7 +124,7 @@ class ContentController extends Controller
         ], $info['ok'] ? 200 : 422);
     }
 
-    public function storeYouTube(Request $request, YouTube $youtube)
+    public function storeYouTube(Request $request, YouTube $youtube, YouTubeSearch $search)
     {
         $request->validate(['url' => ['required', 'string', 'max:500']], ['url.required' => __('Pega el enlace del vídeo de YouTube.')]);
 
@@ -144,9 +153,11 @@ class ContentController extends Controller
             'youtube_id' => $id,
             'title' => $title,
             'description' => $data['description'] ?? null,
-            'category_id' => $data['category_id'] ?? null,
+            'list_id' => $data['list_id'] ?? null,
             'status' => Content::STATUS_READY,
             'status_message' => $info['checked'] ? null : __('No se pudo comprobar con YouTube al añadirlo.'),
+            // Con la API configurada; si no, la duración se completa más tarde (kidstv:youtube-durations).
+            'duration' => $search->durations([$id])[$id] ?? null,
         ]);
         $content->profiles()->sync($data['profile_ids'] ?? []);
 
@@ -194,7 +205,7 @@ class ContentController extends Controller
         $content->fill([
             'title' => $data['title'],
             'description' => $data['description'] ?? null,
-            'category_id' => $data['category_id'] ?? null,
+            'list_id' => $data['list_id'] ?? null,
         ]);
 
         if ($request->hasFile('cover')) {
@@ -294,7 +305,7 @@ class ContentController extends Controller
         $family = $this->family();
 
         return [
-            'categories' => $family->categories,
+            'lists' => $family->ownLists,
             'profiles' => $family->profiles,
         ];
     }

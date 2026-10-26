@@ -17,7 +17,7 @@ return new class extends Migration
             $table->timestamps();
         });
 
-        Schema::create('categories', function (Blueprint $table) {
+        Schema::create('lists', function (Blueprint $table) {
             $table->id();
             $table->foreignId('family_id')->constrained()->cascadeOnDelete();
             $table->string('name', 40);
@@ -28,7 +28,7 @@ return new class extends Migration
         Schema::create('contents', function (Blueprint $table) {
             $table->id();
             $table->foreignId('family_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('category_id')->nullable()->constrained()->nullOnDelete();
+            $table->foreignId('list_id')->nullable()->constrained()->nullOnDelete();
             $table->string('type', 10);
             $table->string('title', 120);
             $table->text('description')->nullable();
@@ -70,7 +70,7 @@ return new class extends Migration
         Schema::dropIfExists('uploads');
         Schema::dropIfExists('content_profile');
         Schema::dropIfExists('contents');
-        Schema::dropIfExists('categories');
+        Schema::dropIfExists('lists');
         Schema::dropIfExists('profiles');
     }
 };

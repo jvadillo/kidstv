@@ -140,7 +140,7 @@ class AccountTest extends TestCase
         $user = $this->adult();
         $this->actingAsAdult($user);
 
-        foreach (['/panel', '/panel/bienvenida', '/panel/perfiles', '/panel/perfiles/nuevo', '/panel/categorias', '/panel/contenidos',
+        foreach (['/panel', '/panel/bienvenida', '/panel/perfiles', '/panel/perfiles/nuevo', '/panel/listas', '/panel/listas/publicas', '/panel/contenidos',
             '/panel/contenidos/nuevo/youtube', '/panel/contenidos/nuevo/video', '/panel/contenidos/nuevo/audio',
             '/panel/televisores', '/panel/televisores/vincular', '/panel/cuenta'] as $url) {
             $this->get($url)->assertOk();

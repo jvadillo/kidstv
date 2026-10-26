@@ -5,12 +5,18 @@ namespace App\Http\Controllers\Tv;
 use App\Http\Controllers\Controller;
 use App\Models\Content;
 use App\Models\Device;
+use App\Models\Play;
 use App\Services\TvCatalog;
 use Illuminate\Http\Request;
 
 /** Consulta de perfiles y catálogo, y reproducción. Es todo lo que puede hacer un televisor. */
 class CatalogController extends Controller
 {
+    // La TV avisa cada 30 s: el primer aviso no puede traer mucho más que eso.
+    private const FIRST_REPORT_MAX_SECONDS = 45;
+
+    private const REPORT_SLACK_SECONDS = 15;
+
     public function __construct(private TvCatalog $catalog) {}
 
     public function session(Request $request)
@@ -36,16 +42,14 @@ class CatalogController extends Controller
         $device = $this->device($request);
         $profile = $device->family->profiles()->findOrFail($profile);
 
-        $contents = $profile->contents()->ready()->ordered()->get();
-
         return response()->json(['profile' => ['id' => $profile->id, 'name' => $profile->name, 'avatar' => $profile->avatar]]
-            + $this->catalog->present($contents, $device));
+            + $this->catalog->present($device, $profile));
     }
 
     public function play(Request $request, int $content)
     {
         $device = $this->device($request);
-        $content = $device->family->contents()->find($content);
+        $content = $this->catalog->find($device->family, $content);
 
         if (! $content || ! $content->isReady()) {
             return response()->json(['error' => 'content_unavailable', 'message' => __('Este contenido ya no está disponible.')], 404);
@@ -53,8 +57,8 @@ class CatalogController extends Controller
 
         // Fuera de la Zona de adultos, solo se reproduce lo autorizado para el perfil activo.
         if (! AdultZoneController::isUnlocked($request, $device)) {
-            $allowed = $content->profiles()->whereKey((int) $request->query('profile'))->exists();
-            if (! $allowed) {
+            $profile = $device->family->profiles()->find((int) $request->query('profile'));
+            if (! $profile || ! $this->catalog->allowedFor($content, $device->family, $profile)) {
                 return response()->json(['error' => 'content_unavailable', 'message' => __('Este contenido ya no está disponible.')], 404);
             }
         }
@@ -78,7 +82,7 @@ class CatalogController extends Controller
     public function problem(Request $request, int $content)
     {
         $device = $this->device($request);
-        $content = $device->family->contents()->findOrFail($content);
+        $content = $this->catalog->find($device->family, $content) ?? abort(404);
         $code = (int) $request->input('code');
 
         if ($content->isYouTube() && in_array($code, [100, 101, 150], true)) {
@@ -88,6 +92,40 @@ class CatalogController extends Controller
                     ? __('YouTube indica que el vídeo ya no existe o es privado.')
                     : __('El propietario del vídeo no permite reproducirlo fuera de YouTube.'),
             ]);
+        }
+
+        return response()->json(['ok' => true]);
+    }
+
+    /**
+     * La TV informa periódicamente de cuántos segundos lleva vistos de una reproducción
+     * (identificada por una clave aleatoria propia). Nunca se cuenta más tiempo del que
+     * ha pasado realmente entre dos avisos, aunque se manipule la petición.
+     */
+    public function watched(Request $request)
+    {
+        $device = $this->device($request);
+        $family = $device->family;
+        $data = $request->validate([
+            'key' => ['required', 'string', 'alpha_num:ascii', 'min:8', 'max:40'],
+            'content_id' => ['required', 'integer'],
+            'seconds' => ['required', 'integer', 'min:0', 'max:86400'],
+        ]);
+
+        $content = $this->catalog->find($family, $data['content_id']) ?? abort(404);
+
+        $play = Play::firstOrNew(['device_id' => $device->id, 'client_key' => $data['key']]);
+        if ($play->exists) {
+            $elapsed = (int) $play->updated_at->diffInSeconds(now(), true);
+            $play->seconds = max($play->seconds, min($data['seconds'], $play->seconds + $elapsed + self::REPORT_SLACK_SECONDS));
+            $play->touch();
+        } else {
+            $play->fill([
+                'family_id' => $family->id,
+                'content_id' => $content->id,
+                'content_type' => $content->type,
+                'seconds' => min($data['seconds'], self::FIRST_REPORT_MAX_SECONDS),
+            ])->save();
         }
 
         return response()->json(['ok' => true]);

@@ -52,7 +52,8 @@ return [
 
     'avatars' => ['estrella', 'corazon', 'sol', 'luna', 'nube', 'flor', 'cohete', 'pez'],
 
-    'default_categories' => ['Dibujos', 'Música', 'Cuentos', 'Aprender'],
+    // Listas con las que empieza cada familia nueva.
+    'default_lists' => ['Dibujos', 'Música', 'Cuentos', 'Aprender'],
 
     /*
     | Aplicación de televisión

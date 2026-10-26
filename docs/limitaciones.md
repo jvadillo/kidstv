@@ -28,7 +28,9 @@
 - **Espacio en disco.** El VPS es compartido y tiene poco espacio libre; por defecto 500 MB por vídeo, 3 GB por familia y un margen de 1,5 GB libres en el disco. Para muchas familias habría que ampliar disco o mover los archivos a un volumen dedicado.
 - **Copias de seguridad** automáticas de la base de datos en el mismo disco; los archivos solo se copian manualmente (`ops/backup.sh --media`).
 - **Una persona adulta por familia** en esta versión (el modelo de datos ya separa familia y usuario, para añadir más adultos en el futuro).
-- **Colecciones/listas** no implementadas: la organización es por categorías y orden manual.
+- **Listas públicas**: se añaden tal cual; las familias no pueden quitarles ni añadirles vídeos (sí quitarlas enteras). Son listas de la familia del administrador: si se elimina esa cuenta, desaparecen de todas las videotecas.
+- **Estadísticas de uso**: el tiempo visto lo envían las teles con la versión nueva de la app; un paquete webOS antiguo no lo envía hasta reinstalarlo. Se guarda por tele y contenido, nunca por perfil infantil, y se borra a los 12 meses.
+- **Idioma de los resultados de YouTube**: es una preferencia (`relevanceLanguage`), no un filtro; pueden aparecer vídeos en otros idiomas.
 - **Sin buscador** en la tele (por diseño) ni control por horarios (fuera de alcance).
 - **Protección anti-abuso** básica (campo trampa, tiempo mínimo, límites por IP y correo); no hay CAPTCHA para no depender de servicios externos.
 - **Textos legales** (privacidad y condiciones) son una base razonable, pero deben revisarse legalmente antes de abrir el servicio al público, en particular por tratarse de un servicio usado por menores. Verificar un correo no acredita la patria potestad.

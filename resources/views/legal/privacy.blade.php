@@ -11,10 +11,11 @@
         <ul>
             <li><strong>{{ __('Persona adulta:') }}</strong> {{ __('correo electrónico, nombre visible opcional, fecha de aceptación de las condiciones y datos técnicos de las sesiones (navegador, dirección IP y última actividad) para poder mostrarte y revocar tus sesiones.') }}</li>
             <li><strong>{{ __('Perfiles infantiles:') }}</strong> {{ __('solo un apodo y un avatar predefinido. No pedimos nombres completos, fechas de nacimiento ni fotografías.') }}</li>
-            <li><strong>{{ __('Contenidos:') }}</strong> {{ __('los archivos que subes, sus portadas y datos (título, categoría, descripción) y los enlaces de YouTube que añades.') }}</li>
+            <li><strong>{{ __('Contenidos:') }}</strong> {{ __('los archivos que subes, sus portadas y datos (título, lista, descripción) y los enlaces de YouTube que añades.') }}</li>
             <li><strong>{{ __('Televisores:') }}</strong> {{ __('nombre que les pones, tipo de dispositivo y fecha de última conexión.') }}</li>
+            <li><strong>{{ __('Uso del servicio:') }}</strong> {{ __('cada tele informa de cuánto tiempo se reproduce cada contenido (fecha, tele, contenido y minutos), para conocer el uso del servicio y mejorar las listas públicas. Estos datos se conservan 12 meses.') }}</li>
         </ul>
-        <p>{{ __('No registramos qué ve cada niño ni construimos perfiles de uso. No hay publicidad ni seguimiento comercial.') }}</p>
+        <p>{{ __('No registramos qué perfil infantil está viendo ni construimos perfiles de uso de los niños. No hay publicidad ni seguimiento comercial.') }}</p>
 
         <h2>{{ __('Para qué los usamos') }}</h2>
         <p>{{ __('Exclusivamente para prestar el servicio: identificarte por correo, guardar tu videoteca y mostrarla en los televisores que tú vinculas. La base legal es la ejecución del servicio que solicitas.') }}</p>
@@ -28,7 +29,7 @@
         <p>{{ __('Si usas el buscador de YouTube del panel, el texto que buscas se envía a YouTube (Google) desde nuestro servidor, sin ningún dato tuyo ni de tu familia, y los resultados se guardan en caché durante una hora. La tele nunca tiene buscador.') }}</p>
 
         <h2>{{ __('Cuánto tiempo') }}</h2>
-        <p>{{ __('Mientras mantengas la cuenta. Los códigos de acceso caducan en minutos y se eliminan en 24 horas; las sesiones caducan tras :days días sin uso. Al eliminar la cuenta borramos de inmediato perfiles, contenidos y archivos; las copias de seguridad del servidor, si existen, se sobrescriben en un plazo máximo de 30 días.', ['days' => config('kidstv.auth_session_days')]) }}</p>
+        <p>{{ __('Mientras mantengas la cuenta. Los códigos de acceso caducan en minutos y se eliminan en 24 horas; las sesiones caducan tras :days días sin uso. Al eliminar la cuenta borramos de inmediato perfiles, contenidos, archivos y datos de uso; las copias de seguridad del servidor, si existen, se sobrescriben en un plazo máximo de 30 días.', ['days' => config('kidstv.auth_session_days')]) }}</p>
 
         <h2>{{ __('Tus derechos') }}</h2>
         <p>{{ __('Desde «Cuenta» puedes exportar todos tus datos, cambiar tu correo y eliminar la cuenta. Para cualquier otra solicitud (acceso, rectificación, oposición, limitación) escribe al responsable del servicio. También puedes reclamar ante la Agencia Española de Protección de Datos.') }}</p>

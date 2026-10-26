@@ -117,14 +117,16 @@ Todos los comandos desde `~/projects/kidstv`; abrevia con `alias kc='docker comp
 | Logs del procesado de vídeos | `kc logs -f worker` |
 | Logs de acceso HTTP | `kc logs -f web` |
 | Entrar sin correo (cuenta existente) | `kc exec app php artisan kidstv:login-link correo@ejemplo.com` |
-| Limpiar códigos/sesiones/subidas caducadas | `kc exec app php artisan kidstv:prune` (automático cada hora) |
+| Nombrar administrador (panel `/admin`) | `kc exec app php artisan kidstv:admin correo@ejemplo.com` (`--revoke` para quitarlo) |
+| Completar la duración de los vídeos de YouTube | `kc exec app php artisan kidstv:youtube-durations` (automático cada día a las 04:10; requiere `YOUTUBE_API_KEY`) |
+| Limpiar códigos/sesiones/subidas caducadas y uso de hace más de 12 meses | `kc exec app php artisan kidstv:prune` (automático cada hora) |
 | Copia de la base de datos | `kc exec app php artisan kidstv:backup` (automático cada día a las 01:40 UTC) |
 | Trabajos fallidos | `kc exec app php artisan queue:failed` / `queue:retry all` |
 | Consola | `kc exec app php artisan tinker` |
 | Espacio usado por archivos | `kc exec app du -sh storage/app/private` |
 | Reiniciar todo | `kc restart` |
 
-**Eliminar los datos de una familia a petición** (si no puede hacerlo ella desde *Cuenta → Eliminar cuenta*):
+**Eliminar los datos de una familia a petición** (si no puede hacerlo ella desde *Cuenta → Eliminar cuenta*): desde el panel de administración (*Admin → Usuarios → ficha → Eliminar la cuenta*) o por consola:
 ```bash
 kc exec app php artisan tinker --execute='$u=App\Models\User::where("email","correo@ejemplo.com")->firstOrFail(); app(App\Services\MediaLibrary::class)->deleteFamilyFiles($u->family); $u->family->delete();'
 ```

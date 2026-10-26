@@ -118,7 +118,7 @@ class UploadController extends Controller
             'type' => $upload->kind,
             'title' => $data['title'],
             'description' => $data['description'] ?? null,
-            'category_id' => $data['category_id'] ?? null,
+            'list_id' => $data['list_id'] ?? null,
             'status' => Content::STATUS_PROCESSING,
             'file_path' => $path,
             'mime' => $upload->kind === Content::TYPE_AUDIO

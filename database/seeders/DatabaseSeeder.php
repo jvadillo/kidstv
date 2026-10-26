@@ -14,8 +14,8 @@ class DatabaseSeeder extends Seeder
         $user = User::factory()->create(['email' => 'familia@example.com', 'name' => 'Familia de prueba']);
         $family = $user->family;
 
-        foreach (config('kidstv.default_categories') as $i => $name) {
-            $family->categories()->create(['name' => $name, 'position' => $i]);
+        foreach (config('kidstv.default_lists') as $i => $name) {
+            $family->lists()->create(['name' => $name, 'position' => $i]);
         }
 
         $ane = $family->profiles()->create(['name' => 'Ane', 'avatar' => 'estrella', 'position' => 1]);
@@ -26,7 +26,7 @@ class DatabaseSeeder extends Seeder
             'title' => 'Big Buck Bunny',
             'youtube_id' => 'aqz-KE-bpKQ',
             'status' => Content::STATUS_READY,
-            'category_id' => $family->categories()->first()->id,
+            'list_id' => $family->lists()->first()->id,
         ]);
         $content->profiles()->attach($ane);
     }

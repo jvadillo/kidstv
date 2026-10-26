@@ -7,7 +7,7 @@ use Illuminate\Validation\Rule;
 
 trait ValidatesContentMetadata
 {
-    /** Valida título, descripción, categoría, portada y perfiles, siempre dentro de la familia. */
+    /** Valida título, descripción, lista, portada y perfiles, siempre dentro de la familia. */
     protected function validatedMetadata(Request $request, bool $titleRequired): array
     {
         $familyId = $this->family()->id;
@@ -15,7 +15,7 @@ trait ValidatesContentMetadata
         return $request->validate([
             'title' => [$titleRequired ? 'required' : 'nullable', 'string', 'max:120'],
             'description' => ['nullable', 'string', 'max:1000'],
-            'category_id' => ['nullable', 'integer', Rule::exists('categories', 'id')->where('family_id', $familyId)],
+            'list_id' => ['nullable', 'integer', Rule::exists('lists', 'id')->where('family_id', $familyId)->whereNull('source_id')],
             'profile_ids' => ['array'],
             'profile_ids.*' => ['integer', Rule::exists('profiles', 'id')->where('family_id', $familyId)],
             'cover' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:'.(config('kidstv.max_cover_mb') * 1024)],

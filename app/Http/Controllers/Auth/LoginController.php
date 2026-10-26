@@ -129,6 +129,10 @@ class LoginController extends Controller
         $request->session()->forget('login_email');
         $user = User::where('email', $email)->first();
 
+        if ($user?->isBlocked()) {
+            return redirect()->route('login')->withErrors(['email' => __('Esta cuenta está bloqueada. Si crees que es un error, escribe al soporte de KidsTV.')]);
+        }
+
         if ($user) {
             $this->sessions->start($request, $user);
 

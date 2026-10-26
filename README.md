@@ -23,13 +23,20 @@ Aplicación web (Laravel 13) en la que una persona adulta se registra solo con s
 - Acceso sin contraseña: código de 6 cifras o enlace de un solo uso por correo; la sesión se mantiene en ese navegador (60 días, renovable) y se puede revocar desde *Cuenta*.
 - Asistente de primeros pasos: perfil infantil → primer contenido → probar en el navegador o conectar la tele.
 - Perfiles infantiles con apodo y avatar predefinido (sin datos personales del menor).
-- Biblioteca: **buscador de YouTube** con miniatura, duración, canal y visualizaciones, vista previa y «Añadir» en un clic (búsqueda segura estricta, solo vídeos insertables); o pegar el enlace (comprobación de inserción vía oEmbed); subir MP4 o MP3/M4A por fragmentos con progreso, categorías, orden, portada, asignación por perfil, ocultar temporalmente, estados *Listo / Procesando / No disponible / Error*.
+- Biblioteca: **buscador de YouTube** con miniatura, duración, canal y visualizaciones, vista previa y «Añadir» en un clic (búsqueda segura estricta, solo vídeos insertables); con idioma preferido de los resultados (español, inglés, euskera, catalán y otros); o pegar el enlace (comprobación de inserción vía oEmbed); subir MP4 o MP3/M4A por fragmentos con progreso, listas de vídeos, orden, portada, asignación por perfil, ocultar temporalmente, estados *Listo / Procesando / No disponible / Error*.
+- **Listas públicas**: listas preparadas por los administradores que cualquier familia añade a su videoteca tal cual (eligiendo qué perfiles las ven) y que se mantienen al día solas.
 - Televisores: vincular por código o QR, renombrar, desvincular. Botón «Probar modo TV» para usar el propio navegador como tele.
 - Cuenta: PIN parental, cambio de correo, sesiones abiertas, exportación en JSON y eliminación de la cuenta (con revalidación por correo).
 
+**Panel de administración** (`/admin`, solo cuentas nombradas con `kidstv:admin`):
+- Resumen de uso: minutos vistos (hoy, 7 y 30 días, gráfico diario), cuentas nuevas, familias activas, televisores, biblioteca y espacio, vídeos de listas públicas más vistos.
+- Usuarios: búsqueda y orden por actividad, uso o espacio; ficha con uso, perfiles, teles y listas; bloquear/desbloquear (sin panel y con las teles sin servicio), dar o quitar permisos de administrador y eliminar la cuenta.
+- Listas públicas: crear, publicar una lista existente, editar y dejar de publicar; los vídeos se gestionan desde la biblioteca.
+
 **App de TV** (la misma en `/tv/` y en el paquete webOS):
 - Vinculación con código temporal + QR, sin escribir contraseñas en la tele.
-- Selección de perfil → catálogo con una fila por categoría (carrusel horizontal, como en las plataformas de vídeo) → reproductor.
+- Selección de perfil → catálogo con una fila por lista (carrusel horizontal, como en las plataformas de vídeo; la duración en cada miniatura) → reproductor.
+- Informa del tiempo reproducido (por tele y contenido, sin perfil infantil) para las estadísticas de uso.
 - Navegación completa con flechas, OK y Atrás (también puntero/ratón opcional), foco visible y restaurado al volver del reproductor.
 - Vídeo y audio propios a pantalla completa con pausa, avance/retroceso de 10 s; YouTube con el reproductor oficial (modo privacidad mejorada).
 - Al terminar vuelve al catálogo (reproducción automática solo si el adulto la activa).

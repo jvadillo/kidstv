@@ -206,17 +206,17 @@ class LibraryTest extends TestCase
         $this->get('/panel/contenidos/'.$a->id)->assertSee('Oculto');
     }
 
-    public function test_categories_and_profiles_are_managed(): void
+    public function test_lists_and_profiles_are_managed(): void
     {
         $user = $this->adult();
         $this->actingAsAdult($user);
 
         $this->post('/panel/perfiles', ['name' => 'Ane', 'avatar' => 'luna'])->assertRedirect();
         $this->post('/panel/perfiles', ['name' => '', 'avatar' => 'invalido'])->assertSessionHasErrors(['name', 'avatar']);
-        $this->post('/panel/categorias', ['name' => 'Canciones'])->assertSessionHas('status');
-        $this->post('/panel/categorias', ['name' => 'Canciones'])->assertSessionHasErrors('name');
+        $this->post('/panel/listas', ['name' => 'Canciones'])->assertSessionHas('status');
+        $this->post('/panel/listas', ['name' => 'Canciones'])->assertSessionHasErrors('name');
 
         $this->assertSame(['Ane'], $user->family->profiles()->pluck('name')->all());
-        $this->assertSame(['Canciones'], $user->family->categories()->pluck('name')->all());
+        $this->assertSame(['Canciones'], $user->family->lists()->pluck('name')->all());
     }
 }

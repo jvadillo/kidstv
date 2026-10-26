@@ -19,7 +19,7 @@ class FamilyIsolationTest extends TestCase
         $bobFamily = $bob->family;
 
         $profile = $this->profile($bobFamily, 'Hija de Bob');
-        $category = $bobFamily->categories()->create(['name' => 'Privada']);
+        $list = $bobFamily->lists()->create(['name' => 'Privada']);
         Storage::disk('local')->put('families/'.$bobFamily->id.'/media/b.mp4', 'secreto');
         $content = $bobFamily->contents()->create([
             'type' => 'video', 'title' => 'Vídeo privado de Bob', 'status' => 'ready', 'mime' => 'video/mp4',
@@ -42,8 +42,8 @@ class FamilyIsolationTest extends TestCase
         $this->post('/panel/contenidos/'.$content->id.'/visibilidad', ['action' => 'hide'])->assertNotFound();
         $this->delete('/panel/contenidos/'.$content->id)->assertNotFound();
 
-        $this->put('/panel/categorias/'.$category->id, ['name' => 'X'])->assertNotFound();
-        $this->delete('/panel/categorias/'.$category->id)->assertNotFound();
+        $this->put('/panel/listas/'.$list->id, ['name' => 'X'])->assertNotFound();
+        $this->delete('/panel/listas/'.$list->id)->assertNotFound();
 
         $this->put('/panel/televisores/'.$device->id, ['name' => 'X'])->assertNotFound();
         $this->delete('/panel/televisores/'.$device->id)->assertNotFound();
@@ -52,8 +52,8 @@ class FamilyIsolationTest extends TestCase
         // Tampoco puede asignar contenidos ni perfiles ajenos a los suyos.
         $own = $this->profile($alice->family, 'Hijo de Alice');
         $this->put('/panel/perfiles/'.$own->id.'/contenidos', ['content_ids' => [$content->id]])->assertSessionHasErrors('content_ids.0');
-        $this->post('/panel/contenidos/youtube', ['url' => 'aqz-KE-bpKQ', 'title' => 'x', 'profile_ids' => [$profile->id], 'category_id' => $category->id])
-            ->assertSessionHasErrors(['profile_ids.0', 'category_id']);
+        $this->post('/panel/contenidos/youtube', ['url' => 'aqz-KE-bpKQ', 'title' => 'x', 'profile_ids' => [$profile->id], 'list_id' => $list->id])
+            ->assertSessionHasErrors(['profile_ids.0', 'list_id']);
 
         $this->get('/panel/contenidos')->assertDontSee('Vídeo privado de Bob');
         $this->get('/panel')->assertDontSee('Tele de Bob');

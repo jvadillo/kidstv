@@ -122,7 +122,7 @@ ul, ol { padding-left: 1.25rem; }
 
 .tabbar {
     position: fixed; bottom: 0; left: 0; right: 0; z-index: 20;
-    display: grid; grid-template-columns: repeat(5, 1fr);
+    display: grid; grid-template-columns: repeat(var(--tabs, 5), 1fr);
     background: var(--surface);
     border-top: 1px solid var(--line);
     padding: .25rem .25rem calc(.25rem + env(safe-area-inset-bottom));
@@ -365,7 +365,7 @@ input[type=file] { font: inherit; padding: .5rem 0; max-width: 100%; }
 
 .upload-progress { display: flex; flex-direction: column; gap: .4rem; }
 
-.category-item, .settings-row { display: flex; align-items: center; gap: .75rem; flex-wrap: wrap; justify-content: space-between; }
+.list-entry, .settings-row { display: flex; align-items: center; gap: .75rem; flex-wrap: wrap; justify-content: space-between; }
 .settings-row > div { display: flex; flex-direction: column; min-width: 0; flex: 1; }
 .row-actions { display: flex; gap: .35rem; align-items: center; }
 
@@ -381,6 +381,66 @@ input[type=file] { font: inherit; padding: .5rem 0; max-width: 100%; }
 @media (min-width: 760px) { .pair-layout { grid-template-columns: 1fr 1fr; align-items: start; } }
 .howto { padding-left: 2.2rem; }
 .howto li { margin-bottom: .6rem; }
+
+/* Listas */
+.list-item { display: flex; flex-direction: column; gap: .75rem; }
+.list-linked-name { display: flex; align-items: center; gap: .5rem; flex-wrap: wrap; }
+.list-profiles { display: flex; flex-direction: column; gap: .5rem; border-top: 1px solid var(--line); padding-top: .75rem; }
+.list-profiles .label { font-weight: 700; }
+.badge-public { background: var(--info-soft); color: var(--primary); }
+.public-lists-link { margin: 1rem 0; }
+.public-lists-link > .icon { width: 34px; height: 34px; padding: 6px; border-radius: 10px; box-sizing: content-box; background: var(--info-soft); color: var(--primary); flex: none; }
+.public-list { display: grid; gap: 1rem; }
+.public-list-thumbs { display: grid; grid-template-columns: repeat(4, 1fr); gap: .35rem; align-items: center; text-decoration: none; min-width: 0; }
+.public-list-thumbs .thumb { width: 100%; }
+.public-list-body h2 { margin-bottom: .25rem; }
+@media (min-width: 760px) { .public-list { grid-template-columns: 320px 1fr; align-items: center; } }
+
+/* Administración */
+.stat-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: .75rem; margin-bottom: 1rem; }
+@media (min-width: 760px) { .stat-grid { grid-template-columns: repeat(4, 1fr); } }
+.stat { display: flex; flex-direction: column; gap: .2rem; padding: 1rem; background: var(--surface); border-radius: var(--radius); box-shadow: var(--shadow); min-width: 0; }
+.stat-label { font-size: .85rem; font-weight: 700; color: var(--ink-2); }
+.stat-value { font-size: 1.6rem; line-height: 1.15; font-variant-numeric: tabular-nums; }
+.stat-value-sm { font-size: 1.2rem; }
+.stat-sub { font-size: .8rem; color: var(--ink-2); }
+.admin-columns { display: grid; gap: 1rem; margin: 1rem 0; }
+.admin-columns > * { min-width: 0; }
+@media (min-width: 760px) { .admin-columns { grid-template-columns: 1fr 1fr; align-items: start; } }
+.admin-columns h3 { margin-top: 1rem; }
+.admin-user-title { overflow-wrap: anywhere; }
+.admin-list-form { display: flex; flex-wrap: wrap; gap: .5rem; align-items: flex-end; }
+.admin-list-form .field:first-child { flex: 1 1 200px; }
+.admin-list-form .grow { flex: 2 1 260px; }
+.pager-info { align-self: center; }
+
+.table-wrap { overflow-x: auto; background: var(--surface); border-radius: var(--radius); box-shadow: var(--shadow); }
+.table { width: 100%; border-collapse: collapse; font-size: .9rem; }
+.table th, .table td { padding: .6rem .75rem; text-align: left; border-bottom: 1px solid var(--line); vertical-align: top; }
+.table th { font-size: .78rem; text-transform: uppercase; letter-spacing: .03em; color: var(--ink-2); white-space: nowrap; }
+.table tr:last-child td { border-bottom: 0; }
+.table .num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.table .badge { margin-top: .2rem; }
+
+/* Gráfico de minutos por día: una serie, barras finas con 2px de separación. */
+.chart { margin: 0; }
+.chart-head { display: flex; justify-content: space-between; align-items: baseline; gap: .5rem; flex-wrap: wrap; margin-bottom: .75rem; }
+.chart-plot { position: relative; height: 180px; margin-left: 3.6rem; }
+.chart-gridline { position: absolute; left: 0; right: 0; border-top: 1px dashed var(--line); }
+.chart-gridline span { position: absolute; right: 100%; transform: translateY(-50%); padding-right: .4rem; font-size: .72rem; color: var(--ink-2); white-space: nowrap; }
+.chart-bars { position: absolute; inset: 0; display: flex; align-items: flex-end; gap: 2px; border-bottom: 1px solid var(--line); }
+.chart-col { position: relative; flex: 1; height: 100%; display: flex; align-items: flex-end; }
+.chart-bar { display: block; width: 100%; background: var(--primary); border-radius: 4px 4px 0 0; min-height: 0; }
+.chart-col:hover .chart-bar { filter: brightness(1.25); }
+.chart-col::after {
+    content: attr(data-tip); position: absolute; bottom: calc(100% + 6px); left: 50%; transform: translateX(-50%);
+    background: var(--ink); color: var(--bg); font-size: .75rem; font-weight: 700; padding: .25rem .5rem; border-radius: 6px;
+    white-space: nowrap; pointer-events: none; opacity: 0; transition: opacity .1s ease; z-index: 2;
+}
+.chart-col:first-child::after { left: 0; transform: none; }
+.chart-col:last-child::after { left: auto; right: 0; transform: none; }
+.chart-col:hover::after { opacity: 1; }
+.chart-axis { display: flex; justify-content: space-between; margin: .35rem 0 0 3.6rem; }
 
 /* Asistente */
 .wizard { max-width: 640px; margin: 0 auto; }
@@ -409,7 +469,7 @@ input[type=search]:focus { border-color: var(--primary); outline: none; box-shad
 
 .yt-add-settings { display: flex; flex-wrap: wrap; gap: 1rem 1.5rem; align-items: flex-end; margin: 0 0 1rem; border: 0; }
 .yt-add-settings .label { font-weight: 700; }
-.yt-add-category select { width: auto; min-width: 200px; }
+.yt-add-list select { width: auto; min-width: 200px; }
 
 .yt-results { list-style: none; padding: 0; margin: 0; display: grid; gap: .75rem; }
 .yt-result { display: grid; grid-template-columns: 136px 1fr; grid-template-rows: auto auto; gap: .5rem .75rem; background: var(--surface); border-radius: var(--radius); box-shadow: var(--shadow); padding: .6rem; min-width: 0; }

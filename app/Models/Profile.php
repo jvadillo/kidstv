@@ -19,4 +19,10 @@ class Profile extends Model
     {
         return $this->belongsToMany(Content::class);
     }
+
+    /** Listas públicas enlazadas que ve este perfil. */
+    public function lists(): BelongsToMany
+    {
+        return $this->belongsToMany(VideoList::class, 'list_profile', 'profile_id', 'list_id');
+    }
 }

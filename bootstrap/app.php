@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Middleware\AuthenticateDevice;
+use App\Http\Middleware\EnsureAdmin;
 use App\Http\Middleware\RequireRecentConfirmation;
 use App\Http\Middleware\ResumeAdultSession;
 use App\Http\Middleware\SecurityHeaders;
@@ -32,6 +33,7 @@ return Application::configure(basePath: dirname(__DIR__))
         // cookie persistente pueda restaurar la sesión del adulto.
         $middleware->prependToPriorityList(AuthenticatesRequests::class, ResumeAdultSession::class);
         $middleware->alias([
+            'admin' => EnsureAdmin::class,
             'confirmed' => RequireRecentConfirmation::class,
             'device' => AuthenticateDevice::class,
         ]);

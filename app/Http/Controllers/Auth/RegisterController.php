@@ -41,8 +41,8 @@ class RegisterController extends Controller
             }
 
             $family = Family::create(['name' => null]);
-            foreach (config('kidstv.default_categories') as $i => $name) {
-                $family->categories()->create(['name' => $name, 'position' => $i]);
+            foreach (config('kidstv.default_lists') as $i => $name) {
+                $family->lists()->create(['name' => $name, 'position' => $i]);
             }
 
             return User::create([

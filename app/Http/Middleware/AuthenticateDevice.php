@@ -27,6 +27,14 @@ class AuthenticateDevice
             ], 401);
         }
 
+        // Cuenta bloqueada por un administrador: la tele sigue vinculada, pero sin servicio.
+        if ($device->family->isBlocked()) {
+            return response()->json([
+                'error' => 'account_blocked',
+                'message' => __('Esta videoteca está suspendida. El adulto responsable puede escribir al soporte de KidsTV.'),
+            ], 403);
+        }
+
         if (! $device->last_seen_at || $device->last_seen_at->lt(now()->subMinute())) {
             $device->forceFill(['last_seen_at' => now()])->saveQuietly();
         }

@@ -10,6 +10,9 @@
         ['devices.index', 'devices.*', __('Teles'), 'tv'],
         ['account.show', 'account.*', __('Cuenta'), 'user'],
     ];
+    if (auth()->user()?->isAdmin()) {
+        $nav[] = ['admin.dashboard', 'admin.*', __('Admin'), 'shield'];
+    }
 @endphp
 
 @section('body')
@@ -41,7 +44,7 @@
         <a href="{{ route('help.tv') }}">{{ __('Ayuda con la tele') }}</a>
     </footer>
 
-    <nav class="tabbar" aria-label="{{ __('Secciones') }}">
+    <nav class="tabbar" aria-label="{{ __('Secciones') }}" style="--tabs: {{ count($nav) }}">
         @foreach ($nav as [$route, $pattern, $label, $icon])
             <a href="{{ route($route) }}" @class(['active' => request()->routeIs($pattern)])>
                 @include('partials.icon', ['name' => $icon])

@@ -1,14 +1,17 @@
 <?php
 
+use App\Http\Controllers\Admin\AdminDashboardController;
+use App\Http\Controllers\Admin\AdminListController;
+use App\Http\Controllers\Admin\AdminUserController;
 use App\Http\Controllers\Auth\ConfirmController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\Panel\AccountController;
-use App\Http\Controllers\Panel\CategoryController;
 use App\Http\Controllers\Panel\ContentController;
 use App\Http\Controllers\Panel\DashboardController;
 use App\Http\Controllers\Panel\DeviceController;
+use App\Http\Controllers\Panel\ListController;
 use App\Http\Controllers\Panel\ProfileController;
 use App\Http\Controllers\Panel\UploadController;
 use Illuminate\Support\Facades\Route;
@@ -40,6 +43,22 @@ Route::middleware('auth')->group(function () {
     // Destino del QR que muestra el televisor.
     Route::get('/tv/vincular', fn () => redirect()->route('devices.pair', request()->only('code')))->name('tv.link');
 
+    // Administración de la plataforma (solo cuentas con is_admin).
+    Route::prefix('admin')->middleware('admin')->name('admin.')->group(function () {
+        Route::get('/', AdminDashboardController::class)->name('dashboard');
+        Route::get('/usuarios', [AdminUserController::class, 'index'])->name('users.index');
+        Route::get('/usuarios/{user}', [AdminUserController::class, 'show'])->name('users.show');
+        Route::post('/usuarios/{user}/bloqueo', [AdminUserController::class, 'block'])->name('users.block');
+        Route::delete('/usuarios/{user}/bloqueo', [AdminUserController::class, 'unblock'])->name('users.unblock');
+        Route::put('/usuarios/{user}/administrador', [AdminUserController::class, 'admin'])->name('users.admin');
+        Route::delete('/usuarios/{user}', [AdminUserController::class, 'destroy'])->name('users.destroy');
+        Route::get('/listas', [AdminListController::class, 'index'])->name('lists.index');
+        Route::post('/listas', [AdminListController::class, 'store'])->name('lists.store');
+        Route::put('/listas/{list}', [AdminListController::class, 'update'])->name('lists.update');
+        Route::post('/listas/{list}/publicar', [AdminListController::class, 'publish'])->name('lists.publish');
+        Route::delete('/listas/{list}/publicar', [AdminListController::class, 'unpublish'])->name('lists.unpublish');
+    });
+
     Route::prefix('panel')->group(function () {
         Route::get('/', DashboardController::class)->name('panel');
         Route::get('/bienvenida', [DashboardController::class, 'welcome'])->name('welcome');
@@ -52,11 +71,16 @@ Route::middleware('auth')->group(function () {
         Route::put('/perfiles/{profile}/contenidos', [ProfileController::class, 'assign'])->name('profiles.assign');
         Route::delete('/perfiles/{profile}', [ProfileController::class, 'destroy'])->name('profiles.destroy');
 
-        Route::get('/categorias', [CategoryController::class, 'index'])->name('categories.index');
-        Route::post('/categorias', [CategoryController::class, 'store'])->name('categories.store');
-        Route::put('/categorias/{category}', [CategoryController::class, 'update'])->name('categories.update');
-        Route::post('/categorias/{category}/mover', [CategoryController::class, 'move'])->name('categories.move');
-        Route::delete('/categorias/{category}', [CategoryController::class, 'destroy'])->name('categories.destroy');
+        Route::get('/listas', [ListController::class, 'index'])->name('lists.index');
+        Route::post('/listas', [ListController::class, 'store'])->name('lists.store');
+        Route::get('/listas/publicas', [ListController::class, 'explore'])->name('lists.public');
+        Route::get('/listas/publicas/{list}', [ListController::class, 'showPublic'])->name('lists.public.show');
+        Route::post('/listas/publicas/{list}', [ListController::class, 'subscribe'])->name('lists.public.subscribe');
+        Route::get('/listas/publicas/{list}/portada/{content}', [ListController::class, 'publicCover'])->name('lists.public.cover');
+        Route::put('/listas/{list}', [ListController::class, 'update'])->name('lists.update');
+        Route::put('/listas/{list}/perfiles', [ListController::class, 'profiles'])->name('lists.profiles');
+        Route::post('/listas/{list}/mover', [ListController::class, 'move'])->name('lists.move');
+        Route::delete('/listas/{list}', [ListController::class, 'destroy'])->name('lists.destroy');
 
         Route::get('/contenidos', [ContentController::class, 'index'])->name('contents.index');
         Route::get('/contenidos/nuevo/youtube', [ContentController::class, 'createYouTube'])->name('contents.youtube.create');
