@@ -25,8 +25,9 @@ Aplicación web (Laravel 13) en la que una persona adulta se registra solo con s
 - Perfiles infantiles con apodo y avatar predefinido (sin datos personales del menor).
 - Biblioteca: **buscador de YouTube** con miniatura, duración, canal y visualizaciones, vista previa y «Añadir» en un clic (búsqueda segura estricta, solo vídeos insertables); con idioma preferido de los resultados (español, inglés, euskera, catalán y otros); o pegar el enlace (comprobación de inserción vía oEmbed); subir MP4 o MP3/M4A por fragmentos con progreso, listas de vídeos, orden, portada, asignación por perfil, ocultar temporalmente, estados *Listo / Procesando / No disponible / Error*.
 - **Listas públicas**: listas preparadas por los administradores que cualquier familia añade a su videoteca tal cual (eligiendo qué perfiles las ven) y que se mantienen al día solas.
-- Televisores: vincular por código o QR, renombrar, desvincular. Botón «Probar modo TV» para usar el propio navegador como tele.
-- **Límite diario de tele** (*Cuenta → Preferencias*): se activa o desactiva y se elige el tiempo con un control deslizante (de 5 min a 5 h); se cuenta en cada tele, sin contar la Zona de adultos.
+- Televisores (desde *Cuenta*): vincular por código o QR, renombrar, desvincular. Botón «Probar modo TV» para usar el propio navegador como tele.
+- **Límite diario de tele** (*Cuenta → Preferencias*): se activa o desactiva y se elige el tiempo con un control deslizante (de 5 min a 5 h); cada niño tiene ese tiempo al día sumando todas las teles, sin contar la Zona de adultos.
+- **Actividad**: tiempo de pantalla por día, semana o mes (total, medias, gráfico y navegación a periodos anteriores), lo que más ve cada niño (por tiempo o por veces, hasta el top 10), cuándo lo ha visto y tiempo por listas; para un niño o para todos.
 - Cuenta: PIN parental, cambio de correo, sesiones abiertas, exportación en JSON y eliminación de la cuenta (con revalidación por correo).
 
 **Panel de administración** (`/admin`, solo cuentas nombradas con `kidstv:admin`):
@@ -37,12 +38,12 @@ Aplicación web (Laravel 13) en la que una persona adulta se registra solo con s
 **App de TV** (la misma en `/tv/` y en el paquete webOS):
 - Vinculación con código temporal + QR, sin escribir contraseñas en la tele.
 - Selección de perfil → catálogo con una fila por lista (carrusel horizontal, como en las plataformas de vídeo; la duración en cada miniatura) → reproductor.
-- Informa del tiempo reproducido (por tele y contenido, sin perfil infantil) para las estadísticas de uso.
+- Informa del tiempo reproducido y del perfil que lo ve, para el límite diario de cada niño y la pantalla *Actividad* (las estadísticas de administración solo usan totales).
 - Navegación completa con flechas, OK y Atrás (también puntero/ratón opcional), foco visible y restaurado al volver del reproductor.
 - Vídeo y audio propios a pantalla completa con pausa, avance/retroceso de 10 s; YouTube con el reproductor oficial (modo privacidad mejorada).
 - Barra de pausa, avance y progreso para YouTube: automática, siempre visible u oculta, configurable para toda la familia desde *Cuenta → Preferencias*.
 - Al terminar vuelve al catálogo (reproducción automática solo si el adulto la activa).
-- Con límite diario, avisa al niño cuando queda poco tiempo y, al agotarse, muestra una pantalla de descanso animada hasta el día siguiente (el servidor también rechaza reproducir); desde la Zona de adultos se puede seguir viendo.
+- Con límite diario, avisa al niño cuando queda poco tiempo y, al agotarse, muestra una pantalla de descanso animada hasta el día siguiente (el servidor también rechaza reproducir); otro niño con tiempo puede cambiar de perfil, y desde la Zona de adultos se puede seguir viendo.
 - Zona de adultos con PIN validado en el servidor, espera progresiva tras fallos y bloqueo por inactividad.
 - Pantallas para sin conexión, contenido retirado, error de reproducción y tele desvinculada.
 

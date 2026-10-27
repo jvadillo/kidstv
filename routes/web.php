@@ -8,6 +8,7 @@ use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\Panel\AccountController;
+use App\Http\Controllers\Panel\ActivityController;
 use App\Http\Controllers\Panel\ContentController;
 use App\Http\Controllers\Panel\DashboardController;
 use App\Http\Controllers\Panel\DeviceController;
@@ -102,6 +103,8 @@ Route::middleware('auth')->group(function () {
         Route::post('/subidas/{upload}/fragmento', [UploadController::class, 'chunk'])->name('uploads.chunk');
         Route::post('/subidas/{upload}/completar', [UploadController::class, 'complete'])->name('uploads.complete');
         Route::delete('/subidas/{upload}', [UploadController::class, 'cancel'])->name('uploads.cancel');
+
+        Route::get('/actividad', ActivityController::class)->name('activity');
 
         Route::get('/televisores', [DeviceController::class, 'index'])->name('devices.index');
         Route::get('/televisores/vincular', [DeviceController::class, 'pairForm'])->name('devices.pair');

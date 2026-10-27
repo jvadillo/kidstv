@@ -46,7 +46,7 @@
                     <input type="checkbox" name="daily_limit" value="1" class="daily-limit-toggle" @checked(old('daily_limit', $family->daily_limit_enabled))>
                     <span>
                         {{ __('Límite diario de tele') }}
-                        <span class="hint block">{{ __('Cuando quede poco tiempo, la tele avisa; al terminar, muestra una pantalla de descanso hasta el día siguiente. Se cuenta en cada tele por separado, y lo que veas desde la Zona de adultos no cuenta.') }}</span>
+                        <span class="hint block">{{ __('Cuando quede poco tiempo, la tele avisa; al terminar, muestra una pantalla de descanso hasta el día siguiente. Cada niño tiene este tiempo al día, sumando todas las teles; lo que veas desde la Zona de adultos no cuenta.') }}</span>
                     </span>
                 </label>
                 <div class="field daily-limit-slider">

@@ -169,7 +169,7 @@ class AccountTest extends TestCase
 
         foreach (['/panel', '/panel/bienvenida', '/panel/perfiles', '/panel/perfiles/nuevo', '/panel/listas/sin-lista', '/panel/listas/publicas', '/panel/contenidos',
             '/panel/contenidos/nuevo/youtube', '/panel/contenidos/nuevo/video', '/panel/contenidos/nuevo/audio',
-            '/panel/televisores', '/panel/televisores/vincular', '/panel/cuenta'] as $url) {
+            '/panel/televisores', '/panel/televisores/vincular', '/panel/cuenta', '/panel/actividad', '/panel/actividad?periodo=dia', '/panel/actividad?periodo=mes'] as $url) {
             $this->get($url)->assertOk();
         }
 

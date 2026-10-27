@@ -7,8 +7,9 @@
         ['panel', 'panel', __('Inicio'), 'home'],
         ['contents.index', ['contents.*', 'lists.*'], __('Biblioteca'), 'library'],
         ['profiles.index', 'profiles.*', __('Perfiles'), 'kids'],
-        ['devices.index', 'devices.*', __('Teles'), 'tv'],
-        ['account.show', 'account.*', __('Cuenta'), 'user'],
+        ['activity', 'activity', __('Actividad'), 'chart'],
+        // Las teles se gestionan desde Cuenta.
+        ['account.show', ['account.*', 'devices.*'], __('Cuenta'), 'user'],
     ];
     if (auth()->user()?->isAdmin()) {
         $nav[] = ['admin.dashboard', 'admin.*', __('Admin'), 'shield'];

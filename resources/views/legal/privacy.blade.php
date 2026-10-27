@@ -5,7 +5,7 @@
 @section('content')
     <article class="prose">
         <h1>{{ __('Política de privacidad') }}</h1>
-        <p class="muted small">{{ __('Versión 1.0 · Pendiente de revisión legal antes de abrir el servicio al público.') }}</p>
+        <p class="muted small">{{ __('Versión 1.1 (27 de octubre de 2026) · Pendiente de revisión legal antes de abrir el servicio al público.') }}</p>
 
         <h2>{{ __('Qué datos tratamos') }}</h2>
         <ul>
@@ -13,12 +13,13 @@
             <li><strong>{{ __('Perfiles infantiles:') }}</strong> {{ __('solo un apodo y un avatar predefinido. No pedimos nombres completos, fechas de nacimiento ni fotografías.') }}</li>
             <li><strong>{{ __('Contenidos:') }}</strong> {{ __('los archivos que subes, sus portadas y datos (título, lista, descripción) y los enlaces de YouTube que añades.') }}</li>
             <li><strong>{{ __('Televisores:') }}</strong> {{ __('nombre que les pones, tipo de dispositivo y fecha de última conexión.') }}</li>
-            <li><strong>{{ __('Uso del servicio:') }}</strong> {{ __('cada tele informa de cuánto tiempo se reproduce cada contenido (fecha, tele, contenido, minutos y si se vio desde la Zona de adultos), para conocer el uso del servicio, mejorar las listas públicas y aplicar el límite diario de tele si lo activas. Estos datos se conservan 12 meses.') }}</li>
+            <li><strong>{{ __('Actividad en la tele:') }}</strong> {{ __('cada tele informa de cada reproducción: qué contenido, qué perfil infantil lo estaba viendo, en qué tele, cuándo empezó, cuántos minutos se vieron y si fue desde la Zona de adultos. Estos datos se conservan 12 meses.') }}</li>
         </ul>
-        <p>{{ __('No registramos qué perfil infantil está viendo ni construimos perfiles de uso de los niños. No hay publicidad ni seguimiento comercial.') }}</p>
+        <p>{{ __('La actividad de cada perfil infantil solo la ve la persona adulta de la familia, en la pantalla «Actividad» del panel, y sirve para aplicar el límite diario de tele de cada niño. No la usamos para publicidad, recomendaciones ni perfiles comerciales, y no la compartimos con nadie. Para conocer el uso del servicio y mejorar las listas públicas, los administradores solo ven totales por familia, tele y contenido, nunca qué ve cada niño.') }}</p>
+        <p>{{ __('No hay publicidad ni seguimiento comercial. Si borras un perfil infantil, sus reproducciones dejan de estar asociadas a él.') }}</p>
 
         <h2>{{ __('Para qué los usamos') }}</h2>
-        <p>{{ __('Exclusivamente para prestar el servicio: identificarte por correo, guardar tu videoteca y mostrarla en los televisores que tú vinculas. La base legal es la ejecución del servicio que solicitas.') }}</p>
+        <p>{{ __('Exclusivamente para prestar el servicio: identificarte por correo, guardar tu videoteca, mostrarla en los televisores que tú vinculas, enseñarte la actividad de tus hijos y aplicar el límite diario si lo activas. La base legal es la ejecución del servicio que solicitas.') }}</p>
 
         <h2>{{ __('Dónde se guardan') }}</h2>
         <p>{{ __('En un servidor privado virtual (VPS) administrado por el responsable del servicio. No usamos servicios externos de identificación, bases de datos ni almacenamiento. El envío de los correos con códigos se realiza a través de un proveedor de envío de correo, que solo recibe tu dirección y el mensaje.') }}</p>

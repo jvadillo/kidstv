@@ -10,6 +10,12 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 #[Fillable(['name', 'avatar', 'position'])]
 class Profile extends Model
 {
+    protected static function booted(): void
+    {
+        // Sin clave foránea en plays: el tiempo visto se conserva, pero ya sin el niño.
+        static::deleting(fn (Profile $profile) => Play::where('profile_id', $profile->id)->update(['profile_id' => null]));
+    }
+
     public function family(): BelongsTo
     {
         return $this->belongsTo(Family::class);

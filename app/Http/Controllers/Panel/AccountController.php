@@ -150,7 +150,7 @@ class AccountController extends Controller
     public function export(Request $request)
     {
         $user = $request->user();
-        $family = $user->family->load(['profiles.contents:id', 'profiles.lists:id', 'lists.source', 'contents.profiles:id', 'devices', 'plays.device:id,name']);
+        $family = $user->family->load(['profiles.contents:id', 'profiles.lists:id', 'lists.source', 'contents.profiles:id', 'devices', 'plays.device:id,name', 'plays.profile:id,name']);
 
         $data = [
             'exported_at' => now()->toIso8601String(),
@@ -187,6 +187,7 @@ class AccountController extends Controller
             'usage' => $family->plays->map(fn ($p) => [
                 'started_at' => $p->created_at?->toIso8601String(),
                 'device' => $p->device?->name,
+                'profile' => $p->profile?->name,
                 'content_id' => $p->content_id,
                 'content_type' => $p->content_type,
                 'seconds' => $p->seconds,

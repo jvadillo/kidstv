@@ -278,7 +278,9 @@ p { font-size: 1.9rem; line-height: 1.35; margin: 0 0 1rem; }
 .limit-warning span { display: block; font-size: 1.9rem; font-weight: 700; color: #4a4380; margin-top: 0.3rem; }
 
 .screen-timeup h1 { margin-bottom: 1rem; }
-.screen-timeup p { max-width: 70rem; }
+.screen-timeup p { max-width: 70rem; margin-bottom: 2.5rem; }
+.profile-resting .profile-avatar { opacity: 0.55; }
+.profile-rest { margin-top: 0.6rem; padding: 0.3rem 1.2rem; border-radius: 1.4rem; background: rgba(255, 255, 255, 0.12); color: #d8d6f3; font-size: 1.6rem; font-weight: 700; }
 .timeup-art { position: relative; width: 44rem; height: 32rem; margin-bottom: 2.5rem; }
 .timeup-tv {
     position: absolute; left: 7rem; bottom: 0; width: 30rem; height: 27.5rem;

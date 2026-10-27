@@ -2,12 +2,12 @@
 
 namespace App\Services;
 
-use App\Models\Device;
 use App\Models\Play;
+use App\Models\Profile;
 
 /**
- * Límite diario de tele: cuenta lo reproducido hoy en cada televisor fuera de la Zona de
- * adultos. Se calcula con los mismos registros de uso, sin guardar qué perfil está viendo.
+ * Límite diario de tele: cada niño tiene los mismos minutos al día, sumando lo que ha
+ * visto en todas las teles de la familia. Lo visto desde la Zona de adultos no cuenta.
  */
 class ScreenTime
 {
@@ -16,19 +16,19 @@ class ScreenTime
     private const ROUNDING_SECONDS = 15;
 
     /**
-     * Estado del límite para un televisor, o null si la familia no tiene límite.
+     * Estado del límite para un perfil, o null si la familia no tiene límite.
      *
      * @return array{limit_seconds: int, remaining_seconds: int, warn_seconds: int}|null
      */
-    public function status(Device $device): ?array
+    public function status(Profile $profile): ?array
     {
-        $minutes = $device->family->dailyLimit();
+        $minutes = $profile->family->dailyLimit();
         if ($minutes === null) {
             return null;
         }
 
         $limit = $minutes * 60;
-        $remaining = $limit - $this->usedToday($device);
+        $remaining = $limit - $this->usedToday($profile);
 
         return [
             'limit_seconds' => $limit,
@@ -38,16 +38,17 @@ class ScreenTime
         ];
     }
 
-    public function isExhausted(Device $device): bool
+    public function isExhausted(Profile $profile): bool
     {
-        $status = $this->status($device);
+        $status = $this->status($profile);
 
         return $status !== null && $status['remaining_seconds'] === 0;
     }
 
-    public function usedToday(Device $device): int
+    public function usedToday(Profile $profile): int
     {
-        return (int) Play::where('device_id', $device->id)
+        return (int) Play::where('family_id', $profile->family_id)
+            ->where('profile_id', $profile->id)
             ->where('adult', false)
             ->where('created_at', '>=', today())
             ->sum('seconds');

@@ -207,13 +207,14 @@
 
     /* ---------- Tiempo de visionado (estadísticas de uso) ---------- */
 
-    // Solo cuenta mientras el vídeo avanza de verdad; se envía cada 30 s y al terminar.
-    // Sin el perfil activo: no se registra qué ve cada niño.
+    // Solo cuenta mientras el vídeo avanza de verdad; se envía cada 30 s y al terminar,
+    // con el perfil que lo ve (límite diario de cada niño y «Actividad» en el panel).
     function watchStart(item) {
         watchStop();
         S.watch = {
             key: Math.random().toString(36).slice(2, 12) + new Date().getTime().toString(36),
             content: item.id,
+            profile: S.adultCatalog || !S.profile ? null : S.profile.id,
             seconds: 0,
             since: 0,
             sent: 0
@@ -245,7 +246,7 @@
         var seconds = Math.floor(w.seconds);
         if (seconds < 5 || seconds - w.sent < 5) return;
         w.sent = seconds;
-        api('POST', '/plays', { key: w.key, content_id: w.content, seconds: seconds }, function (status, data) {
+        api('POST', '/plays', { key: w.key, content_id: w.content, profile_id: w.profile, seconds: seconds }, function (status, data) {
             // Lo visto desde que salió el aviso aún no lo sabe el servidor.
             if (status === 200 && data && !S.adultCatalog) limitSync(data.screen_time, S.watch === w ? w.seconds - seconds : 0);
         }, { silent: true });
@@ -261,12 +262,21 @@
 
     /* ---------- Límite diario de tele ---------- */
 
-    // El servidor dice cuánto queda en esta tele (sin contar la Zona de adultos);
-    // entre aviso y aviso, la tele lo descuenta mientras el vídeo avanza.
+    // El servidor dice cuánto le queda hoy al niño (sumando todas las teles, sin la Zona
+    // de adultos); entre aviso y aviso, la tele lo descuenta mientras el vídeo avanza.
     function limitSync(status, unsent) {
         if (status === undefined) return;
         S.limit = status ? { remaining: status.remaining_seconds - (unsent || 0), warn: status.warn_seconds } : null;
         if (!S.limit || S.limit.remaining > S.limit.warn) S.limitWarned = false;
+    }
+
+    /** Estado del límite de un perfil según la última sesión cargada. */
+    function profileLimit(id) {
+        var profiles = (S.session && S.session.profiles) || [];
+        for (var i = 0; i < profiles.length; i++) {
+            if (profiles[i].id === id) return profiles[i].screen_time;
+        }
+        return undefined;
     }
 
     function timeIsUp() {
@@ -309,7 +319,8 @@
                 '<div class="screen screen-center screen-timeup">' + TIMEUP_ART +
                     '<h1>' + esc(t('limit.title')) + '</h1>' +
                     '<p class="muted">' + esc(t('limit.hint')) + '</p>' +
-                    '<div class="adult-corner"><div class="btn btn-quiet focusable autofocus" data-action="adult" data-key="adult">' + ICON_LOCK + '<span>' + esc(t('adult.button')) + '</span></div></div>' +
+                    '<div class="btn focusable autofocus" data-action="profiles" data-key="profiles">' + esc(t('limit.change')) + '</div>' +
+                    '<div class="adult-corner"><div class="btn btn-quiet focusable" data-action="adult" data-key="adult">' + ICON_LOCK + '<span>' + esc(t('adult.button')) + '</span></div></div>' +
                 '</div>'
             );
             Nav.restore();
@@ -320,7 +331,11 @@
             }, 60000);
         },
         leave: function () { clearTimer('poll'); },
-        action: function (action) { if (action === 'adult') openAdult(); },
+        action: function (action) {
+            if (action === 'adult') openAdult();
+            // Otro niño puede tener aún tiempo: se recarga lo que le queda a cada uno.
+            else if (action === 'profiles') loadSession(function () { show('profiles'); });
+        },
         key: function (name) {
             if (name === 'back') { confirmExit(); return true; }
             return false;
@@ -452,8 +467,11 @@
 
     screens.profiles = {
         enter: function () {
+            var self = this;
             this.render();
             this.schedule();
+            // Al volver, se actualiza enseguida el tiempo que le queda a cada niño.
+            loadSession(function (changed) { if (changed && S.screen === 'profiles' && !dialog) self.render(); }, true);
         },
         render: function () {
             var profiles = (S.session && S.session.profiles) || [];
@@ -467,9 +485,11 @@
                 html += '<div class="profiles-wrap scroll-y"><div class="profiles-grid">';
                 for (var i = 0; i < profiles.length; i++) {
                     var p = profiles[i];
-                    html += '<div class="profile-card focusable" data-action="profile" data-arg="' + p.id + '" data-key="p-' + p.id + '">' +
+                    var resting = p.screen_time && p.screen_time.remaining_seconds <= 0;
+                    html += '<div class="profile-card focusable' + (resting ? ' profile-resting' : '') + '" data-action="profile" data-arg="' + p.id + '" data-key="p-' + p.id + '">' +
                         '<img class="profile-avatar" src="' + esc(K.avatar(p.avatar)) + '" alt="">' +
-                        '<span class="profile-name">' + esc(p.name) + '</span></div>';
+                        '<span class="profile-name">' + esc(p.name) + '</span>' +
+                        (resting ? '<span class="profile-rest">' + esc(t('limit.badge')) + '</span>' : '') + '</div>';
                 }
                 html += '</div></div>';
             }
@@ -502,7 +522,7 @@
             if (status !== 200) return;
             var before = JSON.stringify(S.session);
             S.session = data;
-            limitSync(data.screen_time);
+            if (S.profile && !S.adultCatalog) limitSync(profileLimit(S.profile.id));
             callback(before !== JSON.stringify(data));
         }, { silent: !!silent });
     }
@@ -515,6 +535,9 @@
                 // Elegir un perfil infantil cierra la zona de adultos.
                 lockAdult(true);
                 S.profile = profiles[i];
+                S.limit = null;
+                S.limitWarned = false;
+                limitSync(profiles[i].screen_time);
                 K.store.set('profile', String(id));
                 show('catalog', { reload: true });
                 return;

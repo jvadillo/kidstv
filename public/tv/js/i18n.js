@@ -37,6 +37,8 @@ window.KIDSTV_I18N = {
         'limit.warnHint': 'Cuando se acabe, la tele se irá a descansar.',
         'limit.title': '¡Se acabó la tele por hoy!',
         'limit.hint': 'La tele se ha ido a descansar. Mañana habrá más. ¿Jugamos a otra cosa?',
+        'limit.change': 'Cambiar de perfil',
+        'limit.badge': 'Mañana más',
 
         'pin.title': 'Zona de adultos',
         'pin.prompt': 'Escribe el PIN parental',

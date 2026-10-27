@@ -7,10 +7,11 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
- * Una reproducción en un televisor y los segundos que se han visto (estadísticas de uso).
- * No guarda el perfil infantil activo: la política de privacidad lo descarta.
+ * Una reproducción en un televisor, el perfil infantil que la veía y los segundos vistos.
+ * Sirve para el límite diario de cada niño, la pantalla «Actividad» de su familia y las
+ * estadísticas de uso (estas, siempre agregadas y sin perfil).
  */
-#[Fillable(['family_id', 'device_id', 'content_id', 'content_type', 'client_key', 'seconds', 'adult'])]
+#[Fillable(['family_id', 'device_id', 'profile_id', 'content_id', 'content_type', 'client_key', 'seconds', 'adult'])]
 class Play extends Model
 {
     protected function casts(): array
@@ -29,6 +30,11 @@ class Play extends Model
     public function device(): BelongsTo
     {
         return $this->belongsTo(Device::class);
+    }
+
+    public function profile(): BelongsTo
+    {
+        return $this->belongsTo(Profile::class);
     }
 
     public function content(): BelongsTo
