@@ -8,22 +8,24 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\Hash;
 
-#[Fillable(['name', 'autoplay_next', 'youtube_controls', 'daily_limit_enabled', 'daily_limit_minutes'])]
+#[Fillable(['name', 'autoplay_next', 'youtube_controls', 'daily_limit_mode', 'daily_limit_minutes'])]
 #[Hidden(['pin_hash'])]
 class Family extends Model
 {
     public const YOUTUBE_CONTROLS = ['auto', 'always', 'hidden'];
 
+    /** Límite diario: ninguno, un tiempo compartido entre todos los niños o uno para cada niño. */
+    public const DAILY_LIMIT_MODES = ['off', 'shared', 'per_profile'];
+
     /** Valores del control deslizante del límite diario, en minutos. */
     public const DAILY_LIMIT_OPTIONS = [5, 10, 15, 20, 30, 40, 50, 60, 75, 90, 105, 120, 150, 300];
 
-    protected $attributes = ['youtube_controls' => 'auto', 'daily_limit_enabled' => false, 'daily_limit_minutes' => 60];
+    protected $attributes = ['youtube_controls' => 'auto', 'daily_limit_mode' => 'off', 'daily_limit_minutes' => 60];
 
     protected function casts(): array
     {
         return [
             'autoplay_next' => 'boolean',
-            'daily_limit_enabled' => 'boolean',
             'daily_limit_minutes' => 'integer',
         ];
     }
@@ -101,10 +103,17 @@ class Family extends Model
         return $this->pin_hash !== null && Hash::check($pin, $this->pin_hash);
     }
 
-    /** Minutos de tele al día en cada televisor, o null si no hay límite. */
-    public function dailyLimit(): ?int
+    /**
+     * Minutos de tele al día de un niño, sumando todas las teles, o null si no hay límite.
+     * Con tiempo compartido son los minutos de todos los niños juntos.
+     */
+    public function dailyLimitFor(Profile $profile): ?int
     {
-        return $this->daily_limit_enabled ? $this->daily_limit_minutes : null;
+        return match ($this->daily_limit_mode) {
+            'shared' => $this->daily_limit_minutes,
+            'per_profile' => $profile->daily_limit_minutes,
+            default => null,
+        };
     }
 
     /** Bytes ocupados por los archivos propios de la familia. */

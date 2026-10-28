@@ -7,9 +7,17 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
-#[Fillable(['name', 'avatar', 'position'])]
+#[Fillable(['name', 'avatar', 'position', 'daily_limit_minutes'])]
 class Profile extends Model
 {
+    // Solo se aplica con un límite diario para cada niño (Family::$daily_limit_mode).
+    protected $attributes = ['daily_limit_minutes' => 60];
+
+    protected function casts(): array
+    {
+        return ['daily_limit_minutes' => 'integer'];
+    }
+
     protected static function booted(): void
     {
         // Sin clave foránea en plays: el tiempo visto se conserva, pero ya sin el niño.

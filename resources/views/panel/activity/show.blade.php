@@ -14,7 +14,7 @@
 <div class="activity-page">
     <header class="activity-head">
         <div class="activity-title">
-            <h1>{{ __('Actividad') }}</h1>
+            <h1>{{ __('Actividad') }} @include('panel.activity.watching')</h1>
             <p class="muted">{{ $profile ? __('Qué y cuánto ve :name en la tele', ['name' => $profile->name]) : __('Qué y cuánto ven en la tele') }}</p>
         </div>
 
@@ -178,6 +178,7 @@
             <p>{{ __('Mientras un vídeo o un audio avanza de verdad, la tele envía cada 30 segundos cuánto lleva visto y qué perfil lo está viendo. Las pausas, la carga y los menús no cuentan. Si se manipulara la tele, nunca se cuenta más tiempo del que ha pasado.') }}</p>
             <p>{{ __('Cada reproducción cuenta en el día y la hora en que empezó, aunque termine más tarde. Las semanas van de lunes a domingo y los días, de medianoche a medianoche.') }}</p>
             <p>{{ __('La media diaria divide el tiempo entre los días del periodo que ya han empezado (si es la semana o el mes en curso, solo hasta hoy). En el mes, cada barra es la media al día de esa semana.') }}</p>
+            <p>{{ __('«Viendo ahora» aparece mientras un vídeo avanza en alguna tele: desaparece poco después de pausarlo o terminarlo.') }}</p>
             <p>{{ __('Una sesión son los vídeos seguidos en la misma tele y del mismo niño: si pasan más de :n minutos entre uno y otro, empieza otra.', ['n' => ActivityReport::SESSION_GAP_MINUTES]) }}</p>
             <p>{{ __('No cuenta lo que se ve desde la Zona de adultos. Lo visto antes del 27 de octubre de 2026, o en teles con la app de LG anterior a la 1.4.0, no tiene perfil: aparece en «Todos», pero no en cada niño.') }}</p>
             <p>{{ __('Los datos se guardan 12 meses y solo los ves tú. Puedes descargarlos desde Cuenta → Exportar mis datos.') }}</p>

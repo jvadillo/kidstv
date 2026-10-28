@@ -33,6 +33,7 @@ class ActivityController extends Controller
             'report' => $report,
             'profiles' => $profiles,
             'profile' => $profile,
+            'watching' => ActivityReport::watchingNow($family, $profile),
             // Enlaces que conservan el resto de filtros.
             'query' => array_filter([
                 'perfil' => $profile?->id,

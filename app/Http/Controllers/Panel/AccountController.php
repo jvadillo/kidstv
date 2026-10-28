@@ -37,9 +37,12 @@ class AccountController extends Controller
             'family_name' => ['nullable', 'string', 'max:60'],
             'autoplay_next' => ['boolean'],
             'youtube_controls' => ['sometimes', 'required', Rule::in(Family::YOUTUBE_CONTROLS)],
-            'daily_limit' => ['sometimes', 'boolean'],
-            // Posición del control deslizante dentro de Family::DAILY_LIMIT_OPTIONS.
+            'daily_limit_mode' => ['sometimes', 'required', Rule::in(Family::DAILY_LIMIT_MODES)],
+            // Posiciones de los controles deslizantes dentro de Family::DAILY_LIMIT_OPTIONS:
+            // el del tiempo compartido y el de cada niño, por id de perfil.
             'daily_limit_step' => ['sometimes', 'integer', 'between:0,'.(count(Family::DAILY_LIMIT_OPTIONS) - 1)],
+            'profile_limit_steps' => ['sometimes', 'array'],
+            'profile_limit_steps.*' => ['integer', 'between:0,'.(count(Family::DAILY_LIMIT_OPTIONS) - 1)],
         ]);
 
         $family = $request->user()->family;
@@ -48,9 +51,14 @@ class AccountController extends Controller
             'name' => $data['family_name'] ?? null,
             'autoplay_next' => $request->boolean('autoplay_next'),
             'youtube_controls' => $data['youtube_controls'] ?? $family->youtube_controls,
-            'daily_limit_enabled' => $request->has('daily_limit') ? $request->boolean('daily_limit') : $family->daily_limit_enabled,
+            'daily_limit_mode' => $data['daily_limit_mode'] ?? $family->daily_limit_mode,
             'daily_limit_minutes' => isset($data['daily_limit_step']) ? Family::DAILY_LIMIT_OPTIONS[$data['daily_limit_step']] : $family->daily_limit_minutes,
         ]);
+        foreach ($family->profiles as $profile) {
+            if (isset($data['profile_limit_steps'][$profile->id])) {
+                $profile->update(['daily_limit_minutes' => Family::DAILY_LIMIT_OPTIONS[$data['profile_limit_steps'][$profile->id]]]);
+            }
+        }
 
         return back()->with('status', __('Preferencias guardadas.'));
     }
@@ -163,10 +171,12 @@ class AccountController extends Controller
             'family' => [
                 'name' => $family->name, 'autoplay_next' => $family->autoplay_next,
                 'youtube_controls' => $family->youtube_controls, 'pin_configured' => $family->hasPin(),
-                'daily_limit_minutes' => $family->dailyLimit(),
+                'daily_limit_mode' => $family->daily_limit_mode,
+                'daily_limit_minutes' => $family->daily_limit_mode === 'shared' ? $family->daily_limit_minutes : null,
             ],
             'profiles' => $family->profiles->map(fn ($p) => [
                 'id' => $p->id, 'name' => $p->name, 'avatar' => $p->avatar,
+                'daily_limit_minutes' => $family->daily_limit_mode === 'per_profile' ? $p->daily_limit_minutes : null,
                 'content_ids' => $p->contents->pluck('id'),
                 'public_list_ids' => $p->lists->pluck('id'),
             ]),

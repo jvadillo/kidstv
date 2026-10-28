@@ -244,10 +244,13 @@ input[type=file] { font: inherit; padding: .5rem 0; max-width: 100%; }
 .check { display: flex; gap: .65rem; align-items: flex-start; cursor: pointer; }
 .check input { width: 22px; height: 22px; margin-top: .1rem; flex: none; accent-color: var(--primary); }
 
-/* Límite diario: el control deslizante solo aparece con el límite activado. */
-.daily-limit { display: flex; flex-direction: column; gap: .75rem; }
-.daily-limit:has(.daily-limit-toggle:not(:checked)) .daily-limit-slider { display: none; }
-.daily-limit-slider { padding-left: calc(22px + .65rem); }
+/* Límite diario: los controles deslizantes de cada opción solo aparecen al elegirla. */
+.daily-limit { gap: .75rem; }
+.daily-limit > legend { margin-bottom: .1rem; }
+.daily-limit-options { display: none; flex-direction: column; gap: .5rem; padding-left: calc(22px + .65rem); }
+.daily-limit:has(.daily-limit-mode[value=shared]:checked) .daily-limit-shared,
+.daily-limit:has(.daily-limit-mode[value=per_profile]:checked) .daily-limit-profiles { display: flex; }
+.daily-limit-slider .avatar { margin-right: .3rem; }
 .daily-limit-value { color: var(--primary); }
 input[type=range] { width: 100%; min-height: 44px; margin: 0; accent-color: var(--primary); }
 .range-scale { display: flex; justify-content: space-between; font-size: .8rem; color: var(--ink-2); margin-top: -.35rem; }
@@ -580,7 +583,12 @@ input[type=search]:focus { border-color: var(--primary); outline: none; box-shad
 
 .activity-head { display: flex; align-items: flex-start; justify-content: space-between; gap: .75rem; margin: .5rem 0 1rem; }
 .activity-title { min-width: 0; }
-.activity-title h1 { margin: 0; }
+.activity-title h1 { margin: 0; display: flex; flex-wrap: wrap; align-items: center; column-gap: .6rem; row-gap: .2rem; }
+.watching:empty { display: none; }
+.badge-live { display: inline-flex; align-items: center; gap: .4rem; background: var(--ok-soft); color: var(--ok); font-size: .78rem; vertical-align: middle; white-space: normal; }
+.live-dot { width: 8px; height: 8px; flex: none; border-radius: 50%; background: currentColor; animation: live-pulse 1.6s ease-in-out infinite; }
+@keyframes live-pulse { 50% { opacity: .3; } }
+@media (prefers-reduced-motion: reduce) { .live-dot { animation: none; } }
 .activity-title p { margin: .15rem 0 0; font-size: .92rem; }
 .activity-profile { flex: none; }
 .activity-profile > summary { gap: .4rem; padding: .3rem .55rem .3rem .35rem; border-radius: 999px; max-width: 170px; }

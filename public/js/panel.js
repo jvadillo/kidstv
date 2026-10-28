@@ -112,15 +112,33 @@
     }
 
     function initDailyLimit() {
-        var range = document.getElementById('daily_limit_step');
-        if (!range) return;
-        var minutes = JSON.parse(range.dataset.minutes);
-        var output = document.querySelector('.daily-limit-value');
-        range.addEventListener('input', function () {
-            var label = formatMinutes(minutes[range.value]);
-            output.textContent = label;
-            range.setAttribute('aria-valuetext', label);
+        document.querySelectorAll('.daily-limit-slider').forEach(function (slider) {
+            var range = slider.querySelector('input[type=range]');
+            var minutes = JSON.parse(range.dataset.minutes);
+            var output = slider.querySelector('.daily-limit-value');
+            range.addEventListener('input', function () {
+                var label = formatMinutes(minutes[range.value]);
+                output.textContent = label;
+                range.setAttribute('aria-valuetext', label);
+            });
         });
+    }
+
+    // Actividad: el aviso «Viendo ahora» se actualiza cada minuto mientras la página está a la vista.
+    function initWatching() {
+        if (!document.querySelector('[data-watching]')) return;
+        setInterval(function () {
+            if (document.hidden) return;
+            fetch(location.href, { headers: { 'X-Requested-With': 'XMLHttpRequest' }, credentials: 'same-origin' })
+                .then(function (res) { return res.ok ? res.text() : null; })
+                .then(function (html) {
+                    if (!html) return;
+                    var fresh = new DOMParser().parseFromString(html, 'text/html').querySelector('[data-watching]');
+                    var current = document.querySelector('[data-watching]');
+                    if (fresh && current) current.replaceWith(fresh);
+                })
+                .catch(function () {});
+        }, 60000);
     }
 
     // Comprobación del enlace de YouTube mientras se escribe/pega.
@@ -394,5 +412,6 @@
         initUploadForm();
         initYouTubeSearch();
         initDailyLimit();
+        initWatching();
     });
 })();

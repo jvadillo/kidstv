@@ -6,8 +6,9 @@ use App\Models\Play;
 use App\Models\Profile;
 
 /**
- * Límite diario de tele: cada niño tiene los mismos minutos al día, sumando lo que ha
- * visto en todas las teles de la familia. Lo visto desde la Zona de adultos no cuenta.
+ * Límite diario de tele, sumando lo visto en todas las teles de la familia: un tiempo
+ * compartido entre todos los niños o uno para cada niño. Lo visto desde la Zona de
+ * adultos no cuenta.
  */
 class ScreenTime
 {
@@ -22,7 +23,7 @@ class ScreenTime
      */
     public function status(Profile $profile): ?array
     {
-        $minutes = $profile->family->dailyLimit();
+        $minutes = $profile->family->dailyLimitFor($profile);
         if ($minutes === null) {
             return null;
         }
@@ -45,10 +46,11 @@ class ScreenTime
         return $status !== null && $status['remaining_seconds'] === 0;
     }
 
+    /** Segundos vistos hoy por el niño o, con tiempo compartido, por todos (también sin perfil, de apps antiguas). */
     public function usedToday(Profile $profile): int
     {
         return (int) Play::where('family_id', $profile->family_id)
-            ->where('profile_id', $profile->id)
+            ->when($profile->family->daily_limit_mode !== 'shared', fn ($query) => $query->where('profile_id', $profile->id))
             ->where('adult', false)
             ->where('created_at', '>=', today())
             ->sum('seconds');

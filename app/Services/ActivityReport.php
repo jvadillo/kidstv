@@ -25,6 +25,9 @@ class ActivityReport
 
     public const RETENTION_MONTHS = 12;
 
+    // La tele avisa cada 30 s mientras el vídeo avanza: sin avisos recientes, ya no está viendo nada.
+    public const WATCHING_SECONDS = 75;
+
     public readonly CarbonImmutable $start;
 
     /** Fin del periodo (excluido). */
@@ -60,6 +63,25 @@ class ActivityReport
             ->get();
 
         $this->linkedLists = $family->lists()->whereNotNull('source_id')->with('source')->get()->keyBy('source_id');
+    }
+
+    /**
+     * Reproducciones que siguen avanzando ahora mismo en alguna tele, del niño elegido
+     * o de cualquiera, sin la Zona de adultos.
+     *
+     * @return Collection<int, Play>
+     */
+    public static function watchingNow(Family $family, ?Profile $profile): Collection
+    {
+        return Play::query()
+            ->where('family_id', $family->id)
+            ->where('adult', false)
+            ->when($profile, fn ($query) => $query->where('profile_id', $profile->id))
+            ->where('created_at', '>=', now()->subDay())
+            ->where('updated_at', '>=', now()->subSeconds(self::WATCHING_SECONDS))
+            ->with(['content', 'profile'])
+            ->latest('updated_at')
+            ->get();
     }
 
     /* ---------- Periodo y navegación ---------- */

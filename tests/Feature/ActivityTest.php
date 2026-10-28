@@ -128,6 +128,22 @@ class ActivityTest extends TestCase
         $this->get('/panel/cuenta')->assertSee(route('devices.index'));
     }
 
+    public function test_watching_now_shows_who_is_watching_while_the_tv_keeps_reporting(): void
+    {
+        $this->actingAsAdult($this->family->users()->first());
+        $this->get('/panel/actividad')->assertOk()->assertDontSee('badge-live', false);
+
+        $this->played($this->iker, $this->story, '2026-10-21 17:59:00', 40);
+        $this->played(null, $this->song, '2026-10-21 17:59:30', 20, adult: true);    // Zona de adultos: no cuenta.
+        $this->get('/panel/actividad')->assertSee('Viendo ahora: Iker')->assertSee('Iker: Cuento de la luna');
+        $this->get('/panel/actividad?perfil='.$this->iker->id)->assertSee('badge-live', false)->assertDontSee('Viendo ahora:');
+        $this->get('/panel/actividad?perfil='.$this->ane->id)->assertDontSee('badge-live', false);
+
+        // Sin avisos de la tele (pausa o fin), deja de mostrarse.
+        $this->travel(2)->minutes();
+        $this->get('/panel/actividad')->assertDontSee('badge-live', false);
+    }
+
     public function test_deleting_a_child_keeps_the_time_without_the_child(): void
     {
         $this->actingAsAdult($this->family->users()->first());
