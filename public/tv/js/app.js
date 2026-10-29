@@ -1140,13 +1140,18 @@
     function setupButton(label, action, arg, key) {
         return '<button class="btn focusable" data-action="' + action + '" data-arg="' + esc(arg || '') + '" data-key="' + (key || action) + '">' + esc(label) + '</button>';
     }
+    function setupChoice(title, detail, symbol, action, arg, key, selected) {
+        return '<button class="setup-choice focusable' + (selected ? ' selected' : '') + '" data-action="' + action + '" data-arg="' + esc(arg || '') + '" data-key="' + key + '"' + (action === 'age' ? ' aria-pressed="' + !!selected + '"' : '') + '>' +
+            '<span class="setup-choice-symbol" aria-hidden="true">' + symbol + '</span><strong>' + esc(title) + '</strong><span class="setup-choice-detail">' + esc(detail) + '</span></button>';
+    }
 
     screens.welcome = {
         enter: function () {
             mount('<div class="screen screen-center setup-welcome"><div class="brand-big"><span class="logo"></span>KidsTV</div>' +
                 '<h1>Prepara los vídeos que verá tu hija o hijo</h1><p class="muted">Elige sus series favoritas y prepara su tele.</p>' +
-                '<div class="setup-actions">' + setupButton('Continuar con el móvil · Más cómodo', 'mobile') +
-                setupButton('Continuar en esta tele', 'tv') + setupButton('Ya tengo cuenta', 'mobile') + '</div></div>');
+                '<div class="setup-choices">' + setupChoice('Continuar con el móvil', 'Escanea un QR y configura todo cómodamente.', '<span class="setup-device setup-device-mobile"></span>', 'mobile', '', 'mobile') +
+                setupChoice('Continuar en esta tele', 'Elige su nombre y sus series con el mando.', '<span class="setup-device setup-device-tv"></span>', 'tv', '', 'tv') +
+                setupChoice('Ya tengo cuenta', 'Conecta esta tele y recupera tus perfiles.', '<span class="setup-person"></span>', 'mobile', '', 'account') + '</div><p class="setup-hint">Usa ← → para elegir y pulsa OK para continuar</p></div>');
             Nav.restore();
         },
         action: function (action) { show(action === 'tv' ? 'setup' : 'pairing'); },
@@ -1161,16 +1166,20 @@
         },
         render: function () {
             var self = this;
-            var html = '<div class="screen setup-screen"><p class="muted">' + (this.step === 'lists' ? 'Para quién ✓ · Qué ver · Su tele' : 'Para quién · Qué ver · Su tele') + '</p>';
+            var stepIndex = this.step === 'name' ? 0 : this.step === 'age' ? 1 : 2;
+            var html = '<div class="screen setup-screen setup-' + this.step + '"><ol class="setup-progress" aria-label="Preparar su tele">';
+            var steps = ['Su nombre', 'Su edad', 'Sus series'];
+            for (var s = 0; s < steps.length; s++) html += '<li class="' + (s === stepIndex ? 'active' : s < stepIndex ? 'complete' : '') + '"' + (s === stepIndex ? ' aria-current="step"' : '') + '><span>' + (s < stepIndex ? '✓' : s + 1) + '</span>' + steps[s] + '</li>';
+            html += '</ol><div class="setup-content">';
             if (this.step === 'name') {
                 html += '<h1>¿Para quién es la tele?</h1><p class="muted">Su nombre o apodo. Solo lo verá tu familia.</p>' +
-                    '<input id="setup-name" class="focusable setup-input" data-action="edit" data-key="name" maxlength="40" placeholder="Por ejemplo, Nora" value="' + esc(setupDraft.name || '') + '">' +
-                    '<div class="setup-actions">' + setupButton('Continuar', 'next') + '</div>';
+                    '<div class="setup-name-form"><label for="setup-name">Nombre o apodo</label><input id="setup-name" class="focusable setup-input" data-action="edit" data-key="name" maxlength="40" autocomplete="off" placeholder="Por ejemplo, Nora" value="' + esc(setupDraft.name || '') + '">' +
+                    '<p class="setup-hint">Pulsa OK para escribir. Al terminar, pulsa Continuar.</p><div class="setup-actions">' + setupButton('Continuar', 'next') + '</div></div>';
             } else if (this.step === 'age') {
-                html += '<h1>¿Cuántos años tiene?</h1><p class="muted">Te propondremos series adecuadas para su edad.</p><div class="setup-actions">';
+                html += '<h1>¿Cuántos años tiene?</h1><p class="muted">Te propondremos series adecuadas para su edad.</p><div class="setup-choices setup-ages">';
                 var ages = [['0-3', '0–3 años'], ['3-6', '3–6 años'], ['7-12', '7–12 años']];
-                for (var a = 0; a < ages.length; a++) html += setupButton(ages[a][1] + (setupDraft.age === ages[a][0] ? ' ✓' : ''), 'age', ages[a][0], ages[a][0]);
-                html += '</div>';
+                for (var a = 0; a < ages.length; a++) html += setupChoice(ages[a][1], ['Primeros descubrimientos', 'Imaginar y aprender', 'Explorar nuevas historias'][a], ages[a][1].split(' ')[0], 'age', ages[a][0], ages[a][0], setupDraft.age === ages[a][0]);
+                html += '</div><p class="setup-hint">Usa ← → y pulsa OK para elegir su edad</p>';
             } else {
                 html += '<h1>¿Qué le gusta ver?</h1><p class="muted">Pulsa OK para seleccionar sus series. Después elige «Empezar a ver».</p>';
                 html += '<div class="setup-toolbar">' + setupButton('Empezar a ver (' + (setupDraft.lists || []).length + ')', 'finish') +
@@ -1183,14 +1192,18 @@
                     count++;
                     var chosen = (setupDraft.lists || []).indexOf(l.id) >= 0;
                     html += '<button class="setup-card focusable' + (chosen ? ' selected' : '') + '" aria-pressed="' + chosen + '" data-action="list" data-arg="' + l.id + '" data-key="list-' + l.id + '">' +
-                        (l.cover ? '<img src="' + esc(l.cover) + '" alt="">' : '') + '<span>' + esc(l.name) + (chosen ? ' ✓' : '') + '</span></button>';
+                        '<span class="setup-cover"><span class="setup-cover-placeholder" aria-hidden="true">▶</span>' + (l.cover ? '<img src="' + esc(l.cover) + '" alt="" onerror="this.style.display=\'none\'">' : '') + '<span class="setup-check" aria-hidden="true">✓</span></span><span class="setup-card-title">' + esc(l.name) + '</span></button>';
                 }
-                if (!count) html += '<p>No hay series con este filtro. Prueba «Todas las edades».</p>';
+                if (!count) html += '<p class="setup-empty">' + (!this.lists ? 'Cargando sus series…' : 'No hay series con este filtro. Prueba «Todas las edades».') + '</p>';
                 html += '</div>';
             }
-            html += '<div class="setup-footer">' + setupButton('Volver', 'back') + setupButton('Seguir en el móvil', 'mobile') + '</div></div>';
-            var key = Nav.currentKey();
+            html += '</div><div class="setup-footer">' + setupButton('Volver', 'back') + setupButton('Seguir en el móvil', 'mobile') + '</div></div>';
+            var key = this.renderedStep === this.step ? Nav.currentKey() : (this.step === 'age' ? setupDraft.age : null);
+            var grid = app.querySelector('.setup-grid'), scroll = grid ? grid.scrollTop : 0;
+            this.renderedStep = this.step;
             mount(html);
+            grid = app.querySelector('.setup-grid');
+            if (grid) grid.scrollTop = scroll;
             Nav.restore(key);
             if (this.step === 'lists' && !this.lists) {
                 K.http('GET', '/api/tv/setup/catalog', {}, function (status, data) {

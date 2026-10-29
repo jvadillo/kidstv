@@ -14,4 +14,8 @@ Los códigos no dan una sesión adulta. La creación provisional solo admite lis
 
 La interfaz se comprueba con teclado (flechas, OK, Atrás y escritura), transferencia del borrador, foco visible y acciones dentro de 1280×720. La comprobación en navegador no sustituye una prueba en un LG físico.
 
-El paquete LG 1.5.0 incluye este flujo. Las teles que ya tienen una app instalada necesitan reinstalar el nuevo `public/downloads/kidstv-webos.ipk`; el despliegue del servidor no actualiza su JavaScript local. Las vinculaciones existentes se conservan al actualizar sin borrar datos de la app.
+El paquete LG 1.5.1 incluye este flujo y el rediseño de las pantallas de bienvenida, nombre, edad y series. Las teles que ya tienen una app instalada necesitan reinstalar el nuevo `public/downloads/kidstv-webos.ipk`; el despliegue del servidor no actualiza su JavaScript local. Las vinculaciones existentes se conservan al actualizar sin borrar datos de la app.
+
+La bienvenida y la edad usan tres tarjetas horizontales navegables con izquierda/derecha y OK. El borde amarillo identifica el foco; el verde y el check circular dentro de la miniatura identifican las series seleccionadas. El nombre tiene una etiqueta visible y una acción alineada. Los pasos comparten indicador de progreso y un pie fijo con Volver y Seguir en el móvil. La selección conserva el foco y el desplazamiento del catálogo.
+
+Validación del rediseño: recorrido en Edge con teclado a 1280×720, capturas a 1920×1080, selección y deselección en filas inferiores, check dentro de la miniatura, acciones dentro del viewport, transferencia del borrador al móvil y creación de sesión provisional. Pendiente la comprobación en TV física.
