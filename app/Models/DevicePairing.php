@@ -22,6 +22,7 @@ class DevicePairing extends Model
     protected function casts(): array
     {
         return [
+            'draft' => 'array',
             'device_token' => 'encrypted',
             'expires_at' => 'datetime',
             'claimed_at' => 'datetime',

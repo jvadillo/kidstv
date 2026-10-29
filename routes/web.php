@@ -25,6 +25,10 @@ Route::view('/ayuda/televisores', 'legal.tv-help')->name('help.tv');
 
 // Primeros pasos: los tres primeros se pueden hacer sin cuenta (el borrador va en la sesión).
 Route::prefix('empezar')->name('onboarding.')->controller(OnboardingController::class)->group(function () {
+    Route::get('/tv', [\App\Http\Controllers\TvOnboardingController::class, 'entry'])->name('tv');
+    Route::post('/tv', [\App\Http\Controllers\TvOnboardingController::class, 'begin'])->middleware('throttle:tv-pairing')->name('tv.begin');
+    Route::get('/tv/confirmar', [\App\Http\Controllers\TvOnboardingController::class, 'confirm'])->middleware(['auth', 'confirmed'])->name('tv.confirm');
+    Route::post('/tv/confirmar', [\App\Http\Controllers\TvOnboardingController::class, 'attach'])->middleware(['auth', 'confirmed'])->name('tv.attach');
     Route::get('/', 'profile')->name('profile');
     Route::post('/', 'storeProfile')->name('profile.store');
     Route::get('/edad', 'age')->name('age');

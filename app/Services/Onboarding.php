@@ -89,7 +89,11 @@ class Onboarding
      */
     public function apply(User $user, array $draft): ?Profile
     {
-        $family = $user->family;
+        return $this->applyToFamily($user->family, $draft);
+    }
+
+    public function applyToFamily(Family $family, array $draft): ?Profile
+    {
 
         return DB::transaction(function () use ($family, $draft) {
             $profile = null;
@@ -122,6 +126,9 @@ class Onboarding
     /** Último paso, ya con cuenta: se guarda el borrador y se sigue hacia la tele o al panel. */
     public function finish(Request $request, User $user): RedirectResponse
     {
+        if ($request->session()->has('onboarding_pairing')) {
+            return redirect()->route('onboarding.tv.confirm');
+        }
         $draft = $this->draft($request);
         $request->session()->forget([self::DRAFT_KEY, self::CLAIM_KEY]);
 

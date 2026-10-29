@@ -23,6 +23,9 @@
         <div class="ob-actions">
             <button class="btn btn-primary btn-lg btn-block">{{ __('Continuar') }} @include('partials.icon', ['name' => 'right'])</button>
             <p class="hint center">{{ __('Solo lo verá tu familia. No pedimos fotos, apellidos ni fecha de nacimiento.') }}</p>
+            @unless(session('onboarding_pairing'))
+                <a href="{{ route('onboarding.tv') }}" class="btn btn-link">{{ __('Tengo un código en la tele') }}</a>
+            @endunless
         </div>
     </form>
 @endsection

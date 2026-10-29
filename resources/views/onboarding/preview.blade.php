@@ -59,8 +59,10 @@
 
         <form method="POST" action="{{ route('onboarding.choose') }}" class="ob-final">
             @csrf
-            <button name="next" value="connect" class="btn btn-accent btn-lg btn-block">@include('partials.icon', ['name' => 'tv']) {{ __('Conectar mi tele') }}</button>
+            <button name="next" value="connect" class="btn btn-accent btn-lg btn-block">@include('partials.icon', ['name' => 'tv']) {{ session('onboarding_pairing') ? __('Guardar y conectar esta tele') : __('Conectar mi tele') }}</button>
+            @unless(session('onboarding_pairing'))
             <button name="next" value="later" class="btn btn-ghost btn-lg btn-block">{{ __('Lo haré más tarde') }}</button>
+            @endunless
             @if ($guest)
                 <p class="hint center">{{ __('Para guardarla solo te pediremos tu correo. Sin contraseñas.') }}</p>
             @endif

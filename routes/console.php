@@ -15,6 +15,10 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 Artisan::command('kidstv:prune', function () {
+    // Solo familias provisionales sin adultos; nunca cuentas registradas.
+    foreach (\App\Models\Family::where('provisional_until', '<', now())->whereDoesntHave('users')->get() as $family) {
+        $family->delete();
+    }
     $tokens = LoginToken::where('expires_at', '<', now()->subDay())->delete();
     $sessions = AuthSession::where('expires_at', '<', now())->delete();
     $pairings = DevicePairing::where('expires_at', '<', now()->subHour())->delete();

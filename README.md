@@ -20,6 +20,8 @@ Aplicación web (Laravel 13) en la que una persona adulta se registra solo con s
 ## Qué hace
 
 **Panel de adultos** (web, pensado para móvil):
+
+También se puede comenzar desde la TV, con el mando y reproducción provisional sin correo, o continuar en el móvil mediante QR y código. El correo y el PIN se configuran al guardar o entrar por primera vez a la Zona de adultos. [Flujos y comprobaciones](docs/onboarding-tv.md).
 - Acceso sin contraseña: código de 6 cifras o enlace de un solo uso por correo; la sesión se mantiene en ese navegador (60 días, renovable) y se puede revocar desde *Cuenta*.
 - Primeros pasos sin registrarse (`/empezar`), en tres decisiones y menos de 2 minutos: **para quién** (nombre y etapa de edad: 0–3, 3–6 o 7–12 años), **qué ve** (catálogo de listas públicas con portadas, filtrado ya por su edad y por idioma, que se eligen tocando sin recargar) y **su tele** (vista previa a escala de cómo quedará la app de TV, con «Conectar mi tele» o «Lo haré más tarde»). El borrador va en la sesión; el correo (código de 6 cifras, con las condiciones en la misma pantalla) solo se pide para guardarlo, y con un correo ya registrado se añade a esa familia. Límites, PIN y demás ajustes quedan para después.
 - Perfiles infantiles con apodo y avatar predefinido (sin datos personales del menor).

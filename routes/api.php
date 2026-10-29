@@ -8,11 +8,14 @@ use Illuminate\Support\Facades\Route;
 
 // API del televisor. Sin cookies ni sesión: el televisor se identifica con su token de dispositivo.
 Route::prefix('tv')->group(function () {
+    Route::get('/setup/catalog', [\App\Http\Controllers\Tv\SetupController::class, 'catalog'])->middleware('throttle:tv-api');
+    Route::post('/setup/{pairing}', [\App\Http\Controllers\Tv\SetupController::class, 'finish'])->middleware('throttle:tv-pairing');
     Route::post('/pairings', [PairingController::class, 'start'])->middleware('throttle:tv-pairing');
     Route::get('/pairings/{pairing}', [PairingController::class, 'poll'])->middleware('throttle:tv-poll');
     Route::get('/pairings/{pairing}/qr.svg', [PairingController::class, 'qr'])->middleware('throttle:tv-poll')->name('tv.pairing.qr');
 
     Route::middleware(['throttle:tv-api', 'device'])->group(function () {
+        Route::post('/setup-link', [PairingController::class, 'start'])->middleware('throttle:tv-pairing');
         Route::get('/session', [CatalogController::class, 'session']);
         Route::get('/profiles/{profile}/catalog', [CatalogController::class, 'catalog']);
         Route::get('/contents/{content}/play', [CatalogController::class, 'play']);

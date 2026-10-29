@@ -27,6 +27,7 @@ class Family extends Model
         return [
             'autoplay_next' => 'boolean',
             'daily_limit_minutes' => 'integer',
+            'provisional_until' => 'datetime',
         ];
     }
 
@@ -92,6 +93,9 @@ class Family extends Model
     /** Sin ningún adulto activo (cuenta bloqueada por un administrador), los televisores dejan de funcionar. */
     public function isBlocked(): bool
     {
+        if ($this->provisional_until !== null && $this->users()->doesntExist()) {
+            return $this->provisional_until->isPast();
+        }
         return $this->users()->whereNull('blocked_at')->doesntExist();
     }
 

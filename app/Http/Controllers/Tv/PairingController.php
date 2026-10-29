@@ -22,6 +22,11 @@ class PairingController extends Controller
     {
         $data = $request->validate([
             'platform' => ['nullable', Rule::in(['web', 'webos', 'tizen', 'androidtv'])],
+            'draft' => ['nullable', 'array:name,age,lists'],
+            'draft.name' => ['nullable', 'string', 'max:40'],
+            'draft.age' => ['nullable', Rule::in(array_keys(\App\Models\VideoList::AGE_RANGES))],
+            'draft.lists' => ['nullable', 'array', 'max:60'],
+            'draft.lists.*' => ['integer'],
         ]);
 
         $secret = Str::random(48);
@@ -33,6 +38,16 @@ class PairingController extends Controller
             'user_agent' => Str::limit((string) $request->userAgent(), 490, ''),
             'expires_at' => now()->addMinutes(config('kidstv.pairing_ttl_minutes')),
         ]);
+        $device = $request->attributes->get('device');
+        $draft = $data['draft'] ?? null;
+        if ($device) {
+            $profile = $device->family->profiles()->first();
+            $draft = $device->family->provisional_until && $profile ? [
+                'name' => $profile->name, 'age' => $profile->age_range,
+                'lists' => $device->family->lists()->whereNotNull('source_id')->pluck('source_id')->all(),
+            ] : null;
+        }
+        $pairing->forceFill(['draft' => $draft, 'setup_device_id' => $device?->id])->save();
 
         return response()->json([
             'id' => $pairing->id,
@@ -40,8 +55,8 @@ class PairingController extends Controller
             'code_display' => $pairing->formattedCode(),
             'secret' => $secret,
             'expires_in' => config('kidstv.pairing_ttl_minutes') * 60,
-            'link_url' => route('devices.pair'),
-            'link_display' => preg_replace('~^https?://~', '', route('devices.pair')),
+            'link_url' => route('onboarding.tv'),
+            'link_display' => preg_replace('~^https?://~', '', route('onboarding.tv')),
             'qr_url' => route('tv.pairing.qr', $pairing->id),
         ], 201);
     }
@@ -82,7 +97,7 @@ class PairingController extends Controller
         abort_unless($pairing && $pairing->isClaimable(), 404);
 
         $renderer = new ImageRenderer(new RendererStyle(320, 1), new SvgImageBackEnd);
-        $svg = (new Writer($renderer))->writeString(route('tv.link', ['code' => $pairing->code]));
+        $svg = (new Writer($renderer))->writeString(route('onboarding.tv', ['code' => $pairing->code]));
 
         return response($svg, 200, [
             'Content-Type' => 'image/svg+xml',

@@ -27,6 +27,10 @@ class AuthenticateDevice
             ], 401);
         }
 
+        if ($device->family->provisional_until?->isPast()) {
+            return response()->json(['error' => 'device_revoked', 'message' => __('La configuración provisional ha caducado. Prepara de nuevo esta tele.')], 401);
+        }
+
         // Cuenta bloqueada por un administrador: la tele sigue vinculada, pero sin servicio.
         if ($device->family->isBlocked()) {
             return response()->json([
@@ -37,6 +41,9 @@ class AuthenticateDevice
 
         if (! $device->last_seen_at || $device->last_seen_at->lt(now()->subMinute())) {
             $device->forceFill(['last_seen_at' => now()])->saveQuietly();
+            if ($device->family->provisional_until) {
+                $device->family->forceFill(['provisional_until' => now()->addDays(30)])->saveQuietly();
+            }
         }
 
         $request->attributes->set('device', $device);

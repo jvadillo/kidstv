@@ -380,21 +380,27 @@
     /* ---------- Vinculación ---------- */
 
     screens.pairing = {
-        enter: function () {
+        enter: function (arg) {
+            this.saving = !!S.token;
             loading(t('pair.loading'));
+            var pending;
+            try { pending = JSON.parse(K.store.get('pendingPairing') || 'null'); } catch (ignore) {}
+            if (pending && pending.saving === this.saving) { this.render(pending); return; }
             this.request();
         },
         request: function () {
             var self = this;
             clearTimer('pairPoll');
             clearTimer('pairCountdown');
-            K.http('POST', '/api/tv/pairings', { body: { platform: K.config.platform } }, function (status, data) {
+            K.http('POST', self.saving ? '/api/tv/setup-link' : '/api/tv/pairings', { headers: headers(), body: { platform: K.config.platform, draft: setupDraft } }, function (status, data) {
                 if (S.screen !== 'pairing') return;
                 if (status !== 201) {
                     S.timers.pairPoll = setTimeout(function () { self.request(); }, 5000);
                     mount('<div class="screen screen-center"><h1>' + esc(t('error.offline')) + '</h1><p class="muted">' + esc(t('error.offlineHint')) + '</p></div>');
                     return;
                 }
+                data.saving = self.saving;
+                K.store.set('pendingPairing', JSON.stringify(data));
                 self.render(data);
             });
         },
@@ -405,13 +411,14 @@
                 '<div class="screen screen-pairing">' +
                     '<div class="pair-text">' +
                         '<div class="brand-big"><span class="logo"></span>KidsTV</div>' +
-                        '<h1>' + esc(t('pair.title')) + '</h1>' +
+                        '<h1>' + (self.saving ? 'Guarda y protege su tele' : 'Prepara su tele desde el móvil') + '</h1>' +
                         '<p class="pair-step">' + esc(t('pair.step1')) + '</p>' +
                         '<p class="pair-url">' + esc(p.link_display) + '</p>' +
                         '<p class="pair-step">' + esc(t('pair.step2')) + '</p>' +
                         '<p class="pair-code">' + esc(p.code_display) + '</p>' +
                         '<p class="muted pair-expiry"></p>' +
-                        '<p class="muted small">' + esc(t('pair.noaccount')) + '</p>' +
+                        '<p class="muted small">' + (self.saving ? 'Verifica tu correo y crea el PIN para la Zona de adultos. Si ya tienes cuenta, usa ese correo.' : 'Escanea el QR o abre esta dirección e introduce el código. Si ya tienes cuenta, podrás usar tus perfiles.') + '</p>' +
+                        '<button class="btn focusable autofocus" data-action="back">Volver</button>' +
                     '</div>' +
                     '<div class="pair-qr">' +
                         '<div class="qr-box"><img src="' + esc(p.qr_url) + '" alt=""></div>' +
@@ -420,9 +427,10 @@
                 '</div>'
             );
             var expiry = app.querySelector('.pair-expiry');
+            Nav.restore();
             function tick() {
                 expiry.textContent = t('pair.expires', { time: K.formatTime(remaining) });
-                if (remaining-- <= 0) self.request();
+                remaining = Math.max(0, remaining - 1);
             }
             tick();
             S.timers.pairCountdown = setInterval(tick, 1000);
@@ -432,13 +440,16 @@
                     if (S.screen !== 'pairing') return;
                     if (status === 200 && data.status === 'paired') {
                         clearTimer('pairCountdown');
-                        S.token = data.token;
-                        K.store.set('token', data.token);
+                        if (data.token) { S.token = data.token; K.store.set('token', data.token); }
+                        K.store.set('setupDraft', null);
+                        K.store.set('pendingPairing', null);
+                        setupDraft = {};
                         loading(t('pair.done'));
                         start();
                         return;
                     }
                     if (status === 410 || status === 404) { self.request(); return; }
+                    if (data.expires_in !== undefined) remaining = data.expires_in;
                     S.timers.pairPoll = setTimeout(poll, 3000);
                 });
             }
@@ -448,8 +459,11 @@
             clearTimer('pairPoll');
             clearTimer('pairCountdown');
         },
+        action: function (action) {
+            if (action === 'back') { K.store.set('pendingPairing', null); show(S.token ? 'profiles' : 'welcome'); }
+        },
         key: function (name) {
-            if (name === 'back') { confirmExit(); return true; }
+            if (name === 'back') { this.action('back'); return true; }
             return false;
         }
     };
@@ -863,6 +877,7 @@
 
     function openAdult() {
         if (S.adult) { show('adultMenu'); return; }
+        if (S.session && !S.session.family.has_pin) { show('pairing'); return; }
         show('pin', { from: S.screen });
     }
 
@@ -1067,6 +1082,12 @@
     /* ---------- Entrada: mando, teclado y puntero ---------- */
 
     document.addEventListener('keydown', function (e) {
+        if (e.target && e.target.id === 'setup-name') {
+            if (e.keyCode === 13 || e.keyCode === 40 || e.keyCode === 461 || e.keyCode === 10009 || e.keyCode === 27) {
+                e.preventDefault(); e.target.blur(); Nav.restore('next');
+            }
+            return;
+        }
         var name = K.keyName(e);
         if (!name) return;
         S.lastKeyAt = new Date().getTime();
@@ -1110,6 +1131,143 @@
         activate(el);
     });
 
+    /* ---------- Primeros pasos con el mando ---------- */
+
+    var setupDraft = {};
+    try { setupDraft = JSON.parse(K.store.get('setupDraft') || '{}'); } catch (ignore) {}
+    if (!setupDraft || typeof setupDraft !== 'object') setupDraft = {};
+    function saveSetup() { K.store.set('setupDraft', JSON.stringify(setupDraft)); }
+    function setupButton(label, action, arg, key) {
+        return '<button class="btn focusable" data-action="' + action + '" data-arg="' + esc(arg || '') + '" data-key="' + (key || action) + '">' + esc(label) + '</button>';
+    }
+
+    screens.welcome = {
+        enter: function () {
+            mount('<div class="screen screen-center setup-welcome"><div class="brand-big"><span class="logo"></span>KidsTV</div>' +
+                '<h1>Prepara los vídeos que verá tu hija o hijo</h1><p class="muted">Elige sus series favoritas y prepara su tele.</p>' +
+                '<div class="setup-actions">' + setupButton('Continuar con el móvil · Más cómodo', 'mobile') +
+                setupButton('Continuar en esta tele', 'tv') + setupButton('Ya tengo cuenta', 'mobile') + '</div></div>');
+            Nav.restore();
+        },
+        action: function (action) { show(action === 'tv' ? 'setup' : 'pairing'); },
+        key: function (name) { if (name === 'back') { confirmExit(); return true; } return false; }
+    };
+
+    screens.setup = {
+        enter: function (arg) {
+            this.step = arg.step || 'name';
+            this.busy = false;
+            this.render();
+        },
+        render: function () {
+            var self = this;
+            var html = '<div class="screen setup-screen"><p class="muted">' + (this.step === 'lists' ? 'Para quién ✓ · Qué ver · Su tele' : 'Para quién · Qué ver · Su tele') + '</p>';
+            if (this.step === 'name') {
+                html += '<h1>¿Para quién es la tele?</h1><p class="muted">Su nombre o apodo. Solo lo verá tu familia.</p>' +
+                    '<input id="setup-name" class="focusable setup-input" data-action="edit" data-key="name" maxlength="40" placeholder="Por ejemplo, Nora" value="' + esc(setupDraft.name || '') + '">' +
+                    '<div class="setup-actions">' + setupButton('Continuar', 'next') + '</div>';
+            } else if (this.step === 'age') {
+                html += '<h1>¿Cuántos años tiene?</h1><p class="muted">Te propondremos series adecuadas para su edad.</p><div class="setup-actions">';
+                var ages = [['0-3', '0–3 años'], ['3-6', '3–6 años'], ['7-12', '7–12 años']];
+                for (var a = 0; a < ages.length; a++) html += setupButton(ages[a][1] + (setupDraft.age === ages[a][0] ? ' ✓' : ''), 'age', ages[a][0], ages[a][0]);
+                html += '</div>';
+            } else {
+                html += '<h1>¿Qué le gusta ver?</h1><p class="muted">Pulsa OK para seleccionar sus series. Después elige «Empezar a ver».</p>';
+                html += '<div class="setup-toolbar">' + setupButton('Empezar a ver (' + (setupDraft.lists || []).length + ')', 'finish') +
+                    setupButton(this.allAges ? 'Ver su edad' : 'Todas las edades', 'filter') + '</div>';
+                html += '<div class="setup-grid scroll-y">';
+                var lists = this.lists || [], count = 0;
+                for (var i = 0; i < lists.length; i++) {
+                    var l = lists[i];
+                    if (!this.allAges && l.ages.indexOf(setupDraft.age) < 0) continue;
+                    count++;
+                    var chosen = (setupDraft.lists || []).indexOf(l.id) >= 0;
+                    html += '<button class="setup-card focusable' + (chosen ? ' selected' : '') + '" aria-pressed="' + chosen + '" data-action="list" data-arg="' + l.id + '" data-key="list-' + l.id + '">' +
+                        (l.cover ? '<img src="' + esc(l.cover) + '" alt="">' : '') + '<span>' + esc(l.name) + (chosen ? ' ✓' : '') + '</span></button>';
+                }
+                if (!count) html += '<p>No hay series con este filtro. Prueba «Todas las edades».</p>';
+                html += '</div>';
+            }
+            html += '<div class="setup-footer">' + setupButton('Volver', 'back') + setupButton('Seguir en el móvil', 'mobile') + '</div></div>';
+            var key = Nav.currentKey();
+            mount(html);
+            Nav.restore(key);
+            if (this.step === 'lists' && !this.lists) {
+                K.http('GET', '/api/tv/setup/catalog', {}, function (status, data) {
+                    if (S.screen !== 'setup') return;
+                    if (status !== 200) { showOffline('No se pueden cargar las series', function () { self.render(); }); return; }
+                    hideOffline(); self.lists = data.lists; self.render();
+                });
+            }
+        },
+        action: function (action, arg) {
+            if (this.busy) return;
+            if (this.step === 'name') {
+                setupDraft.name = app.querySelector('#setup-name').value.replace(/^\s+|\s+$/g, '');
+                saveSetup();
+            }
+            if (action === 'edit') { app.querySelector('#setup-name').focus(); return; }
+            if (action === 'mobile') { show('pairing'); return; }
+            if (action === 'back') {
+                if (this.step === 'name') show('welcome');
+                else { this.step = this.step === 'lists' ? 'age' : 'name'; this.render(); }
+            }
+            if (action === 'next') {
+                if (!setupDraft.name) { toast('Escribe su nombre o apodo'); return; }
+                this.step = 'age'; this.render();
+            }
+            if (action === 'age') { setupDraft.age = arg; saveSetup(); this.step = 'lists'; this.render(); }
+            if (action === 'filter') { this.allAges = !this.allAges; this.render(); }
+            if (action === 'list') {
+                var id = parseInt(arg, 10), selected = setupDraft.lists || [], index = selected.indexOf(id);
+                if (index >= 0) selected.splice(index, 1); else if (selected.length < 60) selected.push(id);
+                setupDraft.lists = selected; saveSetup(); this.render();
+            }
+            if (action === 'finish') {
+                if (!(setupDraft.lists || []).length) { toast('Elige al menos una serie'); return; }
+                openDialog({ title: 'Su tele está preparada',
+                    text: 'Podrá ver las series elegidas sin correo. Guarda la configuración desde la Zona de adultos para recuperarla o usar otra tele. Sin guardar, se conserva 30 días desde el último uso y puede perderse al borrar la app.',
+                    buttons: [{ label: 'Empezar a ver', action: function () { screens.setup.finish(); } }, { label: 'Volver' }] });
+            }
+        },
+        finish: function () {
+            var self = this;
+            this.busy = true;
+            // Se conserva la vinculación hasta recibir el token, también tras un corte de red.
+            var pending;
+            try { pending = JSON.parse(K.store.get('setupPending') || 'null'); } catch (ignore) {}
+            function failed(message) { self.busy = false; toast(message || 'No se ha podido preparar la tele. Vuelve a intentarlo.'); }
+            function ready(token) {
+                S.token = token; K.store.set('token', token); K.store.set('setupPending', null);
+                K.store.set('pendingPairing', null);
+                K.store.set('setupDraft', null); setupDraft = {}; self.busy = false; start();
+            }
+            function submit(p) {
+                K.store.set('setupPending', JSON.stringify(p));
+                K.http('POST', '/api/tv/setup/' + p.id, { headers: { 'X-Pairing-Secret': p.secret }, body: setupDraft }, function (status, data) {
+                    if (status === 201) { ready(data.token); return; }
+                    if (status === 410) { recover(p); return; }
+                    failed(status === 422 ? 'Revisa el nombre, la edad y las series. Alguna serie puede haber dejado de estar disponible.' : null);
+                });
+            }
+            function create() {
+                K.http('POST', '/api/tv/pairings', { body: { platform: K.config.platform } }, function (status, p) {
+                    if (status !== 201) { failed(); return; } submit(p);
+                });
+            }
+            function recover(p) {
+                K.http('GET', '/api/tv/pairings/' + p.id, { headers: { 'X-Pairing-Secret': p.secret } }, function (status, data) {
+                    if (status === 200 && data.token) ready(data.token);
+                    else if (status === 200) submit(p);
+                    else if (status === 410 || status === 404) { K.store.set('setupPending', null); create(); }
+                    else failed();
+                });
+            }
+            if (pending) recover(pending); else create();
+        },
+        key: function (name) { if (name === 'back') { this.action('back'); return true; } return this.busy; }
+    };
+
     /* ---------- Arranque ---------- */
 
     function start() {
@@ -1126,7 +1284,8 @@
         }
 
         S.token = K.store.get('token');
-        if (!S.token) { show('pairing'); return; }
+        if (K.store.get('pendingPairing')) { show('pairing'); return; }
+        if (!S.token) { show('welcome'); return; }
         loading();
         start();
     }

@@ -38,7 +38,7 @@
             <button class="btn btn-primary btn-lg btn-block">{{ __('Enviarme el código') }}</button>
         </form>
 
-        <p class="hint center">{{ __('¿Ya tienes cuenta? Escribe el mismo correo y añadiremos a :name a tu videoteca.', ['name' => $draft['name']]) }}</p>
+        <p class="hint center">{{ session('onboarding_pairing') ? __('¿Ya tienes cuenta? Usa el mismo correo. Podrás añadir este perfil o usar los que ya tienes.') : __('¿Ya tienes cuenta? Escribe el mismo correo y añadiremos a :name a tu videoteca.', ['name' => $draft['name']]) }}</p>
         <p class="center"><a href="{{ route('onboarding.preview') }}" class="btn btn-link">@include('partials.icon', ['name' => 'left']) {{ __('Volver a su tele') }}</a></p>
     </div>
 @endsection

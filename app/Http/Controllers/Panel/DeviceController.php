@@ -50,6 +50,9 @@ class DeviceController extends Controller
             if (! $pairing) {
                 throw ValidationException::withMessages(['code' => __('El código no es válido o ha caducado. Comprueba el que aparece ahora en el televisor.')]);
             }
+            if ($pairing->setup_device_id) {
+                throw ValidationException::withMessages(['code' => __('Abre /empezar/tv con este código para guardar esta tele.')]);
+            }
 
             [$device, $token] = Device::issue($family, $data['name'], $pairing->platform, $pairing->user_agent);
 

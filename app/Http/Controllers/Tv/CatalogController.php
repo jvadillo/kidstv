@@ -30,6 +30,7 @@ class CatalogController extends Controller
             'family' => [
                 'name' => $family->name,
                 'has_pin' => $family->hasPin(),
+                'provisional' => $family->provisional_until !== null,
                 'autoplay_next' => $family->autoplay_next,
             ],
             // Con límite diario, lo que le queda hoy a cada niño (sumando todas las teles).
