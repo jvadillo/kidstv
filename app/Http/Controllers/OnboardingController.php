@@ -18,31 +18,47 @@ class OnboardingController extends Controller
 {
     public function __construct(private Onboarding $onboarding) {}
 
-    /** Paso 1: nombre y etapa de edad del niño. */
+    /** Paso 1: nombre y etapa de edad en dos pantallas. */
     public function profile(Request $request)
     {
-        return view('onboarding.profile', [
-            'draft' => $this->onboarding->draft($request),
-            'ages' => VideoList::AGE_RANGES,
-        ]);
+        return view('onboarding.profile', ['draft' => $this->onboarding->draft($request)]);
     }
 
     public function storeProfile(Request $request)
     {
-        $data = $request->validate([
-            'name' => ['required', 'string', 'max:40'],
-            'age' => ['required', Rule::in(array_keys(VideoList::AGE_RANGES))],
-        ], [
+        $data = $request->validate(['name' => ['required', 'string', 'max:40']], [
             'name.required' => __('Escribe su nombre o un apodo.'),
-            'age.required' => __('Elige su edad para proponerte series adecuadas.'),
         ]);
 
         $draft = $this->onboarding->draft($request);
         $this->onboarding->update($request, [
             'name' => trim($data['name']),
-            'age' => $data['age'],
             'avatar' => $draft['avatar'] ?? $this->onboarding->pickAvatar($request->user()?->family),
         ]);
+
+        return redirect()->route('onboarding.age');
+    }
+
+    public function age(Request $request)
+    {
+        $draft = $this->onboarding->draft($request);
+        if (! filled($draft['name'] ?? null)) {
+            return redirect()->route('onboarding.profile');
+        }
+
+        return view('onboarding.age', ['draft' => $draft, 'ages' => VideoList::AGE_RANGES]);
+    }
+
+    public function storeAge(Request $request)
+    {
+        if (! filled($this->onboarding->draft($request)['name'] ?? null)) {
+            return redirect()->route('onboarding.profile');
+        }
+
+        $data = $request->validate(['age' => ['required', Rule::in(array_keys(VideoList::AGE_RANGES))]], [
+            'age.required' => __('Elige su edad para proponerte series adecuadas.'),
+        ]);
+        $this->onboarding->update($request, ['age' => $data['age']]);
 
         return redirect()->route('onboarding.lists');
     }
@@ -53,6 +69,10 @@ class OnboardingController extends Controller
         $draft = $this->onboarding->draft($request);
         if (! filled($draft['name'] ?? null)) {
             return redirect()->route('onboarding.profile');
+        }
+
+        if (! array_key_exists($draft['age'] ?? '', VideoList::AGE_RANGES)) {
+            return redirect()->route('onboarding.age');
         }
 
         $lists = $this->onboarding->publicLists($request->user()?->family)->get();
@@ -77,6 +97,10 @@ class OnboardingController extends Controller
     {
         if (! filled($this->onboarding->draft($request)['name'] ?? null)) {
             return redirect()->route('onboarding.profile');
+        }
+
+        if (! array_key_exists($this->onboarding->draft($request)['age'] ?? '', VideoList::AGE_RANGES)) {
+            return redirect()->route('onboarding.age');
         }
 
         $available = $this->onboarding->publicLists($request->user()?->family)->pluck('id')->all();

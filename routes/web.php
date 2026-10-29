@@ -27,6 +27,8 @@ Route::view('/ayuda/televisores', 'legal.tv-help')->name('help.tv');
 Route::prefix('empezar')->name('onboarding.')->controller(OnboardingController::class)->group(function () {
     Route::get('/', 'profile')->name('profile');
     Route::post('/', 'storeProfile')->name('profile.store');
+    Route::get('/edad', 'age')->name('age');
+    Route::post('/edad', 'storeAge')->name('age.store');
     Route::get('/series', 'lists')->name('lists');
     Route::post('/series', 'storeLists')->name('lists.store');
     Route::get('/tele', 'preview')->name('preview');

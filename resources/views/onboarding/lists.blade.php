@@ -24,8 +24,8 @@
     <form method="POST" action="{{ route('onboarding.lists.store') }}" class="ob-catalog" data-ob-catalog>
         @csrf
         <div class="ob-intro">
-            <h1>{{ __('¿Qué le gusta ver a :name?', ['name' => $draft['name']]) }}</h1>
-            <p class="muted">{{ __('Toca sus series favoritas. Cada una será una fila en su tele, con episodios largos de canales oficiales.') }}</p>
+            <h1>{{ __('¿Qué le gusta ver?') }}</h1>
+            <p class="muted">{{ __('Toca sus series favoritas para seleccionarlas. Podrá ver estas listas oficiales en la TV.') }}</p>
         </div>
 
         <div class="ob-filters">
@@ -93,9 +93,9 @@
                         {{ __('Elige al menos una serie') }}
                     </span>
                 </div>
-                <button class="btn btn-primary btn-lg" data-ob-next>{{ __('Ver su tele') }} @include('partials.icon', ['name' => 'right'])</button>
+                <button class="btn btn-primary btn-lg" data-ob-next>{{ __('Finalizar') }} @include('partials.icon', ['name' => 'right'])</button>
             </div>
-            <p class="hint">{{ __('Más adelante podrás crear tus propias listas y subir tus vídeos.') }}</p>
+            <p class="hint">{{ __('Más adelante podrás crear tus listas y subir videos') }}</p>
         </div>
     </form>
 @endsection

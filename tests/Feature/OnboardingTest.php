@@ -44,7 +44,8 @@ class OnboardingTest extends TestCase
     /** Los tres primeros pasos: para quién, qué ver y la vista previa con la decisión final. */
     private function prepareTv(string $name, string $age, array $lists, string $next): void
     {
-        $this->post('/empezar', ['name' => $name, 'age' => $age])->assertRedirect('/empezar/series');
+        $this->post('/empezar', ['name' => $name])->assertRedirect('/empezar/edad');
+        $this->post('/empezar/edad', ['age' => $age])->assertRedirect('/empezar/series');
         $this->post('/empezar/series', ['lists' => array_map(fn (VideoList $list) => $list->id, $lists)])->assertRedirect('/empezar/tele');
         $this->get('/empezar/tele')->assertOk()->assertSee('Esta es la tele de '.$name);
         $this->post('/empezar/tele', ['next' => $next]);
@@ -72,16 +73,19 @@ class OnboardingTest extends TestCase
         Mail::fake();
 
         $this->get('/')->assertOk()->assertSee(route('onboarding.profile'));
-        $this->get('/empezar')->assertOk()->assertSee('¿Para quién es la tele?')->assertSee('3–6 años');
-        $this->post('/empezar', [])->assertSessionHasErrors(['name', 'age']);
-        $this->post('/empezar', ['name' => 'Nora', 'age' => '5-9'])->assertSessionHasErrors('age');
-        $this->post('/empezar', ['name' => 'Nora', 'age' => '3-6'])->assertRedirect('/empezar/series');
+        $this->get('/empezar')->assertOk()->assertSee('¿Para quién es la tele?')->assertDontSee('3–6 años');
+        $this->post('/empezar', [])->assertSessionHasErrors('name');
+        $this->post('/empezar', ['name' => 'Nora'])->assertRedirect('/empezar/edad');
+        $this->get('/empezar/edad')->assertOk()->assertSee('3–6 años');
+        $this->post('/empezar/edad', [])->assertSessionHasErrors('age');
+        $this->post('/empezar/edad', ['age' => '5-9'])->assertSessionHasErrors('age');
+        $this->post('/empezar/edad', ['age' => '3-6'])->assertRedirect('/empezar/series');
 
         // El catálogo sale entero, con su edad y el idioma de la plataforma ya filtrados.
         $catalog = $this->get('/empezar/series')->assertOk()
-            ->assertSee('¿Qué le gusta ver a Nora?')
+            ->assertSee('¿Qué le gusta ver?')
             ->assertSee('Bluey')->assertSee('Pocoyó')->assertDontSee('Privada')
-            ->assertSee('Más adelante podrás crear tus propias listas')
+            ->assertSee('Más adelante podrás crear tus listas y subir videos')
             ->getContent();
         $this->assertMatchesRegularExpression('/data-ob-filter="edad" data-value="3-6"\s+aria-current="true"/', $catalog);
         $this->assertMatchesRegularExpression('/data-ob-filter="idioma" data-value="es"\s+aria-current="true"/', $catalog);
@@ -181,13 +185,16 @@ class OnboardingTest extends TestCase
 
     public function test_each_step_needs_the_previous_one(): void
     {
+        $this->get('/empezar/edad')->assertRedirect('/empezar');
         $this->get('/empezar/series')->assertRedirect('/empezar');
         $this->get('/empezar/tele')->assertRedirect('/empezar');
         $this->get('/empezar/cuenta')->assertRedirect('/empezar');
         $this->get('/empezar/codigo')->assertRedirect('/empezar/cuenta');
         $this->get('/empezar/conectar')->assertRedirect('/entrar');
 
-        $this->post('/empezar', ['name' => 'Nora', 'age' => '3-6']);
+        $this->post('/empezar', ['name' => 'Nora']);
+        $this->get('/empezar/series')->assertRedirect('/empezar/edad');
+        $this->post('/empezar/edad', ['age' => '3-6']);
         $this->get('/empezar/tele')->assertRedirect('/empezar/series');
         $this->post('/empezar/tele', ['next' => 'otra'])->assertSessionHasErrors('next');
     }
