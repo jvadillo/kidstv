@@ -56,7 +56,7 @@ class AuthFlowTest extends TestCase
 
         $this->post('/alta', ['name' => 'Laura'])->assertSessionHasErrors('terms');
 
-        $this->post('/alta', ['name' => 'Laura', 'terms' => '1'])->assertRedirect(route('welcome'));
+        $this->post('/alta', ['name' => 'Laura', 'terms' => '1'])->assertRedirect(route('onboarding.profile'));
 
         $user = User::where('email', 'nueva@example.com')->firstOrFail();
         $this->assertAuthenticatedAs($user);

@@ -14,9 +14,6 @@
           data-max-bytes="{{ $maxBytes }}"
           data-extensions="{{ implode(',', $extensions) }}">
         @csrf
-        @if (request('from_welcome'))
-            <input type="hidden" name="from_welcome" value="1">
-        @endif
 
         <div class="field">
             <label for="file">{{ $kind === 'audio' ? __('Archivo de audio') : __('Archivo de vídeo') }}</label>

@@ -3,12 +3,9 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
-use App\Models\Family;
-use App\Models\User;
 use App\Services\AdultSessions;
-use App\Services\YouTubeSearch;
+use App\Services\Onboarding;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 
 class RegisterController extends Controller
 {
@@ -22,7 +19,7 @@ class RegisterController extends Controller
         return view('auth.register', ['email' => $pending['email']]);
     }
 
-    public function store(Request $request, AdultSessions $sessions)
+    public function store(Request $request, AdultSessions $sessions, Onboarding $onboarding)
     {
         $pending = $this->pending($request);
         if (! $pending) {
@@ -36,29 +33,17 @@ class RegisterController extends Controller
             'terms.accepted' => __('Para crear la cuenta tienes que aceptar las condiciones y la política de privacidad.'),
         ]);
 
-        $user = DB::transaction(function () use ($pending, $data) {
-            if ($existing = User::where('email', $pending['email'])->first()) {
-                return $existing;
-            }
-
-            $family = Family::create(['name' => null]);
-            foreach (config('kidstv.default_lists') as $i => $name) {
-                $family->lists()->create(['name' => $name, 'position' => $i, 'languages' => [YouTubeSearch::defaultLanguage()]]);
-            }
-
-            return User::create([
-                'family_id' => $family->id,
-                'email' => $pending['email'],
-                'name' => $data['name'] ?? null,
-                'email_verified_at' => now(),
-                'terms_accepted_at' => now(),
-            ]);
-        });
+        $user = $onboarding->createAccount($pending['email'], $data['name'] ?? null);
 
         $request->session()->forget('pending_registration');
         $sessions->start($request, $user);
 
-        return redirect()->route('welcome');
+        // Si ya había empezado el asistente sin cuenta, se guarda lo que preparó.
+        if (filled($onboarding->draft($request)['name'] ?? null)) {
+            return $onboarding->finish($request, $user);
+        }
+
+        return redirect()->route('onboarding.profile');
     }
 
     /** Correo verificado hace menos de 30 minutos y pendiente de crear cuenta. */

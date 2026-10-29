@@ -13,13 +13,10 @@
         <div class="notice">
             <p><strong>{{ __('El buscador no está disponible todavía.') }}</strong></p>
             <p>{{ __('El administrador del servidor debe configurar una clave de la API de YouTube. Mientras tanto puedes añadir vídeos pegando su enlace.') }}</p>
-            <a href="{{ route('contents.youtube.create', request()->only('from_welcome')) }}" class="btn btn-primary">{{ __('Pegar un enlace') }}</a>
+            <a href="{{ route('contents.youtube.create') }}" class="btn btn-primary">{{ __('Pegar un enlace') }}</a>
         </div>
     @else
         <form method="GET" action="{{ route('contents.youtube.search') }}" class="yt-search card" role="search">
-            @if (request('from_welcome'))
-                <input type="hidden" name="from_welcome" value="1">
-            @endif
             @if (request('lista'))
                 <input type="hidden" name="lista" value="{{ request('lista') }}">
             @endif
@@ -140,10 +137,10 @@
 
                 <nav class="pager" aria-label="{{ __('Más resultados') }}">
                     @if ($results['prev'])
-                        <a class="btn btn-ghost" href="{{ route('contents.youtube.search', array_filter(['q' => $query, 'duracion' => $duration, 'idioma' => $language, 'ninos' => $kidsOnly ?: null, 'pagina' => $results['prev'], 'from_welcome' => request('from_welcome'), 'lista' => request('lista')])) }}">{{ __('Anteriores') }}</a>
+                        <a class="btn btn-ghost" href="{{ route('contents.youtube.search', array_filter(['q' => $query, 'duracion' => $duration, 'idioma' => $language, 'ninos' => $kidsOnly ?: null, 'pagina' => $results['prev'], 'lista' => request('lista')])) }}">{{ __('Anteriores') }}</a>
                     @endif
                     @if ($results['next'])
-                        <a class="btn btn-ghost" href="{{ route('contents.youtube.search', array_filter(['q' => $query, 'duracion' => $duration, 'idioma' => $language, 'ninos' => $kidsOnly ?: null, 'pagina' => $results['next'], 'from_welcome' => request('from_welcome'), 'lista' => request('lista')])) }}">{{ __('Más resultados') }}</a>
+                        <a class="btn btn-ghost" href="{{ route('contents.youtube.search', array_filter(['q' => $query, 'duracion' => $duration, 'idioma' => $language, 'ninos' => $kidsOnly ?: null, 'pagina' => $results['next'], 'lista' => request('lista')])) }}">{{ __('Más resultados') }}</a>
                     @endif
                 </nav>
 
@@ -151,10 +148,6 @@
                     {!! __('Resultados proporcionados por <a href=":yt" target="_blank" rel="noopener noreferrer">YouTube</a>. Los vídeos se reproducen con el reproductor oficial y pueden incluir anuncios o sugerencias.', ['yt' => 'https://www.youtube.com']) !!}
                 </p>
             @endif
-        @endif
-
-        @if (request('from_welcome'))
-            <p class="center"><a href="{{ route('welcome') }}" class="btn btn-accent">{{ __('Continuar con los primeros pasos') }}</a></p>
         @endif
 
         <dialog class="yt-dialog" data-yt-dialog aria-labelledby="yt-dialog-title">

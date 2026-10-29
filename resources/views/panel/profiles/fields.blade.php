@@ -6,6 +6,19 @@
 </div>
 
 <fieldset class="field">
+    <legend>{{ __('Edad') }} <span class="optional">{{ __('(para proponerte series de su edad)') }}</span></legend>
+    <div class="chips">
+        @foreach (\App\Models\VideoList::AGE_RANGES as $key => $range)
+            <label class="chip chip-text">
+                <input type="radio" name="age_range" value="{{ $key }}" @checked(old('age_range', $profile->age_range) === $key)>
+                <span>{{ \App\Models\VideoList::ageRangeLabel(...$range) }}</span>
+            </label>
+        @endforeach
+    </div>
+    @error('age_range')<p class="error">{{ $message }}</p>@enderror
+</fieldset>
+
+<fieldset class="field">
     <legend>{{ __('Avatar') }}</legend>
     <div class="avatar-picker">
         @foreach (config('kidstv.avatars') as $avatar)

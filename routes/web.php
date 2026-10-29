@@ -7,6 +7,7 @@ use App\Http\Controllers\Auth\ConfirmController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\OnboardingController;
 use App\Http\Controllers\Panel\AccountController;
 use App\Http\Controllers\Panel\ActivityController;
 use App\Http\Controllers\Panel\ContentController;
@@ -21,6 +22,19 @@ Route::get('/', HomeController::class)->name('home');
 Route::view('/privacidad', 'legal.privacy')->name('privacy');
 Route::view('/condiciones', 'legal.terms')->name('terms');
 Route::view('/ayuda/televisores', 'legal.tv-help')->name('help.tv');
+
+// Primeros pasos: los tres primeros se pueden hacer sin cuenta (el borrador va en la sesión).
+Route::prefix('empezar')->name('onboarding.')->controller(OnboardingController::class)->group(function () {
+    Route::get('/', 'profile')->name('profile');
+    Route::post('/', 'storeProfile')->name('profile.store');
+    Route::get('/series', 'lists')->name('lists');
+    Route::post('/series', 'storeLists')->name('lists.store');
+    Route::get('/tele', 'preview')->name('preview');
+    Route::post('/tele', 'choose')->name('choose');
+    Route::get('/cuenta', 'account')->middleware('guest')->name('account');
+    Route::get('/codigo', 'code')->middleware('guest')->name('code');
+    Route::get('/conectar', 'connect')->middleware('auth')->name('connect');
+});
 
 Route::middleware('guest')->group(function () {
     Route::get('/entrar', [LoginController::class, 'show'])->name('login');
@@ -62,7 +76,8 @@ Route::middleware('auth')->group(function () {
 
     Route::prefix('panel')->group(function () {
         Route::get('/', DashboardController::class)->name('panel');
-        Route::get('/bienvenida', [DashboardController::class, 'welcome'])->name('welcome');
+        // El antiguo asistente: ahora son los primeros pasos de /empezar.
+        Route::redirect('/bienvenida', '/empezar')->name('welcome');
 
         Route::get('/perfiles', [ProfileController::class, 'index'])->name('profiles.index');
         Route::get('/perfiles/nuevo', [ProfileController::class, 'create'])->name('profiles.create');

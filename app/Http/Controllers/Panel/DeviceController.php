@@ -62,7 +62,10 @@ class DeviceController extends Controller
             return $device;
         });
 
-        return redirect()->route('devices.index')->with('status', __('«:name» vinculado. En unos segundos mostrará los perfiles de tu familia.', ['name' => $device->name]));
+        $message = __('«:name» vinculado. En unos segundos mostrará los perfiles de tu familia.', ['name' => $device->name]);
+
+        // Al terminar los primeros pasos se vuelve al inicio del panel, no a la gestión de teles.
+        return redirect()->route($request->boolean('from_onboarding') ? 'panel' : 'devices.index')->with('status', $message);
     }
 
     /** Convierte este navegador en una «tele» de prueba para usar la videoteca sin televisor. */

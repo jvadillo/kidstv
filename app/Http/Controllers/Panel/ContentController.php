@@ -198,10 +198,6 @@ class ContentController extends Controller
             return back()->with('status', $message);
         }
 
-        if ($request->boolean('from_welcome')) {
-            return redirect()->route('welcome')->with('status', $message);
-        }
-
         return redirect($this->listUrl($content->list_id))->with('status', $message);
     }
 

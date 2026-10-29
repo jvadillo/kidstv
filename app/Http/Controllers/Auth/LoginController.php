@@ -7,6 +7,7 @@ use App\Models\LoginToken;
 use App\Models\User;
 use App\Services\AdultSessions;
 use App\Services\EmailVerification;
+use App\Services\Onboarding;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\RateLimiter;
@@ -17,6 +18,7 @@ class LoginController extends Controller
     public function __construct(
         private EmailVerification $verification,
         private AdultSessions $sessions,
+        private Onboarding $onboarding,
     ) {}
 
     public function show()
@@ -24,27 +26,37 @@ class LoginController extends Controller
         return view('auth.login', ['formToken' => Crypt::encryptString((string) now()->timestamp)]);
     }
 
+    /**
+     * Envía el código. Desde el asistente de primeros pasos (onboarding=1) las condiciones
+     * se aceptan aquí mismo, y al verificar el correo se guarda directamente lo preparado.
+     */
     public function send(Request $request)
     {
+        $fromOnboarding = $request->boolean('onboarding');
+
         $data = $request->validate([
             'email' => ['required', 'string', 'max:254', config('kidstv.email_dns_check') ? 'email:rfc,dns' : 'email:rfc'],
+            'terms' => $fromOnboarding ? ['accepted'] : [],
         ], [
             'email.required' => __('Escribe tu correo electrónico.'),
             'email.email' => __('Esta dirección de correo no parece válida o su dominio no existe. Revísala.'),
+            'terms.accepted' => __('Para guardar la tele tienes que aceptar las condiciones y la política de privacidad.'),
         ]);
 
         $email = EmailVerification::normalize($data['email']);
         $request->session()->put('login_email', $email);
+        $request->session()->put(Onboarding::CLAIM_KEY, $fromOnboarding);
+        $next = redirect()->route($fromOnboarding ? 'onboarding.code' : 'login.code');
 
         // Protección básica contra registros automatizados: campo trampa y tiempo mínimo
         // de cumplimentación. A un robot se le responde igual que a una persona.
         if (! $this->looksHuman($request)) {
-            return redirect()->route('login.code');
+            return $next;
         }
 
         $this->verification->send($email, LoginToken::PURPOSE_LOGIN, User::where('email', $email)->first(), $request->ip());
 
-        return redirect()->route('login.code');
+        return $next;
     }
 
     public function showCode(Request $request)
@@ -131,6 +143,15 @@ class LoginController extends Controller
 
         if ($user?->isBlocked()) {
             return redirect()->route('login')->withErrors(['email' => __('Esta cuenta está bloqueada. Si crees que es un error, escribe al soporte de KidsTV.')]);
+        }
+
+        // Desde el asistente ya se aceptaron las condiciones: se crea la cuenta (si no la
+        // había) y se guarda en ella el perfil y las listas preparados.
+        if ($request->session()->pull(Onboarding::CLAIM_KEY)) {
+            $user ??= $this->onboarding->createAccount($email);
+            $this->sessions->start($request, $user);
+
+            return $this->onboarding->finish($request, $user);
         }
 
         if ($user) {

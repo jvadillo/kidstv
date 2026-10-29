@@ -138,10 +138,12 @@ class ListFiltersTest extends TestCase
 
         $this->get('/panel/listas/publicas?idioma=es')->assertOk()
             ->assertSee('Bebés')->assertSee('Kantak')->assertDontSee('Songs');
-        // Salen las listas cuya edad se solapa con el tramo.
-        $this->get('/panel/listas/publicas?edad=6-8')->assertOk()
-            ->assertSee('Songs')->assertSee('Kantak')->assertDontSee('Bebés');
-        $this->get('/panel/listas/publicas?idioma=en&edad=0-2')->assertOk()
+        // Salen las listas cuya edad se solapa con la etapa (tocarse en un extremo no basta).
+        $this->get('/panel/listas/publicas?edad=7-12')->assertOk()
+            ->assertSee('Kantak')->assertDontSee('Songs')->assertDontSee('Bebés');
+        $this->get('/panel/listas/publicas?edad=3-6')->assertOk()
+            ->assertSee('Songs')->assertDontSee('Kantak')->assertDontSee('Bebés');
+        $this->get('/panel/listas/publicas?idioma=en&edad=0-3')->assertOk()
             ->assertSee('Ninguna lista coincide con estos filtros')->assertDontSee('Songs');
         // Un filtro desconocido se ignora.
         $this->get('/panel/listas/publicas?idioma=xx&edad=99')->assertOk()->assertSee('Bebés')->assertSee('Songs');

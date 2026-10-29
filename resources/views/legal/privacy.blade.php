@@ -10,7 +10,7 @@
         <h2>{{ __('Qué datos tratamos') }}</h2>
         <ul>
             <li><strong>{{ __('Persona adulta:') }}</strong> {{ __('correo electrónico, nombre visible opcional, fecha de aceptación de las condiciones y datos técnicos de las sesiones (navegador, dirección IP y última actividad) para poder mostrarte y revocar tus sesiones.') }}</li>
-            <li><strong>{{ __('Perfiles infantiles:') }}</strong> {{ __('solo un apodo y un avatar predefinido. No pedimos nombres completos, fechas de nacimiento ni fotografías.') }}</li>
+            <li><strong>{{ __('Perfiles infantiles:') }}</strong> {{ __('solo un apodo, un avatar predefinido y, si lo indicas, su etapa de edad (por ejemplo «3–6 años») para proponerte series adecuadas. No pedimos nombres completos, fechas de nacimiento ni fotografías.') }}</li>
             <li><strong>{{ __('Contenidos:') }}</strong> {{ __('los archivos que subes, sus portadas y datos (título, lista, descripción) y los enlaces de YouTube que añades.') }}</li>
             <li><strong>{{ __('Televisores:') }}</strong> {{ __('nombre que les pones, tipo de dispositivo y fecha de última conexión.') }}</li>
             <li><strong>{{ __('Actividad en la tele:') }}</strong> {{ __('cada tele informa de cada reproducción: qué contenido, qué perfil infantil lo estaba viendo, en qué tele, cuándo empezó, cuántos minutos se vieron y si fue desde la Zona de adultos. Estos datos se conservan 12 meses.') }}</li>

@@ -404,7 +404,111 @@
         showFlash.timer = setTimeout(function () { flash.classList.remove('visible'); }, 3500);
     }
 
+    // Primeros pasos, catálogo: filtros por edad e idioma y selección de series sin recargar.
+    function initOnboardingCatalog() {
+        var form = document.querySelector('[data-ob-catalog]');
+        if (!form) return;
+        var cards = form.querySelectorAll('.ob-card');
+        var empty = form.querySelector('[data-ob-empty]');
+        var count = form.querySelector('[data-ob-count]');
+        var stack = form.querySelector('[data-ob-stack]');
+        var next = form.querySelector('[data-ob-next]');
+        var filters = {};
+        form.querySelectorAll('[data-ob-filter][aria-current]').forEach(function (chip) {
+            filters[chip.dataset.obFilter] = chip.dataset.value;
+        });
+
+        function has(list, value) { return !value || list.split(' ').indexOf(value) !== -1; }
+
+        function applyFilters() {
+            var visible = 0;
+            cards.forEach(function (card) {
+                card.hidden = !(has(card.dataset.ages, filters.edad) && has(card.dataset.langs, filters.idioma));
+                if (!card.hidden) visible++;
+            });
+            empty.hidden = visible > 0;
+            form.querySelectorAll('[data-ob-filter]').forEach(function (chip) {
+                if ((filters[chip.dataset.obFilter] || '') === chip.dataset.value) chip.setAttribute('aria-current', 'true');
+                else chip.removeAttribute('aria-current');
+            });
+            // La dirección conserva los filtros por si se recarga o se vuelve atrás.
+            var params = new URLSearchParams(location.search);
+            Object.keys(filters).forEach(function (key) { params.set(key, filters[key]); });
+            history.replaceState(null, '', location.pathname + '?' + params.toString());
+        }
+
+        function updateSelection() {
+            var checked = form.querySelectorAll('.ob-card input:checked');
+            var n = checked.length;
+            count.textContent = n === 0 ? count.dataset.none : (n === 1 ? count.dataset.one : count.dataset.many.replace(':count', n));
+            next.disabled = n === 0;
+            // Las portadas de las últimas elegidas, apiladas junto al contador.
+            stack.innerHTML = '';
+            Array.prototype.slice.call(checked, -4).forEach(function (input) {
+                var thumb = input.closest('.ob-card').querySelector('[data-ob-thumb]');
+                if (!thumb) return;
+                var img = document.createElement('img');
+                img.src = thumb.src;
+                img.alt = '';
+                stack.appendChild(img);
+            });
+        }
+
+        form.addEventListener('click', function (e) {
+            var chip = e.target.closest('[data-ob-filter]');
+            if (chip) {
+                e.preventDefault();
+                filters[chip.dataset.obFilter] = chip.dataset.value;
+                applyFilters();
+            } else if (e.target.closest('[data-ob-clear]')) {
+                e.preventDefault();
+                filters = { edad: '', idioma: '' };
+                applyFilters();
+            }
+        });
+        form.addEventListener('change', function (e) {
+            if (e.target.closest('.ob-card')) updateSelection();
+        });
+        updateSelection();
+    }
+
+    // Primeros pasos, vista previa: el foco recorre las tarjetas como si alguien usara el mando.
+    function initTvPreview() {
+        var tv = document.querySelector('[data-tv-preview]');
+        if (!tv || (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches)) return;
+        // Las tres primeras tarjetas de las dos primeras filas: siempre caben en la pantalla.
+        var path = [];
+        Array.prototype.slice.call(tv.querySelectorAll('.tvp-track'), 0, 2).forEach(function (track) {
+            Array.prototype.slice.call(track.children, 0, 3).forEach(function (card) { path.push(card); });
+        });
+        if (path.length < 2) return;
+
+        var step = 0;
+        function tick() {
+            path[step].classList.remove('focused');
+            step = (step + 1) % path.length;
+            path[step].classList.add('focused');
+            setTimeout(tick, 1500);
+        }
+        setTimeout(tick, 2200);
+    }
+
+    // Código de 6 cifras: se envía solo al completarlo (también al pegarlo o autocompletarlo).
+    function initCodeAutosubmit() {
+        var input = document.querySelector('[data-code-input]');
+        if (!input) return;
+        input.addEventListener('input', function () {
+            if (input.value.replace(/\D/g, '').length !== 6 || input.form.dataset.sent) return;
+            input.form.dataset.sent = '1';
+            if (input.form.requestSubmit) input.form.requestSubmit();
+            else input.form.submit();
+        });
+    }
+
     onReady(function () {
+        initOnboardingCatalog();
+        initTvPreview();
+        initCodeAutosubmit();
         initConfirms();
         initMenus();
         initCheckTools();

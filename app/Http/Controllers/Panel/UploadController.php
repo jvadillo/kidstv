@@ -138,7 +138,7 @@ class UploadController extends Controller
         $request->session()->flash('status', __('«:title» subido. Lo estamos preparando; en unos momentos estará listo.', ['title' => $content->title]));
 
         return response()->json([
-            'redirect' => $request->boolean('from_welcome') ? route('welcome') : route('contents.edit', $content),
+            'redirect' => route('contents.edit', $content),
         ]);
     }
 

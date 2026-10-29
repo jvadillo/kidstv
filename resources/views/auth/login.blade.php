@@ -26,5 +26,6 @@
         </form>
 
         <p class="small muted">{{ __('Si es tu primera vez, crearemos tu cuenta después de verificar el correo y aceptar las condiciones.') }}</p>
+        <p class="center"><a href="{{ route('onboarding.profile') }}" class="btn btn-link">{{ __('¿Primera vez? Prepara la tele de tu peque sin registrarte') }}</a></p>
     </div>
 @endsection

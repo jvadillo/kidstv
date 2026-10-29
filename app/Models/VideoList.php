@@ -33,8 +33,11 @@ class VideoList extends Model
 
     public const AGE_MAX = 12;
 
-    /** Tramos de edad del filtro de listas públicas: salen las listas cuya edad se solapa. */
-    public const AGE_RANGES = ['0-2' => [0, 2], '3-5' => [3, 5], '6-8' => [6, 8], '9-12' => [9, 12]];
+    /**
+     * Etapas de edad: las de los perfiles infantiles y las del filtro de listas públicas
+     * (salen las listas cuya edad se solapa con la etapa).
+     */
+    public const AGE_RANGES = ['0-3' => [0, 3], '3-6' => [3, 6], '7-12' => [7, 12]];
 
     protected function casts(): array
     {
@@ -149,9 +152,20 @@ class VideoList extends Model
         return $this->hasAgeRange() ? self::ageRangeLabel($list->age_min, $list->age_max) : null;
     }
 
-    /** Si la edad recomendada se solapa con un tramo del filtro (de $min a $max años). */
+    /**
+     * Si la edad recomendada se solapa con una etapa (de $min a $max años). Las etapas
+     * comparten los extremos («0–3» y «3–6»), así que tocarse en un extremo no basta: una
+     * lista de 0–3 años no es de la etapa 3–6, salvo que sea de un solo año o de dos seguidos.
+     */
     public function suitsAges(int $min, int $max): bool
     {
-        return $this->hasAgeRange() && $this->age_min <= $max && $this->age_max >= $min;
+        if (! $this->hasAgeRange()) {
+            return false;
+        }
+
+        $from = max($this->age_min, $min);
+        $to = min($this->age_max, $max);
+
+        return $from < $to || ($from === $to && $this->age_max - $this->age_min <= 1);
     }
 }

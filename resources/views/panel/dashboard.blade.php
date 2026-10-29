@@ -26,23 +26,27 @@
         </a>
     </section>
 
-    @if ($profiles->isEmpty() || $contentCount === 0)
-        <section class="card card-highlight">
-            <h2>{{ __('Primeros pasos') }}</h2>
-            <ol class="steps">
-                <li @class(['done' => $profiles->isNotEmpty()])>
-                    <a href="{{ route('profiles.create') }}">{{ __('Crea un perfil infantil') }}</a>
-                    <span class="muted">{{ __('Solo un apodo y un avatar.') }}</span>
-                </li>
-                <li @class(['done' => $contentCount > 0])>
-                    <a href="{{ youtube_add_url() }}">{{ __('Añade tu primer contenido') }}</a>
-                    <span class="muted">{{ __('Un enlace de YouTube es lo más rápido.') }}</span>
-                </li>
-                <li>
-                    <span>{{ __('Pruébalo con «Probar modo TV» o conecta tu tele') }}</span>
-                    <span class="muted">{{ __('No hace falta tele para empezar.') }}</span>
-                </li>
-            </ol>
+    @if ($profiles->isEmpty())
+        <section class="card card-highlight setup-card">
+            <div>
+                <h2>{{ __('Prepara la tele de tu peque') }}</h2>
+                <p class="muted">{{ __('Su nombre, sus series favoritas y listo: en menos de 2 minutos.') }}</p>
+            </div>
+            <a href="{{ route('onboarding.profile') }}" class="btn btn-primary">{{ __('Empezar') }} @include('partials.icon', ['name' => 'right'])</a>
+        </section>
+    @elseif ($devices->isEmpty())
+        <section class="card card-highlight setup-card">
+            <div>
+                <h2>@include('partials.icon', ['name' => 'tv']) {{ __('Conecta la tele de :names', ['names' => $profiles->pluck('name')->join(', ', ' y ')]) }}</h2>
+                <p class="muted">{{ __('Ya está preparada: solo falta abrir KidsTV en la tele y escribir aquí su código.') }}</p>
+            </div>
+            <div class="form-actions">
+                <a href="{{ route('onboarding.connect') }}" class="btn btn-accent">{{ __('Conectar mi tele') }}</a>
+                <form method="POST" action="{{ route('devices.browser') }}" target="_blank">
+                    @csrf
+                    <button class="btn btn-ghost">{{ __('Probar en este navegador') }}</button>
+                </form>
+            </div>
         </section>
     @endif
 
@@ -59,7 +63,7 @@
                     <a href="{{ route('profiles.edit', $profile) }}" class="profile-pill">
                         @include('partials.avatar', ['avatar' => $profile->avatar, 'size' => 64])
                         <strong>{{ $profile->name }}</strong>
-                        <span class="muted small">{{ trans_choice(':count contenido|:count contenidos', $profile->contents_count) }}</span>
+                        <span class="muted small">{{ $profile->ageLabel() ?? trans_choice(':count contenido|:count contenidos', $profile->contents_count) }}</span>
                     </a>
                 @endforeach
             </div>
@@ -71,7 +75,9 @@
             <h2>{{ __('Últimos añadidos') }}</h2>
             <a href="{{ route('contents.index') }}" class="btn btn-sm btn-ghost">{{ __('Ver biblioteca') }}</a>
         </div>
-        @if ($recent->isEmpty())
+        @if ($recent->isEmpty() && $linkedCount > 0)
+            <p class="empty">{!! trans_choice('Aún no has añadido vídeos propios. La serie que has elegido está en la <a href=":url">Biblioteca</a>.|Aún no has añadido vídeos propios. Las :count series que has elegido están en la <a href=":url">Biblioteca</a>.', $linkedCount, ['url' => e(route('contents.index'))]) !!}</p>
+        @elseif ($recent->isEmpty())
             <p class="empty">{{ __('Tu biblioteca está vacía. Usa los botones de arriba para añadir el primer contenido.') }}</p>
         @else
             <ul class="content-list">

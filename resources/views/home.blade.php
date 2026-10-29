@@ -5,11 +5,12 @@
 @section('content')
     <section class="hero">
         <h1>{{ __('La videoteca de tu familia, en la tele y sin sorpresas') }}</h1>
-        <p class="lead">{{ __('Tú eliges los vídeos, audios y enlaces de YouTube. Tus hijos solo ven lo que has aprobado, con el mando a distancia y sin buscadores.') }}</p>
+        <p class="lead">{{ __('Elige sus series favoritas, añade tus vídeos y enlaces de YouTube. Tus hijos solo ven lo que has aprobado, con el mando a distancia y sin buscadores.') }}</p>
         <div class="hero-actions">
-            <a href="{{ route('login') }}" class="btn btn-primary btn-lg">{{ __('Empezar con mi correo') }}</a>
+            <a href="{{ route('onboarding.profile') }}" class="btn btn-primary btn-lg">{{ __('Preparar la tele de mi peque') }} @include('partials.icon', ['name' => 'right'])</a>
+            <a href="{{ route('login') }}" class="btn btn-ghost btn-lg">{{ __('Ya tengo cuenta') }}</a>
         </div>
-        <p class="muted small">{{ __('Sin contraseñas: te enviamos un código cada vez que entras desde un dispositivo nuevo.') }}</p>
+        <p class="muted small">{{ __('En menos de 2 minutos y sin registrarte: el correo solo te lo pedimos para guardarla.') }}</p>
     </section>
 
     <section class="features">

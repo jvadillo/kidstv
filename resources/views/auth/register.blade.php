@@ -19,7 +19,7 @@
                 <p><strong>{{ __('Antes de empezar') }}</strong></p>
                 <ul>
                     <li>{{ __('Guardamos tu correo y lo que subas en nuestro propio servidor, solo para que funcione tu videoteca.') }}</li>
-                    <li>{{ __('De los niños solo pedimos un apodo y un avatar. Nada de fotos, apellidos ni fechas de nacimiento.') }}</li>
+                    <li>{{ __('De los niños solo pedimos un apodo, un avatar y su etapa de edad. Nada de fotos, apellidos ni fechas de nacimiento.') }}</li>
                     <li>{{ __('Sin publicidad ni perfiles comerciales. Puedes exportar o borrar tus datos cuando quieras.') }}</li>
                 </ul>
             </div>

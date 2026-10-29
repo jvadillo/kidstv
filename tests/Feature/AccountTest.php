@@ -155,7 +155,7 @@ class AccountTest extends TestCase
 
     public function test_public_pages_render(): void
     {
-        $this->get('/')->assertOk()->assertSee('Empezar con mi correo');
+        $this->get('/')->assertOk()->assertSee('Preparar la tele de mi peque');
         $this->get('/privacidad')->assertOk()->assertSee('Política de privacidad');
         $this->get('/condiciones')->assertOk();
         $this->get('/ayuda/televisores')->assertOk()->assertSee('modo desarrollador');
@@ -167,7 +167,7 @@ class AccountTest extends TestCase
         $user = $this->adult();
         $this->actingAsAdult($user);
 
-        foreach (['/panel', '/panel/bienvenida', '/panel/perfiles', '/panel/perfiles/nuevo', '/panel/listas/sin-lista', '/panel/listas/publicas', '/panel/contenidos',
+        foreach (['/panel', '/empezar', '/panel/perfiles', '/panel/perfiles/nuevo', '/panel/listas/sin-lista', '/panel/listas/publicas', '/panel/contenidos',
             '/panel/contenidos/nuevo/youtube', '/panel/contenidos/nuevo/video', '/panel/contenidos/nuevo/audio',
             '/panel/televisores', '/panel/televisores/vincular', '/panel/cuenta', '/panel/actividad', '/panel/actividad?periodo=dia', '/panel/actividad?periodo=mes'] as $url) {
             $this->get($url)->assertOk();
@@ -175,7 +175,8 @@ class AccountTest extends TestCase
 
         $profile = $this->profile($user->family);
         $content = $this->youtubeContent($user->family);
-        $this->get('/panel/bienvenida')->assertOk()->assertSee('¡Todo listo para probar!');
+        $this->get('/panel/bienvenida')->assertRedirect('/empezar');
+        $this->get('/panel')->assertOk()->assertSee('Conecta la tele de Ane');
         $this->get('/panel/perfiles/'.$profile->id)->assertOk();
         $this->get('/panel/contenidos/'.$content->id)->assertOk()->assertSee('youtube-nocookie.com/embed/aqz-KE-bpKQ', false);
     }

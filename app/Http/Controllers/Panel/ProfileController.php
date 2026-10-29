@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Panel;
 
 use App\Http\Controllers\Controller;
 use App\Models\Profile;
+use App\Models\VideoList;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
@@ -29,10 +30,6 @@ class ProfileController extends Controller
         $profile = $family->profiles()->create($this->validated($request) + [
             'position' => (int) $family->profiles()->max('position') + 1,
         ]);
-
-        if ($request->boolean('from_welcome')) {
-            return redirect()->route('welcome')->with('status', __('¡Perfil de :name creado!', ['name' => $profile->name]));
-        }
 
         return redirect()->route('profiles.edit', $profile)->with('status', __('Perfil creado. Ahora elige qué puede ver.'));
     }
@@ -88,6 +85,7 @@ class ProfileController extends Controller
         return $request->validate([
             'name' => ['required', 'string', 'max:40'],
             'avatar' => ['required', Rule::in(config('kidstv.avatars'))],
+            'age_range' => ['nullable', Rule::in(array_keys(VideoList::AGE_RANGES))],
         ], [
             'name.required' => __('Escribe un apodo o nombre para el perfil.'),
         ]);

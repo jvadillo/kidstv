@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
-#[Fillable(['name', 'avatar', 'position', 'daily_limit_minutes'])]
+#[Fillable(['name', 'avatar', 'position', 'daily_limit_minutes', 'age_range'])]
 class Profile extends Model
 {
     // Solo se aplica con un límite diario para cada niño (Family::$daily_limit_mode).
@@ -22,6 +22,14 @@ class Profile extends Model
     {
         // Sin clave foránea en plays: el tiempo visto se conserva, pero ya sin el niño.
         static::deleting(fn (Profile $profile) => Play::where('profile_id', $profile->id)->update(['profile_id' => null]));
+    }
+
+    /** Etapa de edad para mostrar, por ejemplo «3–6 años», o null si no se ha indicado. */
+    public function ageLabel(): ?string
+    {
+        $range = VideoList::AGE_RANGES[$this->age_range] ?? null;
+
+        return $range ? VideoList::ageRangeLabel(...$range) : null;
     }
 
     public function family(): BelongsTo

@@ -14,9 +14,6 @@
     <form method="POST" action="{{ route('contents.youtube.store') }}" enctype="multipart/form-data" class="stack card narrow"
           data-youtube-form data-preview-url="{{ route('contents.youtube.preview') }}">
         @csrf
-        @if (request('from_welcome') || old('from_welcome'))
-            <input type="hidden" name="from_welcome" value="1">
-        @endif
 
         <div class="field">
             <label for="url">{{ __('Enlace del vídeo') }}</label>
