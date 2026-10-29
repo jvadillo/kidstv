@@ -50,5 +50,9 @@ return [
         'terms' => 'las condiciones',
         'confirmation' => 'la confirmación',
         'family_name' => 'el nombre de la familia',
+        'languages' => 'los idiomas',
+        'languages.*' => 'el idioma',
+        'age_min' => 'la edad mínima',
+        'age_max' => 'la edad máxima',
     ],
 ];

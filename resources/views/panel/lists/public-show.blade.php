@@ -8,6 +8,7 @@
         <a href="{{ route('lists.public') }}" class="btn btn-ghost">{{ __('Todas las listas públicas') }}</a>
     </div>
     @if ($list->description)<p class="muted">{{ $list->description }}</p>@endif
+    @include('panel.lists.public-meta', ['list' => $list])
 
     @if ($link)
         <div class="notice notice-info">

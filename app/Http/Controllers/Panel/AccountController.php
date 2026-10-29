@@ -180,7 +180,7 @@ class AccountController extends Controller
                 'content_ids' => $p->contents->pluck('id'),
                 'public_list_ids' => $p->lists->pluck('id'),
             ]),
-            'lists' => $family->lists->map(fn ($c) => ['id' => $c->id, 'name' => $c->displayName(), 'public_list_added' => $c->isLinked()]),
+            'lists' => $family->lists->map(fn ($c) => ['id' => $c->id, 'name' => $c->displayName(), 'languages' => $c->languageCodes(), 'public_list_added' => $c->isLinked()]),
             'contents' => $family->contents->map(fn (Content $c) => [
                 'id' => $c->id, 'type' => $c->type, 'title' => $c->title, 'description' => $c->description,
                 'list_id' => $c->list_id, 'status' => $c->status,

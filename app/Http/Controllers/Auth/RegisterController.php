@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Family;
 use App\Models\User;
 use App\Services\AdultSessions;
+use App\Services\YouTubeSearch;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -42,7 +43,7 @@ class RegisterController extends Controller
 
             $family = Family::create(['name' => null]);
             foreach (config('kidstv.default_lists') as $i => $name) {
-                $family->lists()->create(['name' => $name, 'position' => $i]);
+                $family->lists()->create(['name' => $name, 'position' => $i, 'languages' => [YouTubeSearch::defaultLanguage()]]);
             }
 
             return User::create([

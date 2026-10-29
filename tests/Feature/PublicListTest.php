@@ -15,7 +15,8 @@ class PublicListTest extends TestCase
     private function publicList(): VideoList
     {
         $admin = $this->adult(['is_admin' => true]);
-        $list = $admin->family->lists()->create(['name' => 'Canciones en inglés', 'is_public' => true, 'description' => 'Para aprender jugando']);
+        $list = $admin->family->lists()->create(['name' => 'Canciones en inglés', 'is_public' => true, 'description' => 'Para aprender jugando',
+            'languages' => ['en'], 'age_min' => 2, 'age_max' => 5]);
         $this->youtubeContent($admin->family, ['title' => 'Baby Shark', 'youtube_id' => 'aaaaaaaaaaa', 'list_id' => $list->id, 'duration' => 125]);
         $this->youtubeContent($admin->family, ['title' => 'Oculto', 'youtube_id' => 'bbbbbbbbbbb', 'list_id' => $list->id,
             'status' => Content::STATUS_UNAVAILABLE, 'status_message' => Content::MESSAGE_HIDDEN]);
@@ -32,7 +33,8 @@ class PublicListTest extends TestCase
         $this->actingAsAdult($user);
 
         $this->get('/panel/contenidos')->assertOk()->assertSee('Listas públicas');
-        $this->get('/panel/listas/publicas')->assertOk()->assertSee('Canciones en inglés')->assertSee('Para aprender jugando')->assertSee('1 vídeo');
+        $this->get('/panel/listas/publicas')->assertOk()->assertSee('Canciones en inglés')->assertSee('Para aprender jugando')->assertSee('1 vídeo')
+            ->assertSee('Inglés')->assertSee('2–5 años');
         $this->get('/panel/listas/publicas/'.$list->id)->assertOk()->assertSee('Baby Shark')->assertDontSee('Oculto');
 
         $response = $this->post('/panel/listas/publicas/'.$list->id, ['profile_ids' => [$ane->id]]);
@@ -138,12 +140,22 @@ class PublicListTest extends TestCase
         $existing = $admin->family->lists()->create(['name' => 'Dibujos']);
         $this->actingAsAdult($admin);
 
-        $this->post('/admin/listas', ['name' => 'Ciencia', 'description' => 'Experimentos'])->assertSessionHas('status');
-        $this->assertTrue($admin->family->lists()->where('name', 'Ciencia')->first()->is_public);
-        $this->post('/admin/listas/'.$existing->id.'/publicar')->assertSessionHas('status');
-        $this->assertTrue($existing->fresh()->is_public);
+        // Idioma y edad recomendada son obligatorios en una lista pública.
+        $this->post('/admin/listas', ['name' => 'Ciencia', 'description' => 'Experimentos'])->assertSessionHasErrors(['languages', 'age_min', 'age_max']);
+        $this->post('/admin/listas', ['name' => 'Ciencia', 'languages' => ['es'], 'age_min' => 8, 'age_max' => 4])->assertSessionHasErrors('age_max');
+        $this->post('/admin/listas', ['name' => 'Ciencia', 'description' => 'Experimentos', 'languages' => ['es', 'en'], 'age_min' => 6, 'age_max' => 10])->assertSessionHas('status');
+        $ciencia = $admin->family->lists()->where('name', 'Ciencia')->first();
+        $this->assertTrue($ciencia->is_public);
+        $this->assertSame([6, 10, ['es', 'en']], [$ciencia->age_min, $ciencia->age_max, $ciencia->languages]);
 
-        $this->get('/admin/listas')->assertOk()->assertSee('Ciencia')->assertSee('Dibujos')->assertSee('Gestionar vídeos');
+        $this->post('/admin/listas/'.$existing->id.'/publicar')->assertSessionHasErrors('age_min');
+        $this->assertFalse($existing->fresh()->is_public);
+        $this->post('/admin/listas/'.$existing->id.'/publicar', ['age_min' => 3, 'age_max' => 6])->assertSessionHas('status');
+        $this->assertTrue($existing->fresh()->is_public);
+        $this->put('/admin/listas/'.$ciencia->id, ['name' => 'Ciencia', 'languages' => ['en'], 'age_min' => 9, 'age_max' => 12])->assertSessionHas('status');
+        $this->assertSame([9, 12, ['en']], [$ciencia->fresh()->age_min, $ciencia->fresh()->age_max, $ciencia->fresh()->languages]);
+
+        $this->get('/admin/listas')->assertOk()->assertSee('Ciencia')->assertSee('Dibujos')->assertSee('Gestionar vídeos')->assertSee('9–12 años');
         $this->get('/panel/contenidos')->assertSee('Publicada');
         // Sus propias listas públicas ya están en su videoteca: no se ofrecen para añadir.
         $this->get('/panel/listas/publicas')->assertOk()->assertDontSee('Ciencia');

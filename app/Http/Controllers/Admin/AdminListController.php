@@ -3,10 +3,11 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Panel\ValidatesListFields;
 use App\Models\VideoList;
 use App\Services\UsageStats;
+use App\Services\YouTubeSearch;
 use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
 
 /**
  * Listas públicas. Son listas de la familia del administrador marcadas como públicas:
@@ -15,6 +16,8 @@ use Illuminate\Validation\Rule;
  */
 class AdminListController extends Controller
 {
+    use ValidatesListFields;
+
     public function index(UsageStats $stats)
     {
         $public = VideoList::public()
@@ -28,17 +31,15 @@ class AdminListController extends Controller
             'usage' => $stats->byList(now()->subDays(30), $public->pluck('id')->all()),
             'private' => $this->family()->ownLists()->where('is_public', false)->withCount('contents')->get(),
             'familyId' => $this->family()->id,
+            'defaultLanguage' => YouTubeSearch::defaultLanguage(),
         ]);
     }
 
     public function store(Request $request)
     {
-        $family = $this->family();
-        $data = $this->validated($request);
-        $family->lists()->create($data + [
-            'is_public' => true,
-            'position' => (int) $family->lists()->max('position') + 1,
-        ]);
+        $data = $this->validatedList($request, public: true);
+        // Como cualquier lista nueva, sale la primera en la biblioteca del administrador.
+        $this->family()->prependList($data + ['is_public' => true]);
 
         return back()->with('status', __('Lista pública «:name» creada. Añádele vídeos desde la biblioteca eligiendo esta lista.', ['name' => $data['name']]));
     }
@@ -46,16 +47,16 @@ class AdminListController extends Controller
     public function update(Request $request, int $list)
     {
         $list = VideoList::public()->findOrFail($list);
-        $list->update($this->validated($request, $list));
+        $list->update($this->validatedList($request, $list, public: true));
 
         return back()->with('status', __('Lista «:name» actualizada.', ['name' => $list->name]));
     }
 
-    /** Publicar una lista propia que ya existe. */
-    public function publish(int $list)
+    /** Publicar una lista propia que ya existe, indicando para qué edades es. */
+    public function publish(Request $request, int $list)
     {
         $list = $this->family()->ownLists()->findOrFail($list);
-        $list->update(['is_public' => true]);
+        $list->update($this->validatedAges($request) + ['is_public' => true]);
 
         return back()->with('status', __('«:name» ya es una lista pública.', ['name' => $list->name]));
     }
@@ -69,19 +70,5 @@ class AdminListController extends Controller
         $list->update(['is_public' => false]);
 
         return back()->with('status', trans_choice('«:name» ya no es pública. Se ha quitado de :count videoteca.|«:name» ya no es pública. Se ha quitado de :count videotecas.', $removed, ['name' => $list->name]));
-    }
-
-    private function validated(Request $request, ?VideoList $ignore = null): array
-    {
-        return $request->validate([
-            'name' => [
-                'required', 'string', 'max:40',
-                Rule::unique('lists', 'name')->where('family_id', $ignore->family_id ?? $this->family()->id)->whereNull('source_id')->ignore($ignore?->id),
-            ],
-            'description' => ['nullable', 'string', 'max:200'],
-        ], [
-            'name.required' => __('Escribe un nombre para la lista.'),
-            'name.unique' => __('Ya hay una lista con ese nombre.'),
-        ]);
     }
 }

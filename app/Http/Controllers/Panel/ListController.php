@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Panel;
 use App\Http\Controllers\Controller;
 use App\Models\VideoList;
 use App\Services\MediaLibrary;
+use App\Services\YouTubeSearch;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
@@ -14,6 +15,8 @@ use Illuminate\Validation\Rule;
  */
 class ListController extends Controller
 {
+    use ValidatesListFields;
+
     /** Las listas se ven y se ordenan en la biblioteca. */
     public function index()
     {
@@ -48,22 +51,25 @@ class ListController extends Controller
         ]);
     }
 
+    /** Nueva lista privada: solo lo imprescindible, y luego se le añaden contenidos. */
+    public function create()
+    {
+        return view('panel.lists.create', ['defaultLanguage' => YouTubeSearch::defaultLanguage()]);
+    }
+
     public function store(Request $request)
     {
-        $family = $this->family();
-        $data = $this->validated($request);
-        // Las listas nuevas van arriba del todo, donde se ven en la biblioteca y en la tele.
-        VideoList::where('family_id', $family->id)->increment('position');
-        $list = $family->lists()->create($data + ['position' => 0]);
+        $data = $this->validatedList($request);
+        $list = $this->family()->prependList($data);
 
-        return redirect()->route('lists.show', $list)->with('status', __('Lista «:name» creada.', ['name' => $data['name']]));
+        return redirect()->route('lists.show', $list)->with('status', __('Lista «:name» creada. Ahora añádele vídeos o audios.', ['name' => $data['name']]));
     }
 
     public function update(Request $request, int $list)
     {
         $list = $this->findList($list);
         abort_if($list->isLinked(), 422, __('Las listas públicas no se pueden renombrar.'));
-        $list->update($this->validated($request, $list));
+        $list->update($this->validatedList($request, $list));
 
         return back()->with('status', __('Lista actualizada.'));
     }
@@ -108,19 +114,30 @@ class ListController extends Controller
         return back()->with('status', __('Perfiles de «:name» guardados.', ['name' => $list->displayName()]));
     }
 
-    /** Catálogo de listas públicas que la familia todavía no ha añadido. */
-    public function explore()
+    /** Catálogo de listas públicas, con filtros por idioma y por tramo de edad recomendada. */
+    public function explore(Request $request)
     {
         $linked = $this->family()->lists()->whereNotNull('source_id')->pluck('source_id');
+        $all = $this->availablePublicLists()
+            ->withCount(['contents' => fn ($q) => $q->ready()])
+            ->with(['contents' => fn ($q) => $q->ready()->ordered()])
+            ->orderBy('name')
+            ->get();
+
+        // En el filtro de idioma solo salen los idiomas que tiene alguna lista.
+        $languages = collect(VideoList::languageOptions())->only($all->flatMap->languageCodes()->unique()->all());
+        $language = $languages->has((string) $request->query('idioma')) ? $request->query('idioma') : null;
+        $age = array_key_exists((string) $request->query('edad'), VideoList::AGE_RANGES) ? $request->query('edad') : null;
 
         return view('panel.lists.public', [
-            'lists' => $this->availablePublicLists()
-                ->withCount(['contents' => fn ($q) => $q->ready()])
-                ->with(['contents' => fn ($q) => $q->ready()->ordered()])
-                ->orderBy('name')
-                ->get(),
+            'lists' => $all
+                ->when($language, fn ($lists) => $lists->filter(fn (VideoList $list) => in_array($language, $list->languageCodes(), true)))
+                ->when($age, fn ($lists) => $lists->filter(fn (VideoList $list) => $list->suitsAges(...VideoList::AGE_RANGES[$age])))
+                ->values(),
+            'total' => $all->count(),
+            'languages' => $languages,
+            'filters' => ['idioma' => $language, 'edad' => $age],
             'linked' => $linked->all(),
-            'profiles' => $this->family()->profiles,
         ]);
     }
 
@@ -142,10 +159,9 @@ class ListController extends Controller
         $family = $this->family();
         $profileIds = $this->validatedProfiles($request);
 
-        $link = $family->lists()->firstOrCreate(['source_id' => $source->id], [
-            'name' => mb_substr($source->name, 0, 40),
-            'position' => (int) $family->lists()->max('position') + 1,
-        ]);
+        // Como las listas nuevas, la recién añadida sale la primera.
+        $link = $family->lists()->where('source_id', $source->id)->first()
+            ?? $family->prependList(['source_id' => $source->id, 'name' => mb_substr($source->name, 0, 40)]);
         $link->profiles()->sync($profileIds);
 
         return redirect()->route('lists.show', $link)->with('status', $profileIds
@@ -184,18 +200,5 @@ class ListController extends Controller
             'profile_ids' => ['array'],
             'profile_ids.*' => ['integer', Rule::exists('profiles', 'id')->where('family_id', $this->family()->id)],
         ])['profile_ids'] ?? [];
-    }
-
-    private function validated(Request $request, ?VideoList $ignore = null): array
-    {
-        return $request->validate([
-            'name' => [
-                'required', 'string', 'max:40',
-                Rule::unique('lists', 'name')->where('family_id', $this->family()->id)->whereNull('source_id')->ignore($ignore?->id),
-            ],
-        ], [
-            'name.required' => __('Escribe un nombre para la lista.'),
-            'name.unique' => __('Ya tienes una lista con ese nombre.'),
-        ]);
     }
 }

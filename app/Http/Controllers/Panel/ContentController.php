@@ -21,11 +21,17 @@ class ContentController extends Controller
 
     public function __construct(private MediaLibrary $library) {}
 
-    /** Biblioteca: las listas de la familia, en el orden de las filas de la tele. */
-    public function index()
+    /**
+     * Biblioteca: las listas de la familia, en el orden de las filas de la tele. Con varios
+     * perfiles se puede ver solo lo de un niño y un administrador puede separar las listas
+     * públicas (publicadas o añadidas) de las privadas.
+     */
+    public function index(Request $request)
     {
         $family = $this->family();
         $profiles = $family->profiles;
+        $profile = $profiles->count() > 1 ? $profiles->firstWhere('id', $request->integer('perfil')) : null;
+        $kind = $request->user()->isAdmin() && in_array($request->query('tipo'), ['publicas', 'privadas'], true) ? $request->query('tipo') : null;
         $byList = $family->contents()->with('profiles:id')->ordered()->get()
             ->groupBy(fn (Content $c) => $c->list_id ?? 0);
 
@@ -43,10 +49,21 @@ class ContentController extends Controller
             });
 
         $unlisted = $byList->get(0, collect());
+        $unlisted = $unlisted->isEmpty() ? null : $this->summary($unlisted, $profiles->whereIn('id', $unlisted->flatMap->profiles->pluck('id')));
+        $empty = $cards->isEmpty() && ! $unlisted;
+
+        // Una lista sale con el filtro de un perfil si ese niño ve algo de ella en la tele.
+        $shows = fn (?VideoList $list, $seenBy) => (! $profile || $seenBy->contains('id', $profile->id))
+            && (! $kind || ($kind === 'publicas') === (bool) ($list?->is_public || $list?->isLinked()));
 
         return view('panel.contents.index', [
-            'cards' => $cards,
-            'unlisted' => $unlisted->isEmpty() ? null : $this->summary($unlisted, $profiles->whereIn('id', $unlisted->flatMap->profiles->pluck('id'))),
+            'cards' => $cards->filter(fn ($card) => $shows($card['list'], $card['profiles']))->values(),
+            'unlisted' => $unlisted && $shows(null, $unlisted['profiles']) ? $unlisted : null,
+            'empty' => $empty,
+            'profiles' => $profiles,
+            'profile' => $profile,
+            'kind' => $kind,
+            'filters' => ['perfil' => $profile?->id, 'tipo' => $kind],
             'publicCount' => VideoList::public()->where('family_id', '!=', $family->id)->count(),
         ]);
     }

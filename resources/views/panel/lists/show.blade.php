@@ -27,16 +27,17 @@
                 </div>
             </details>
             @if ($list)
-                <details class="menu" data-menu @if ($errors->has('name')) open @endif>
+                <details class="menu" data-menu @if ($errors->hasAny(['name', 'languages', 'languages.*'])) open @endif>
                     <summary class="btn btn-icon" aria-label="{{ __('Opciones de la lista') }}" title="{{ __('Opciones de la lista') }}">@include('partials.icon', ['name' => 'more'])</summary>
                     <div class="menu-panel menu-panel-end">
-                        <form method="POST" action="{{ route('lists.update', $list) }}" class="menu-form">
+                        <form method="POST" action="{{ route('lists.update', $list) }}" class="menu-form list-edit-form">
                             @csrf
                             @method('PUT')
                             <label for="list-name">{{ __('Nombre de la lista') }}</label>
                             <input type="text" id="list-name" name="name" value="{{ old('name', $list->name) }}" maxlength="40" required @error('name') aria-invalid="true" @enderror>
                             @error('name')<p class="error">{{ $message }}</p>@enderror
-                            <button class="btn btn-primary btn-sm">{{ __('Renombrar') }}</button>
+                            @include('panel.lists.language-fields', ['selected' => $list->languages ?? []])
+                            <button class="btn btn-primary btn-sm">{{ __('Guardar') }}</button>
                         </form>
                         <form method="POST" action="{{ route('lists.destroy', $list) }}" class="menu-form"
                               data-confirm="{{ $list->is_public
@@ -54,6 +55,7 @@
 
     <p class="muted small">
         {{ trans_choice(':count contenido|:count contenidos', $contents->count()) }}
+        @if ($list?->languageNames()) · {{ $list->languageNames() }} @endif
         · {{ $list ? __('Usa las flechas para ordenarlos: así aparecen en la tele.') : __('En la tele aparecen al final, en la fila «Otros».') }}
     </p>
 

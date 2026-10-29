@@ -73,6 +73,7 @@ Route::middleware('auth')->group(function () {
         Route::delete('/perfiles/{profile}', [ProfileController::class, 'destroy'])->name('profiles.destroy');
 
         Route::get('/listas', [ListController::class, 'index'])->name('lists.index');
+        Route::get('/listas/nueva', [ListController::class, 'create'])->name('lists.create');
         Route::post('/listas', [ListController::class, 'store'])->name('lists.store');
         Route::get('/listas/publicas', [ListController::class, 'explore'])->name('lists.public');
         Route::get('/listas/publicas/{list}', [ListController::class, 'showPublic'])->name('lists.public.show');

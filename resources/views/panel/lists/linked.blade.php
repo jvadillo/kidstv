@@ -23,6 +23,7 @@
         <p class="empty"><span class="warn-text">{{ __('Ya no está disponible') }}</span></p>
     @else
         @if ($list->source->description)<p class="muted">{{ $list->source->description }}</p>@endif
+        @include('panel.lists.public-meta', ['list' => $list])
 
         <form method="POST" action="{{ route('lists.profiles', $list) }}" class="card stack">
             @csrf

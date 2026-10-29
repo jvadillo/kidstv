@@ -214,20 +214,20 @@ class LibraryTest extends TestCase
         $ane = $this->profile($family, 'Ane');
         $this->actingAsAdult($user);
 
-        $this->post('/panel/listas', ['name' => 'Cuentos']);
+        $this->post('/panel/listas', ['name' => 'Cuentos', 'languages' => ['es']]);
         $cuentos = $family->lists()->where('name', 'Cuentos')->first();
         $this->youtubeContent($family, ['title' => 'Caperucita', 'list_id' => $cuentos->id])->profiles()->attach($ane);
         $this->youtubeContent($family, ['title' => 'Pinocho', 'list_id' => $cuentos->id]);
         $this->youtubeContent($family, ['title' => 'Suelto']);
         // Al crear una lista se entra en ella para llenarla.
-        $this->post('/panel/listas', ['name' => 'Canciones'])->assertSessionHas('status')
+        $this->post('/panel/listas', ['name' => 'Canciones', 'languages' => ['en', 'es']])->assertSessionHas('status')
             ->assertRedirect('/panel/listas/'.$family->lists()->where('name', 'Canciones')->value('id'));
 
         $this->assertSame(['Canciones', 'Cuentos'], $family->lists()->pluck('name')->all());
 
         // Una tarjeta por lista, en el orden de la tele, con su recuento y quién la ve; al final, «Sin lista».
         $this->get('/panel/contenidos')->assertOk()
-            ->assertSeeInOrder(['Tus listas', 'Canciones', 'Vacía', 'Cuentos', '2 vídeos', 'La ven: Ane', 'Sin lista', '1 vídeo'])
+            ->assertSeeInOrder(['Tus listas', 'Canciones', 'Vacía', 'Español, Inglés', 'Cuentos', '2 vídeos', 'Español', 'La ven: Ane', 'Sin lista', '1 vídeo'])
             ->assertSee('list-thumb-stack', false)
             ->assertDontSee('Caperucita');
 
@@ -257,7 +257,8 @@ class LibraryTest extends TestCase
         $this->delete('/panel/contenidos/'.$caperucita->id)->assertRedirect('/panel/listas/'.$cuentos->id);
         $this->get('/panel/contenidos/'.$caperucita->id)->assertNotFound();
 
-        $this->put('/panel/listas/'.$cuentos->id, ['name' => 'Cuentos de siempre'])->assertSessionHas('status');
+        $this->put('/panel/listas/'.$cuentos->id, ['name' => 'Cuentos de siempre', 'languages' => ['eu']])->assertSessionHas('status');
+        $this->assertSame(['eu'], $cuentos->fresh()->languages);
         $this->delete('/panel/listas/'.$cuentos->id)->assertRedirect('/panel/contenidos');
         $this->assertSame(['Canciones'], $family->lists()->pluck('name')->all());
         $this->get('/panel/listas/'.$cuentos->id)->assertNotFound();
@@ -292,8 +293,11 @@ class LibraryTest extends TestCase
 
         $this->post('/panel/perfiles', ['name' => 'Ane', 'avatar' => 'luna'])->assertRedirect();
         $this->post('/panel/perfiles', ['name' => '', 'avatar' => 'invalido'])->assertSessionHasErrors(['name', 'avatar']);
-        $this->post('/panel/listas', ['name' => 'Canciones'])->assertSessionHas('status');
-        $this->post('/panel/listas', ['name' => 'Canciones'])->assertSessionHasErrors('name');
+        $this->post('/panel/listas', ['name' => 'Canciones', 'languages' => ['es']])->assertSessionHas('status');
+        $this->post('/panel/listas', ['name' => 'Canciones', 'languages' => ['es']])->assertSessionHasErrors('name');
+        // El idioma es obligatorio y tiene que ser uno de los ofrecidos.
+        $this->post('/panel/listas', ['name' => 'Cuentos'])->assertSessionHasErrors('languages');
+        $this->post('/panel/listas', ['name' => 'Cuentos', 'languages' => ['xx']])->assertSessionHasErrors('languages.0');
 
         $this->assertSame(['Ane'], $user->family->profiles()->pluck('name')->all());
         $this->assertSame(['Canciones'], $user->family->lists()->pluck('name')->all());

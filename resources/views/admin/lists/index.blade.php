@@ -22,6 +22,8 @@
             <label for="description">{{ __('Descripción') }} <span class="optional">{{ __('(opcional, la ven las familias)') }}</span></label>
             <input type="text" id="description" name="description" value="{{ old('description') }}" maxlength="200">
         </div>
+        @include('panel.lists.language-fields', ['selected' => [$defaultLanguage]])
+        @include('panel.lists.age-fields')
         <div><button class="btn btn-primary">{{ __('Crear lista pública') }}</button></div>
     </form>
 
@@ -34,19 +36,32 @@
                 @foreach ($public as $list)
                     @php $stats = $usage[$list->id] ?? null; $mine = $list->family_id === $familyId; @endphp
                     <li class="card stack">
-                        <form method="POST" action="{{ route('admin.lists.update', $list) }}" class="admin-list-form">
-                            @csrf
-                            @method('PUT')
-                            <div class="field">
-                                <label for="name-{{ $list->id }}">{{ __('Nombre') }}</label>
-                                <input type="text" id="name-{{ $list->id }}" name="name" value="{{ $list->name }}" maxlength="40" required>
-                            </div>
-                            <div class="field grow">
-                                <label for="description-{{ $list->id }}">{{ __('Descripción') }}</label>
-                                <input type="text" id="description-{{ $list->id }}" name="description" value="{{ $list->description }}" maxlength="200">
-                            </div>
-                            <button class="btn btn-sm btn-ghost">{{ __('Guardar') }}</button>
-                        </form>
+                        <div>
+                            <h3>{{ $list->name }}</h3>
+                            @if ($list->description)<p class="muted small">{{ $list->description }}</p>@endif
+                            @include('panel.lists.public-meta', ['list' => $list])
+                            @unless ($list->hasAgeRange())
+                                <p class="small warn-text">{{ __('Falta la edad recomendada: indícala en «Editar».') }}</p>
+                            @endunless
+                        </div>
+                        <details class="more-options" @if (! $list->hasAgeRange()) open @endif>
+                            <summary>{{ __('Editar') }}</summary>
+                            <form method="POST" action="{{ route('admin.lists.update', $list) }}" class="stack">
+                                @csrf
+                                @method('PUT')
+                                <div class="field">
+                                    <label for="name-{{ $list->id }}">{{ __('Nombre') }}</label>
+                                    <input type="text" id="name-{{ $list->id }}" name="name" value="{{ $list->name }}" maxlength="40" required>
+                                </div>
+                                <div class="field">
+                                    <label for="description-{{ $list->id }}">{{ __('Descripción') }}</label>
+                                    <input type="text" id="description-{{ $list->id }}" name="description" value="{{ $list->description }}" maxlength="200">
+                                </div>
+                                @include('panel.lists.language-fields', ['selected' => $list->languages ?? [], 'id' => 'languages-'.$list->id, 'old' => false])
+                                @include('panel.lists.age-fields', ['list' => $list, 'id' => 'age-'.$list->id, 'old' => false])
+                                <div><button class="btn btn-sm btn-primary">{{ __('Guardar') }}</button></div>
+                            </form>
+                        </details>
                         <p class="small muted">
                             {{ trans_choice(':count vídeo|:count vídeos', $list->contents_count) }}
                             · {{ trans_choice('en :count videoteca|en :count videotecas', $list->links_count) }}
@@ -76,11 +91,12 @@
             <h2>{{ __('Publicar una de tus listas') }}</h2>
             <ul class="card-list">
                 @foreach ($private as $list)
-                    <li class="card list-entry">
-                        <span class="grow"><strong>{{ $list->name }}</strong> <span class="muted small">{{ trans_choice(':count contenido|:count contenidos', $list->contents_count) }}</span></span>
-                        <form method="POST" action="{{ route('admin.lists.publish', $list) }}"
+                    <li class="card stack">
+                        <span><strong>{{ $list->name }}</strong> <span class="muted small">{{ trans_choice(':count contenido|:count contenidos', $list->contents_count) }} · {{ $list->languageNames() }}</span></span>
+                        <form method="POST" action="{{ route('admin.lists.publish', $list) }}" class="publish-form"
                               data-confirm="{{ __('¿Publicar «:name»? Cualquier familia podrá añadirla y ver sus vídeos tal cual.', ['name' => $list->name]) }}">
                             @csrf
+                            @include('panel.lists.age-fields', ['list' => $list, 'id' => 'publish-age-'.$list->id, 'old' => false])
                             <button class="btn btn-sm btn-ghost">{{ __('Publicar') }}</button>
                         </form>
                     </li>

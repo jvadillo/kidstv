@@ -1,4 +1,4 @@
-{{-- Una lista en la biblioteca: portada del primer contenido (apilada si hay más), recuento y quién la ve. --}}
+{{-- Una lista en la biblioteca: portada del primer contenido (apilada si hay más), recuento, idioma y quién la ve. --}}
 @php
     $videos = $count - $audios;
     $parts = array_filter([
@@ -28,6 +28,7 @@
                 <span class="warn-text">{{ __('Ya no está disponible') }}</span>
             @else
                 {{ $parts ? implode(' · ', $parts) : __('Vacía') }}
+                @if ($list?->languageNames()) · <span class="sr-only">{{ __('Idioma:') }}</span> {{ $list->languageNames() }}@endif
             @endif
         </span>
         @if ($profiles->isNotEmpty())

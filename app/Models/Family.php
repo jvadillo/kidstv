@@ -61,6 +61,14 @@ class Family extends Model
         return $this->lists()->whereNull('source_id');
     }
 
+    /** Crea una lista (propia o enlazada) arriba del todo, donde se ve en la biblioteca y en la tele. */
+    public function prependList(array $attributes): VideoList
+    {
+        VideoList::where('family_id', $this->id)->increment('position');
+
+        return $this->lists()->create(['position' => 0] + $attributes);
+    }
+
     public function contents(): HasMany
     {
         return $this->hasMany(Content::class);
