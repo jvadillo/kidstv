@@ -9,7 +9,11 @@
 | Pantalla | `standalone` | `fullscreen` (en iOS, `standalone`) |
 | Para quién | Adultos: biblioteca, perfiles, actividad | Los peques: la videoteca directamente |
 
-- **Panel:** en *Cuenta → Aplicación* aparece «Instalar» cuando el navegador lo ofrece (`beforeinstallprompt`, Chrome/Edge/Android). En iPhone/iPad se explica cómo hacerlo desde *Compartir → Añadir a pantalla de inicio*. Ya instalado, «Modo TV» se abre en la misma ventana (una pestaña nueva saldría de la app).
+- **Panel:** en el *Inicio* aparece un aviso discreto para instalarla (se puede cerrar; no vuelve en 30 días) y en *Cuenta → Aplicación*, siempre. Con `beforeinstallprompt` (Chrome, Edge) se instala con un toque; en iPhone/iPad se explica *Compartir → Añadir a pantalla de inicio*, y en navegadores móviles sin instalación en un toque (Brave, Samsung Internet), el menú del navegador. Si `getInstalledRelatedApps` dice que ya está instalada, no se ofrece.
+
+## Abrir el «Modo TV» desde el panel
+
+`panel.js` pide el token de este navegador con `fetch` (`POST /panel/televisores/este-navegador`, respuesta JSON), lo guarda en `localStorage` (`nokoplay.token`, el mismo origen que `/tv/`) y abre `/tv/`: en el ordenador en otra pestaña, y en el móvil o en la app instalada en la misma ventana (Atrás vuelve al panel). Antes era un POST con `target="_blank"` que redirigía a `/tv/#token=…`; con NokoPlay TV instalada, Android abría la app al ver la redirección y la pestaña se quedaba en la URL del formulario, que el navegador volvía a pedir con GET al recargarla (405). Ahora ese GET redirige a `/tv/`, y sin JavaScript se mantiene el POST con redirección.
 - **NokoPlay TV:** desde la Zona de adultos de `/tv/` en un móvil, tableta u ordenador, «Añadir a la pantalla de inicio». Como el ámbito `/tv/` está dentro de `/`, ambas se pueden instalar a la vez. Desde esa misma Zona de adultos, «Abrir el panel de adultos» vuelve al panel.
 - Iconos: `public/img/pwa/` (192 y 512 px, normales y *maskable* con zona segura), generados por `node tv-apps/make-icons.mjs` a partir de `logos/isotipoPNG.png`.
 

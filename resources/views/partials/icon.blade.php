@@ -14,6 +14,7 @@
         'video' => '<rect x="3" y="6" width="13" height="12" rx="2.5"/><path d="m16 10 5-3v10l-5-3"/>',
         'audio' => '<path d="M9 18V5l11-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="17" cy="16" r="3"/>',
         'plus' => '<path d="M12 5v14M5 12h14"/>',
+        'close' => '<path d="M6 6l12 12M18 6 6 18"/>',
         'up' => '<path d="m6 15 6-6 6 6"/>',
         'down' => '<path d="m6 9 6 6 6-6"/>',
         'right' => '<path d="m9 6 6 6-6 6"/>',

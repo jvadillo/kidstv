@@ -33,8 +33,9 @@ class AccountController extends Controller
     public function update(Request $request)
     {
         $data = $request->validate([
-            'name' => ['nullable', 'string', 'max:60'],
-            'family_name' => ['nullable', 'string', 'max:60'],
+            // Los nombres ya no están en el formulario: solo se cambian si llegan (exportación, saludo, tele).
+            'name' => ['sometimes', 'nullable', 'string', 'max:60'],
+            'family_name' => ['sometimes', 'nullable', 'string', 'max:60'],
             'autoplay_next' => ['boolean'],
             'youtube_controls' => ['sometimes', 'required', Rule::in(Family::YOUTUBE_CONTROLS)],
             'daily_limit_mode' => ['sometimes', 'required', Rule::in(Family::DAILY_LIMIT_MODES)],
@@ -46,9 +47,13 @@ class AccountController extends Controller
         ]);
 
         $family = $request->user()->family;
-        $request->user()->update(['name' => $data['name'] ?? null]);
+        if (array_key_exists('name', $data)) {
+            $request->user()->update(['name' => $data['name']]);
+        }
+        if (array_key_exists('family_name', $data)) {
+            $family->update(['name' => $data['family_name']]);
+        }
         $family->update([
-            'name' => $data['family_name'] ?? null,
             'autoplay_next' => $request->boolean('autoplay_next'),
             'youtube_controls' => $data['youtube_controls'] ?? $family->youtube_controls,
             'daily_limit_mode' => $data['daily_limit_mode'] ?? $family->daily_limit_mode,

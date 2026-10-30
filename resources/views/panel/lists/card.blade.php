@@ -7,21 +7,24 @@
     ]);
 @endphp
 <a href="{{ $url }}" class="list-card">
-    <div @class(['list-thumb', 'list-thumb-stack' => $count > 1])>
-        @if ($first)
-            @include('partials.content-thumb', ['content' => $first, 'coverUrl' => $coverUrl ?? null])
-        @else
-            <span class="thumb">@include('partials.icon', ['name' => 'library'])</span>
+    {{-- El distintivo va bajo la portada: así no ocupa una línea más junto al título. --}}
+    <div class="list-card-side">
+        <div @class(['list-thumb', 'list-thumb-stack' => $count > 1])>
+            @if ($first)
+                @include('partials.content-thumb', ['content' => $first, 'coverUrl' => $coverUrl ?? null])
+            @else
+                <span class="thumb">@include('partials.icon', ['name' => 'library'])</span>
+            @endif
+        </div>
+        @if ($list?->isLinked())
+            <span class="badge badge-public">{{ __('Lista pública') }}</span>
+        @elseif ($list?->is_public)
+            <span class="badge badge-public">{{ __('Publicada') }}</span>
         @endif
     </div>
     <div class="list-card-meta">
         <span class="list-card-title">
             <strong>{{ $name }}</strong>
-            @if ($list?->isLinked())
-                <span class="badge badge-public">{{ __('Lista pública') }}</span>
-            @elseif ($list?->is_public)
-                <span class="badge badge-public">{{ __('Publicada') }}</span>
-            @endif
         </span>
         <span class="muted small">
             @if ($list && ! $list->isAvailable())

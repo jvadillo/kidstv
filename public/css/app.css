@@ -386,6 +386,8 @@ input[type=range] { width: 100%; min-height: 44px; margin: 0; accent-color: var(
 }
 .list-card:hover { transform: translateY(-1px); }
 .list-card:hover .list-card-go { color: var(--primary); transform: translateX(2px); }
+.list-card-side { flex: none; display: flex; flex-direction: column; align-items: center; gap: .35rem; }
+.list-card-side .badge { font-size: .7rem; padding: .1rem .45rem; }
 .list-thumb { position: relative; flex: none; padding-top: 8px; }
 .list-thumb .thumb { position: relative; z-index: 1; width: 96px; aspect-ratio: 16 / 9; }
 .list-thumb .thumb > .icon { width: 28px; height: 28px; }
@@ -657,10 +659,11 @@ input[type=search]:focus { border-color: var(--primary); outline: none; box-shad
 .chart-labels .is-future { opacity: .5; }
 
 .period-nav { display: flex; align-items: center; justify-content: space-between; gap: .4rem; margin-top: 1rem; }
-.period-nav .btn { padding-left: .55rem; padding-right: .7rem; gap: .15rem; }
+/* Los botones nunca parten «Anterior»/«Siguiente»: si falta sitio, las fechas pasan a dos líneas. */
+.period-nav .btn { flex: none; white-space: nowrap; padding-left: .55rem; padding-right: .7rem; gap: .15rem; }
 .period-nav .btn .icon { width: 18px; height: 18px; }
 .period-nav .btn[aria-disabled] { opacity: .4; pointer-events: none; }
-.period-nav-label { text-align: center; color: var(--ink-2); min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.period-nav-label { flex: 1; text-align: center; color: var(--ink-2); min-width: 0; line-height: 1.3; overflow-wrap: anywhere; }
 
 /* Lo que más ve: un ranking por tiempo y otro por veces; se ve el elegido. */
 .top-card:not(:has(#orden-veces:checked)) [data-orden="veces"],

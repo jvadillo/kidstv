@@ -53,5 +53,10 @@ class PwaTest extends TestCase
             ->assertSee('data-pwa-install hidden', false)
             ->assertSee('data-pwa-install-button', false)
             ->assertSee('data-tv-launch', false);
+
+        // En el Inicio, un aviso que se puede descartar (oculto hasta que panel.js sabe si se puede instalar).
+        $this->get('/panel')->assertOk()
+            ->assertSee('data-pwa-install data-pwa-dismissable hidden', false)
+            ->assertSee('data-pwa-dismiss', false);
     }
 }

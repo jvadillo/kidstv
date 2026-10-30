@@ -13,35 +13,10 @@
         <form method="POST" action="{{ route('account.update') }}" class="stack card account-preferences">
             @csrf
             @method('PUT')
-            <div class="field">
-                <label for="name">{{ __('Tu nombre') }} <span class="optional">{{ __('(opcional)') }}</span></label>
-                <input type="text" id="name" name="name" value="{{ old('name', $user->name) }}" maxlength="60">
-            </div>
-            <div class="field">
-                <label for="family_name">{{ __('Nombre de la videoteca') }} <span class="optional">{{ __('(opcional)') }}</span></label>
-                <input type="text" id="family_name" name="family_name" value="{{ old('family_name', $family->name) }}" maxlength="60" placeholder="{{ __('Por ejemplo: La tele de casa') }}">
-            </div>
-            <input type="hidden" name="autoplay_next" value="0">
-            <div class="switch-field account-divider">
-                <div>
-                    <label for="autoplay_next">{{ __('Reproducir automáticamente el siguiente contenido') }}</label>
-                    <p id="autoplay_hint" class="hint">{{ __('Desactivado (recomendado): al terminar un vídeo, la tele vuelve al catálogo.') }}</p>
-                </div>
-                <input type="checkbox" role="switch" class="switch" id="autoplay_next" name="autoplay_next" value="1" aria-describedby="autoplay_hint" @checked(old('autoplay_next', $family->autoplay_next))>
-            </div>
-            <div class="field account-divider">
-                <label for="youtube_controls">{{ __('Controles de YouTube en la tele') }}</label>
-                <select id="youtube_controls" name="youtube_controls" aria-describedby="youtube_controls_hint">
-                    <option value="auto" @selected(old('youtube_controls', $family->youtube_controls) === 'auto')>{{ __('Automáticos') }}</option>
-                    <option value="always" @selected(old('youtube_controls', $family->youtube_controls) === 'always')>{{ __('Siempre visibles') }}</option>
-                    <option value="hidden" @selected(old('youtube_controls', $family->youtube_controls) === 'hidden')>{{ __('Ocultos') }}</option>
-                </select>
-                <p id="youtube_controls_hint" class="hint">{{ __('La barra de NokoPlay muestra pausa, avance y progreso debajo del vídeo. En automático aparece al usar el mando y se oculta tras unos segundos. Aunque la ocultes, el mando sigue funcionando. Se aplica en todas tus teles al abrir el siguiente vídeo.') }}</p>
-            </div>
             @php($limitMode = old('daily_limit_mode', $family->daily_limit_mode))
-            <fieldset class="field daily-limit account-divider" aria-describedby="daily_limit_hint">
+            <fieldset class="field daily-limit" aria-describedby="daily_limit_hint">
                 <legend>{{ __('Límite diario de tele') }}</legend>
-                <p id="daily_limit_hint" class="hint">{{ __('Cuando quede poco tiempo, la tele avisa; al terminar, muestra una pantalla de descanso hasta el día siguiente. Se suma lo visto en todas las teles; lo que veas desde la Zona de adultos no cuenta.') }}</p>
+                <p id="daily_limit_hint" class="hint">{{ __('Cuando quede poco tiempo, la tele avisa; al terminar, muestra una pantalla de descanso hasta el día siguiente. Lo que veas desde la Zona de adultos no cuenta.') }}</p>
                 <label class="check">
                     <input type="radio" name="daily_limit_mode" value="off" class="daily-limit-mode" @checked($limitMode === 'off')>
                     <span>{{ __('Sin límite') }}</span>
@@ -78,6 +53,23 @@
                     @endforelse
                 </div>
             </fieldset>
+            <input type="hidden" name="autoplay_next" value="0">
+            <div class="switch-field account-divider">
+                <div>
+                    <label for="autoplay_next">{{ __('Reproducir automáticamente el siguiente contenido') }}</label>
+                    <p id="autoplay_hint" class="hint">{{ __('Desactivado (recomendado): al terminar un vídeo, la tele vuelve al catálogo.') }}</p>
+                </div>
+                <input type="checkbox" role="switch" class="switch" id="autoplay_next" name="autoplay_next" value="1" aria-describedby="autoplay_hint" @checked(old('autoplay_next', $family->autoplay_next))>
+            </div>
+            <div class="field account-divider">
+                <label for="youtube_controls">{{ __('Controles de YouTube en la tele') }}</label>
+                <select id="youtube_controls" name="youtube_controls" aria-describedby="youtube_controls_hint">
+                    <option value="auto" @selected(old('youtube_controls', $family->youtube_controls) === 'auto')>{{ __('Automáticos') }}</option>
+                    <option value="always" @selected(old('youtube_controls', $family->youtube_controls) === 'always')>{{ __('Siempre visibles') }}</option>
+                    <option value="hidden" @selected(old('youtube_controls', $family->youtube_controls) === 'hidden')>{{ __('Ocultos') }}</option>
+                </select>
+                <p id="youtube_controls_hint" class="hint">{{ __('La barra de NokoPlay muestra pausa, avance y progreso debajo del vídeo. En automático aparece al usar el mando y se oculta tras unos segundos. Aunque la ocultes, el mando sigue funcionando. Se aplica en todas tus teles al abrir el siguiente vídeo.') }}</p>
+            </div>
             <div class="form-actions"><button class="btn btn-primary btn-block">{{ __('Guardar cambios') }}</button></div>
         </form>
     </section>
@@ -89,7 +81,8 @@
             <div>
                 <strong>{{ __('Instala NokoPlay en este dispositivo') }}</strong>
                 <span class="muted small">{{ __('Ábrelo desde la pantalla de inicio, a pantalla completa, como cualquier otra app.') }}</span>
-                <span class="muted small block" data-pwa-install-ios hidden>{{ __('En iPhone o iPad: pulsa Compartir en Safari y elige «Añadir a pantalla de inicio».') }}</span>
+                <span class="muted small block" data-pwa-hint="ios" hidden>{{ __('En iPhone o iPad: pulsa Compartir en Safari y elige «Añadir a pantalla de inicio».') }}</span>
+                <span class="muted small block" data-pwa-hint="menu" hidden>{{ __('En el menú del navegador, elige «Instalar app» o «Añadir a pantalla de inicio».') }}</span>
             </div>
             <button type="button" class="btn btn-sm btn-primary" data-pwa-install-button hidden>{{ __('Instalar') }}</button>
         </div>

@@ -85,7 +85,12 @@ class DeviceController extends Controller
 
         [, $token] = Device::issue($family, __('Navegador de prueba'), 'web', $request->userAgent());
 
-        // El token viaja en el fragmento (#), que el navegador nunca envía al servidor.
+        // El panel (panel.js) guarda el token donde lo lee la app de TV y abre /tv/ él mismo.
+        if ($request->expectsJson()) {
+            return response()->json(['token' => $token, 'url' => url('/tv').'/']);
+        }
+
+        // Sin JavaScript: el token viaja en el fragmento (#), que el navegador nunca envía al servidor.
         return redirect()->to(url('/tv').'/#token='.$token);
     }
 

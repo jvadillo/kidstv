@@ -209,6 +209,21 @@ class TvTest extends TestCase
         $this->assertSame(1, $user->family->devices()->count());
     }
 
+    public function test_browser_test_mode_from_the_panel_script_and_reloaded_tabs(): void
+    {
+        $user = $this->adult();
+        $this->actingAsAdult($user);
+
+        // panel.js lo pide en segundo plano: token en JSON, sin redirección.
+        $json = $this->postJson('/panel/televisores/este-navegador')->assertOk()->assertJsonPath('url', url('/tv').'/')->json();
+        $this->assertMatchesRegularExpression('~^[A-Za-z0-9]{64}$~', $json['token']);
+        $this->tv($json['token'])->getJson('/api/tv/session')->assertOk();
+
+        // Una pestaña que se recarga sobre la URL del formulario ya no da 405, y no crea otra tele.
+        $this->get('/panel/televisores/este-navegador')->assertRedirect('/tv/');
+        $this->assertSame(1, $user->family->devices()->count());
+    }
+
     public function test_youtube_bridge_page_is_embeddable_and_validates_id(): void
     {
         $this->get('/tv/youtube?v=aqz-KE-bpKQ')

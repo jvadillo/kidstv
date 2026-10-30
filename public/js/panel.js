@@ -582,8 +582,42 @@
         });
     }
 
-    // Aplicación instalable: service worker, botón «Instalar» en Cuenta y, ya instalada,
-    // el Modo TV se abre en la misma ventana (una pestaña nueva saldría de la app).
+    function isStandalone() {
+        return navigator.standalone === true || ['standalone', 'fullscreen', 'minimal-ui'].some(function (mode) {
+            return window.matchMedia('(display-mode: ' + mode + ')').matches;
+        });
+    }
+
+    // «Modo TV»: se pide el token de este navegador en segundo plano y se guarda donde lo lee la
+    // app de TV (mismo origen), y luego se abre /tv/. Antes era un POST que redirigía a /tv/: con
+    // NokoPlay TV instalada, Android abría la app y la pestaña se quedaba en la URL del formulario,
+    // que al volver a ella el navegador pedía con GET (405). Sin JavaScript sigue siendo un POST.
+    function initTvLaunch() {
+        var standalone = isStandalone();
+        var touch = window.matchMedia('(pointer: coarse)').matches;
+        document.querySelectorAll('form[data-tv-launch]').forEach(function (form) {
+            form.addEventListener('submit', function (e) {
+                if (e.defaultPrevented) return;
+                e.preventDefault();
+                // En el ordenador, en otra pestaña (abierta ya, para que no la bloquee el navegador);
+                // en el móvil o en la app instalada, en la misma ventana: Atrás vuelve al panel.
+                var win = form.target === '_blank' && !standalone && !touch ? window.open('', '_blank') : null;
+                requestJson('POST', form.action).then(function (res) {
+                    if (!res.ok || !res.data.token) throw new Error('sin token');
+                    window.localStorage.setItem('nokoplay.token', res.data.token);
+                    window.localStorage.removeItem('nokoplay.pendingPairing');
+                    if (win) win.location.href = res.data.url;
+                    else window.location.href = res.data.url;
+                }).catch(function () {
+                    if (win) win.close();
+                    form.removeAttribute('target');
+                    form.submit();
+                });
+            });
+        });
+    }
+
+    // Aplicación instalable: service worker y avisos para instalarla (Inicio y Cuenta).
     function initPwa() {
         if ('serviceWorker' in navigator) {
             var register = function () { navigator.serviceWorker.register('/sw.js').catch(function () {}); };
@@ -591,43 +625,81 @@
             else window.addEventListener('load', register);
         }
 
-        var standalone = navigator.standalone === true || ['standalone', 'fullscreen', 'minimal-ui'].some(function (mode) {
-            return window.matchMedia('(display-mode: ' + mode + ')').matches;
-        });
-        if (standalone) {
-            document.querySelectorAll('form[data-tv-launch]').forEach(function (form) { form.removeAttribute('target'); });
-        }
+        var boxes = Array.prototype.slice.call(document.querySelectorAll('[data-pwa-install]'));
+        if (!boxes.length || isStandalone()) return;
 
-        var section = document.querySelector('[data-pwa-install]');
-        if (!section || standalone) return;
-        var button = section.querySelector('[data-pwa-install-button]');
+        var DISMISSED = 'nokoplay.installDismissed';
         var deferred = null;
+        var installed = false;
+
+        function dismissedRecently() {
+            try { return Date.now() - Number(window.localStorage.getItem(DISMISSED) || 0) < 30 * 86400000; } catch (e) { return false; }
+        }
+        function dismiss() {
+            try { window.localStorage.setItem(DISMISSED, String(Date.now())); } catch (e) { /* sin almacenamiento */ }
+            boxes.forEach(function (box) { if (box.hasAttribute('data-pwa-dismissable')) box.hidden = true; });
+        }
+        /** Muestra cada aviso con la explicación que corresponde: botón, iPhone o menú del navegador. */
+        function offer(hint) {
+            if (installed) return;
+            boxes.forEach(function (box) {
+                if (box.hasAttribute('data-pwa-dismissable') && dismissedRecently()) return;
+                box.querySelectorAll('[data-pwa-hint]').forEach(function (el) { el.hidden = el.getAttribute('data-pwa-hint') !== hint; });
+                var button = box.querySelector('[data-pwa-install-button]');
+                if (button) button.hidden = hint !== 'button';
+                box.hidden = false;
+            });
+        }
+        function hideAll() {
+            boxes.forEach(function (box) { box.hidden = true; });
+        }
 
         var ios = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-        if (ios) {
-            section.querySelector('[data-pwa-install-ios]').hidden = false;
-            section.hidden = false;
-        }
+        if (ios) offer('ios');
 
         window.addEventListener('beforeinstallprompt', function (e) {
             e.preventDefault();
             deferred = e;
-            button.hidden = false;
-            section.hidden = false;
+            offer('button');
         });
-        button.addEventListener('click', function () {
-            if (!deferred) return;
-            deferred.prompt();
-            // Si se descarta, el navegador puede volver a ofrecerlo más adelante (otro beforeinstallprompt).
-            deferred.userChoice.then(function () { section.hidden = !ios; });
-            deferred = null;
-            button.hidden = true;
+
+        // Navegadores sin instalación en un toque (Brave, Samsung Internet…): se explica el menú,
+        // salvo que la app ya esté instalada (getInstalledRelatedApps, donde exista).
+        if (!ios && window.matchMedia('(pointer: coarse)').matches) {
+            setTimeout(function () {
+                if (deferred || installed) return;
+                var check = navigator.getInstalledRelatedApps ? navigator.getInstalledRelatedApps().catch(function () { return []; }) : Promise.resolve([]);
+                check.then(function (apps) {
+                    if (apps.length) installed = true;
+                    else if (!deferred) offer('menu');
+                });
+            }, 3000);
+        }
+
+        boxes.forEach(function (box) {
+            var button = box.querySelector('[data-pwa-install-button]');
+            if (button) {
+                button.addEventListener('click', function () {
+                    if (!deferred) return;
+                    var prompt = deferred;
+                    deferred = null;
+                    prompt.prompt();
+                    // Si se rechaza, no se vuelve a ofrecer en el Inicio durante un tiempo.
+                    prompt.userChoice.then(function (choice) {
+                        if (choice.outcome === 'accepted') { installed = true; hideAll(); } else { dismiss(); hideAll(); }
+                    });
+                });
+            }
+            var close = box.querySelector('[data-pwa-dismiss]');
+            if (close) close.addEventListener('click', dismiss);
         });
-        window.addEventListener('appinstalled', function () { section.hidden = true; });
+
+        window.addEventListener('appinstalled', function () { installed = true; hideAll(); });
     }
 
     onReady(function () {
         initPwa();
+        initTvLaunch();
         initListSorting();
         initOnboardingCatalog();
         initTvPreview();

@@ -8,6 +8,19 @@
     </div>
     <p class="dashboard-intro muted">{{ $profiles->isNotEmpty() ? __('Gestiona lo que ven :names en la tele.', ['names' => $profiles->pluck('name')->unique()->join(', ', ' y ')]) : __('Prepara su videoteca y elige lo que ven en la tele.') }}</p>
 
+    {{-- Aviso para instalar la app: lo muestra panel.js solo si se puede y no se ha descartado hace poco. --}}
+    <section class="install-banner" data-pwa-install data-pwa-dismissable hidden aria-labelledby="install-title">
+        <img class="install-banner-icon" src="{{ asset('img/pwa/icon-192.png') }}" alt="" width="44" height="44">
+        <div class="grow">
+            <strong id="install-title">{{ __('Instala NokoPlay en este dispositivo') }}</strong>
+            <span class="muted small" data-pwa-hint="button" hidden>{{ __('Ábrelo con un toque desde la pantalla de inicio.') }}</span>
+            <span class="muted small" data-pwa-hint="ios" hidden>{{ __('Pulsa Compartir y elige «Añadir a pantalla de inicio».') }}</span>
+            <span class="muted small" data-pwa-hint="menu" hidden>{{ __('En el menú del navegador, elige «Instalar app» o «Añadir a pantalla de inicio».') }}</span>
+            <button type="button" class="btn btn-sm btn-primary" data-pwa-install-button hidden>{{ __('Instalar') }}</button>
+        </div>
+        <button type="button" class="install-banner-close" data-pwa-dismiss aria-label="{{ __('Ahora no') }}" title="{{ __('Ahora no') }}">@include('partials.icon', ['name' => 'close'])</button>
+    </section>
+
     <section class="connect-card" aria-labelledby="connect-title">
         <span class="connect-icon">@include('partials.icon', ['name' => 'tv'])</span>
         <div class="grow">

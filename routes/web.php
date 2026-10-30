@@ -132,6 +132,8 @@ Route::middleware('auth')->group(function () {
         Route::get('/televisores/vincular', [DeviceController::class, 'pairForm'])->name('devices.pair');
         Route::post('/televisores/vincular', [DeviceController::class, 'pair'])->middleware('throttle:pair-claim')->name('devices.pair.store');
         Route::post('/televisores/este-navegador', [DeviceController::class, 'thisBrowser'])->name('devices.browser');
+        // Una pestaña que se recarga o restaura sobre el formulario de «Modo TV» llega con GET.
+        Route::get('/televisores/este-navegador', fn () => redirect('/tv/'));
         Route::put('/televisores/{device}', [DeviceController::class, 'update'])->name('devices.update');
         Route::delete('/televisores/{device}', [DeviceController::class, 'destroy'])->name('devices.destroy');
 

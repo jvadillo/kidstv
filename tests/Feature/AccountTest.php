@@ -85,7 +85,12 @@ class AccountTest extends TestCase
         $this->youtubeContent($user->family, ['title' => 'Mi vídeo']);
         $this->actingAsAdult($user);
 
-        $this->put('/panel/cuenta', ['name' => 'Ana', 'family_name' => 'La tele de casa', 'autoplay_next' => '1', 'youtube_controls' => 'always'])->assertSessionHas('status');
+        $user->update(['name' => 'Ana']);
+        $user->family->update(['name' => 'La tele de casa']);
+        // El formulario ya no lleva los nombres: guardar preferencias no los borra.
+        $this->put('/panel/cuenta', ['autoplay_next' => '1', 'youtube_controls' => 'always'])->assertSessionHas('status');
+        $this->assertSame('Ana', $user->fresh()->name);
+        $this->get('/panel/cuenta')->assertOk()->assertDontSee('name="family_name"', false)->assertDontSee('Se suma lo visto en todas las teles');
         $this->assertTrue($user->family->fresh()->autoplay_next);
         $this->assertSame('always', $user->family->fresh()->youtube_controls);
 
