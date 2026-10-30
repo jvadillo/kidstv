@@ -110,7 +110,7 @@
 
     function post(event, value) {
         if (window.parent && window.parent !== window) {
-            window.parent.postMessage(JSON.stringify({ kidstv: 'yt', event: event, value: value }), '*');
+            window.parent.postMessage(JSON.stringify({ nokoplay: 'yt', event: event, value: value }), '*');
         }
     }
 
@@ -155,7 +155,7 @@
         if (typeof data === 'string') {
             try { data = JSON.parse(data); } catch (err) { return; }
         }
-        if (!data || data.kidstv !== 'cmd') return;
+        if (!data || data.nokoplay !== 'cmd') return;
         command(data.cmd, data.value);
     });
 

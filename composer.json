@@ -1,6 +1,6 @@
 {
     "$schema": "https://getcomposer.org/schema.json",
-    "name": "jvadillo/kidstv",
+    "name": "jvadillo/nokoplay",
     "type": "project",
     "description": "Videoteca familiar para Smart TV",
     "keywords": ["laravel", "framework"],

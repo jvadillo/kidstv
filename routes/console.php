@@ -14,7 +14,7 @@ use Illuminate\Support\Facades\Schedule;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
-Artisan::command('kidstv:prune', function () {
+Artisan::command('nokoplay:prune', function () {
     // Solo familias provisionales sin adultos; nunca cuentas registradas.
     foreach (\App\Models\Family::where('provisional_until', '<', now())->whereDoesntHave('users')->get() as $family) {
         $family->delete();
@@ -35,7 +35,7 @@ Artisan::command('kidstv:prune', function () {
     $this->info("Eliminados: {$tokens} códigos, {$sessions} sesiones, {$pairings} vinculaciones, {$uploads} subidas abandonadas, {$plays} registros de uso antiguos.");
 })->purpose('Elimina códigos, sesiones, vinculaciones, subidas caducadas y estadísticas de uso antiguas');
 
-Artisan::command('kidstv:login-link {email}', function (string $email) {
+Artisan::command('nokoplay:login-link {email}', function (string $email) {
     // Herramienta de administración (requiere acceso al servidor): enlace de acceso de un
     // solo uso para una cuenta existente, útil si el envío de correo no está configurado.
     $user = User::where('email', Str::lower($email))->first();
@@ -59,7 +59,7 @@ Artisan::command('kidstv:login-link {email}', function (string $email) {
     $this->comment('Válido durante 15 minutos y un solo uso.');
 })->purpose('Genera un enlace de acceso de un solo uso para una cuenta existente');
 
-Artisan::command('kidstv:admin {email} {--revoke}', function (string $email) {
+Artisan::command('nokoplay:admin {email} {--revoke}', function (string $email) {
     // Herramienta de administración (requiere acceso al servidor): da o quita el acceso al
     // panel de administración de la plataforma.
     $user = User::where('email', Str::lower($email))->first();
@@ -73,7 +73,7 @@ Artisan::command('kidstv:admin {email} {--revoke}', function (string $email) {
     $this->info($user->is_admin ? "{$user->email} ya es administrador." : "{$user->email} ya no es administrador.");
 })->purpose('Da (o quita con --revoke) permisos de administrador a una cuenta');
 
-Artisan::command('kidstv:youtube-durations', function (YouTubeSearch $search) {
+Artisan::command('nokoplay:youtube-durations', function (YouTubeSearch $search) {
     // Los vídeos añadidos sin la API configurada (o antes de guardar la duración) no la tienen.
     $missing = Content::where('type', Content::TYPE_YOUTUBE)->whereNull('duration')->get(['id', 'youtube_id']);
     $durations = $search->durations($missing->pluck('youtube_id')->all());
@@ -89,7 +89,7 @@ Artisan::command('kidstv:youtube-durations', function (YouTubeSearch $search) {
     $this->info("Duración completada en {$updated} de {$missing->count()} vídeos de YouTube.");
 })->purpose('Completa la duración de los vídeos de YouTube que no la tienen (requiere la API)');
 
-Artisan::command('kidstv:backup {--keep=7}', function () {
+Artisan::command('nokoplay:backup {--keep=7}', function () {
     // Copia consistente de la base de datos SQLite (VACUUM INTO) dentro del volumen de datos.
     $dir = storage_path('backups');
     if (! is_dir($dir)) {
@@ -97,14 +97,14 @@ Artisan::command('kidstv:backup {--keep=7}', function () {
     }
 
     // VACUUM INTO falla si el archivo ya existe: dos copias en el mismo segundo no deben chocar.
-    $base = $dir.'/kidstv-'.now()->format('Ymd-His');
+    $base = $dir.'/nokoplay-'.now()->format('Ymd-His');
     $target = $base.'.sqlite';
     for ($i = 2; file_exists($target); $i++) {
         $target = $base.'-'.$i.'.sqlite';
     }
     DB::statement('VACUUM INTO ?', [$target]);
 
-    $files = glob($dir.'/kidstv-*.sqlite');
+    $files = glob($dir.'/nokoplay-*.sqlite');
     rsort($files);
     foreach (array_slice($files, (int) $this->option('keep')) as $old) {
         unlink($old);
@@ -113,8 +113,8 @@ Artisan::command('kidstv:backup {--keep=7}', function () {
     $this->info('Copia creada: '.$target);
 })->purpose('Copia de seguridad de la base de datos (conserva las últimas N)');
 
-Schedule::command('kidstv:prune')->hourly();
+Schedule::command('nokoplay:prune')->hourly();
 // En UTC: con la hora de Madrid, el cambio de horario de octubre repite la franja de las 2-3 h.
-Schedule::command('kidstv:backup')->timezone('UTC')->dailyAt('01:40')->withoutOverlapping();
+Schedule::command('nokoplay:backup')->timezone('UTC')->dailyAt('01:40')->withoutOverlapping();
 Schedule::command('queue:prune-failed --hours=168')->daily();
-Schedule::command('kidstv:youtube-durations')->dailyAt('04:10');
+Schedule::command('nokoplay:youtube-durations')->dailyAt('04:10');

@@ -51,6 +51,6 @@
 <div class="field">
     <label for="cover">{{ __('Portada') }} <span class="optional">{{ __('(opcional)') }}</span></label>
     <input type="file" id="cover" name="cover" accept="image/jpeg,image/png,image/webp">
-    <p class="hint">{{ $coverHint ?? __('JPG, PNG o WebP, máximo :max MB. Si no subes ninguna, usaremos una imagen del propio contenido.', ['max' => config('kidstv.max_cover_mb')]) }}</p>
+    <p class="hint">{{ $coverHint ?? __('JPG, PNG o WebP, máximo :max MB. Si no subes ninguna, usaremos una imagen del propio contenido.', ['max' => config('nokoplay.max_cover_mb')]) }}</p>
     @error('cover')<p class="error">{{ $message }}</p>@enderror
 </div>

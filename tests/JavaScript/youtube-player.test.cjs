@@ -19,7 +19,7 @@ function playerPage(mode = 'auto') {
             addEventListener(name, listener) { this.listeners[name] = listener; },
         };
     }
-    elements.player.attributes = { 'data-video-id': 'aqz-KE-bpKQ', 'data-controls': mode, 'data-origin': 'https://kidstv.example' };
+    elements.player.attributes = { 'data-video-id': 'aqz-KE-bpKQ', 'data-controls': mode, 'data-origin': 'https://nokoplay.example' };
     elements.toggle.attributes = { 'data-play': 'Reproducir', 'data-pause': 'Pausar' };
     const classes = new Set();
     const timers = new Map();
@@ -71,7 +71,7 @@ function playerPage(mode = 'auto') {
         elements, api, config, messages, timers, advance,
         ready: () => config.events.onReady(),
         visible: () => !elements.controls.hidden && classes.has('controls-visible'),
-        command: (cmd, value) => listeners.message({ source: window.parent, data: JSON.stringify({ kidstv: 'cmd', cmd, value }) }),
+        command: (cmd, value) => listeners.message({ source: window.parent, data: JSON.stringify({ nokoplay: 'cmd', cmd, value }) }),
         message: event => listeners.message(event),
         event: name => listeners[name](),
         close: () => listeners.pagehide(),
@@ -166,7 +166,7 @@ test('remote and pointer seeking stay within the video, with no seeking before m
 test('unrelated messages are ignored and the bridge still reports ready, ended and errors', () => {
     const page = playerPage();
     page.ready();
-    page.message({ source: {}, data: { kidstv: 'cmd', cmd: 'pause' } });
+    page.message({ source: {}, data: { nokoplay: 'cmd', cmd: 'pause' } });
     page.message({ source: {}, data: 'invalid json' });
     assert.equal(page.api.state, 1);
     page.api.setState(0);

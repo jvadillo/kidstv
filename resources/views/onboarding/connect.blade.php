@@ -12,7 +12,7 @@
 
         <ol class="ob-howto">
             <li>
-                <strong>{{ __('Abre KidsTV en la tele') }}</strong>
+                <strong>{{ __('Abre NokoPlay en la tele') }}</strong>
                 <span class="small muted">{!! __('Con la app para televisores LG o, en cualquier Smart TV, desde su navegador en <strong>:url</strong>.', ['url' => e(preg_replace('#^https?://#', '', url('/tv')))]) !!}
                     <a href="{{ route('help.tv') }}" target="_blank">{{ __('Ayuda') }}</a></span>
             </li>

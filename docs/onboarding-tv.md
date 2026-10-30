@@ -14,7 +14,7 @@ Los códigos no dan una sesión adulta. La creación provisional solo admite lis
 
 La interfaz se comprueba con teclado (flechas, OK, Atrás y escritura), transferencia del borrador, foco visible y acciones dentro de 1280×720. La comprobación en navegador no sustituye una prueba en un LG físico.
 
-El paquete LG 1.5.2 incluye este flujo y las mejoras de textos de bienvenida, nombre, edad, series y vinculación. Las teles que ya tienen una app instalada necesitan reinstalar el nuevo `public/downloads/kidstv-webos.ipk`; el despliegue del servidor no actualiza su JavaScript local. Las vinculaciones existentes se conservan al actualizar sin borrar datos de la app.
+El paquete LG 1.5.2 incluye este flujo y las mejoras de textos de bienvenida, nombre, edad, series y vinculación. Las teles que ya tienen una app instalada necesitan reinstalar el nuevo `public/downloads/nokoplay-webos.ipk`; el despliegue del servidor no actualiza su JavaScript local. Las vinculaciones existentes se conservan al actualizar sin borrar datos de la app.
 
 La bienvenida y la edad usan tres tarjetas horizontales navegables con izquierda/derecha y OK. El borde amarillo identifica el foco; el verde y el check circular dentro de la miniatura identifican las series seleccionadas. El nombre tiene una etiqueta visible y una acción alineada. Los pasos comparten indicador de progreso y un pie fijo con Volver; nombre y edad ofrecen Continuar en el móvil. En series, Continuar (N) abre la ventana final con Configurar desde el móvil, Empezar a ver mis series y Volver. La selección conserva el foco y el desplazamiento del catálogo.
 

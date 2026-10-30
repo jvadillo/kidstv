@@ -16,7 +16,7 @@
                 <div class="menu-panel">
                     <a href="{{ route('lists.public') }}" class="menu-item menu-item-2">
                         @include('partials.icon', ['name' => 'globe'])
-                        <span><span class="block">{{ __('Añadir lista pública') }}</span><span class="muted small">{{ __('Preparada por KidsTV, se mantiene al día sola') }}</span></span>
+                        <span><span class="block">{{ __('Añadir lista pública') }}</span><span class="muted small">{{ __('Preparada por NokoPlay, se mantiene al día sola') }}</span></span>
                     </a>
                     <a href="{{ route('lists.create') }}" class="menu-item menu-item-2">
                         @include('partials.icon', ['name' => 'lock'])
@@ -117,7 +117,7 @@
             @include('partials.icon', ['name' => 'globe'])
             <span class="grow">
                 <strong class="block">{{ __('Listas públicas') }}</strong>
-                <span class="muted small">{{ trans_choice('Hay :count lista preparada por KidsTV que puedes añadir a tu videoteca.|Hay :count listas preparadas por KidsTV que puedes añadir a tu videoteca.', $publicCount) }}</span>
+                <span class="muted small">{{ trans_choice('Hay :count lista preparada por NokoPlay que puedes añadir a tu videoteca.|Hay :count listas preparadas por NokoPlay que puedes añadir a tu videoteca.', $publicCount) }}</span>
             </span>
             <span class="btn btn-sm btn-ghost">{{ __('Ver') }}</span>
         </a>

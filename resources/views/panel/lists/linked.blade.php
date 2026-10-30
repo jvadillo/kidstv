@@ -1,6 +1,6 @@
 @extends('layouts.panel')
 
-{{-- Lista pública añadida: sus vídeos los mantiene KidsTV; la familia solo elige quién la ve. --}}
+{{-- Lista pública añadida: sus vídeos los mantiene NokoPlay; la familia solo elige quién la ve. --}}
 @section('title', $list->displayName())
 
 @section('content')

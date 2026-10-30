@@ -19,7 +19,7 @@ class LibraryTest extends TestCase
         parent::setUp();
         Storage::fake('local');
         // Sin ffmpeg en el entorno de pruebas: el procesado marca el archivo como listo.
-        config(['kidstv.ffprobe' => '/nonexistent', 'kidstv.ffmpeg' => '/nonexistent']);
+        config(['nokoplay.ffprobe' => '/nonexistent', 'nokoplay.ffmpeg' => '/nonexistent']);
     }
 
     private function upload(string $kind, string $name, string $bytes, array $fields): array
@@ -134,10 +134,10 @@ class LibraryTest extends TestCase
         $this->postJson('/panel/subidas', ['kind' => 'audio', 'name' => 'nana.mp3', 'size' => 61 * 1024 * 1024])
             ->assertStatus(422)->assertJsonValidationErrors('file');
 
-        config(['kidstv.family_quota_mb' => 1]);
+        config(['nokoplay.family_quota_mb' => 1]);
         $this->postJson('/panel/subidas', ['kind' => 'video', 'name' => 'grande.mp4', 'size' => 2 * 1024 * 1024])
             ->assertStatus(422)->assertJsonFragment(['file' => ['No queda espacio en tu videoteca (límite de 1,0 MB). Elimina algún archivo para subir más.']]);
-        config(['kidstv.family_quota_mb' => 3072]);
+        config(['nokoplay.family_quota_mb' => 3072]);
 
         // Un archivo .mp4 que en realidad no es un vídeo se rechaza al completar.
         $result = $this->upload('video', 'falso.mp4', 'esto no es un video en absoluto', ['title' => 'Falso']);

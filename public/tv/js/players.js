@@ -1,5 +1,5 @@
 /*
- * KidsTV TV · reproductores (vídeo/audio propios y YouTube).
+ * NokoPlay TV · reproductores (vídeo/audio propios y YouTube).
  * Interfaz común: new Player(contenedor, item, opciones) → { key(nombre), destroy() }.
  */
 (function (window, document, K) {
@@ -162,7 +162,7 @@
 
         function send(cmd, value) {
             try {
-                frame.contentWindow.postMessage(JSON.stringify({ kidstv: 'cmd', cmd: cmd, value: value }), origin || '*');
+                frame.contentWindow.postMessage(JSON.stringify({ nokoplay: 'cmd', cmd: cmd, value: value }), origin || '*');
             } catch (e) { /* nada */ }
         }
 
@@ -172,7 +172,7 @@
             if (typeof data === 'string') {
                 try { data = JSON.parse(data); } catch (err) { return; }
             }
-            if (!data || data.kidstv !== 'yt') return;
+            if (!data || data.nokoplay !== 'yt') return;
 
             if (data.event === 'ready') {
                 ready = true;
@@ -224,4 +224,4 @@
             }
         };
     };
-})(window, document, window.KidsTV);
+})(window, document, window.NokoPlay);

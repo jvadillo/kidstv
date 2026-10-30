@@ -100,10 +100,10 @@ class AdminTest extends TestCase
     {
         $user = $this->adult(['email' => 'jon@example.com']);
 
-        $this->artisan('kidstv:admin', ['email' => 'JON@example.com'])->assertSuccessful();
+        $this->artisan('nokoplay:admin', ['email' => 'JON@example.com'])->assertSuccessful();
         $this->assertTrue($user->fresh()->isAdmin());
-        $this->artisan('kidstv:admin', ['email' => 'jon@example.com', '--revoke' => true])->assertSuccessful();
+        $this->artisan('nokoplay:admin', ['email' => 'jon@example.com', '--revoke' => true])->assertSuccessful();
         $this->assertFalse($user->fresh()->isAdmin());
-        $this->artisan('kidstv:admin', ['email' => 'nadie@example.com'])->assertFailed();
+        $this->artisan('nokoplay:admin', ['email' => 'nadie@example.com'])->assertFailed();
     }
 }

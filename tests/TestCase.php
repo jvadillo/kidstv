@@ -16,7 +16,7 @@ abstract class TestCase extends BaseTestCase
     {
         parent::setUp();
 
-        config(['kidstv.email_dns_check' => false]);
+        config(['nokoplay.email_dns_check' => false]);
     }
 
     protected function adult(array $attributes = []): User

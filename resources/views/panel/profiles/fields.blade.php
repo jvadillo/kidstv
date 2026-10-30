@@ -21,7 +21,7 @@
 <fieldset class="field">
     <legend>{{ __('Avatar') }}</legend>
     <div class="avatar-picker">
-        @foreach (config('kidstv.avatars') as $avatar)
+        @foreach (config('nokoplay.avatars') as $avatar)
             <label class="avatar-option">
                 <input type="radio" name="avatar" value="{{ $avatar }}" @checked(old('avatar', $profile->avatar) === $avatar)>
                 @include('partials.avatar', ['avatar' => $avatar, 'size' => 64])

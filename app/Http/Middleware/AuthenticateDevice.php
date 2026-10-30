@@ -35,7 +35,7 @@ class AuthenticateDevice
         if ($device->family->isBlocked()) {
             return response()->json([
                 'error' => 'account_blocked',
-                'message' => __('Esta videoteca está suspendida. El adulto responsable puede escribir al soporte de KidsTV.'),
+                'message' => __('Esta videoteca está suspendida. El adulto responsable puede escribir al soporte de NokoPlay.'),
             ], 403);
         }
 

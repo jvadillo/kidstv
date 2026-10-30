@@ -35,7 +35,7 @@ class LoginController extends Controller
         $fromOnboarding = $request->boolean('onboarding');
 
         $data = $request->validate([
-            'email' => ['required', 'string', 'max:254', config('kidstv.email_dns_check') ? 'email:rfc,dns' : 'email:rfc'],
+            'email' => ['required', 'string', 'max:254', config('nokoplay.email_dns_check') ? 'email:rfc,dns' : 'email:rfc'],
             'terms' => $fromOnboarding ? ['accepted'] : [],
         ], [
             'email.required' => __('Escribe tu correo electrónico.'),
@@ -142,7 +142,7 @@ class LoginController extends Controller
         $user = User::where('email', $email)->first();
 
         if ($user?->isBlocked()) {
-            return redirect()->route('login')->withErrors(['email' => __('Esta cuenta está bloqueada. Si crees que es un error, escribe al soporte de KidsTV.')]);
+            return redirect()->route('login')->withErrors(['email' => __('Esta cuenta está bloqueada. Si crees que es un error, escribe al soporte de NokoPlay.')]);
         }
 
         // Desde el asistente ya se aceptaron las condiciones: se crea la cuenta (si no la

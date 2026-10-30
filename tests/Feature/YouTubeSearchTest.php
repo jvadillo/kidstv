@@ -154,7 +154,7 @@ class YouTubeSearchTest extends TestCase
         $family = $this->adult()->family;
         $content = $this->youtubeContent($family, ['youtube_id' => 'ccccccccccc']);
 
-        $this->artisan('kidstv:youtube-durations')->assertSuccessful();
+        $this->artisan('nokoplay:youtube-durations')->assertSuccessful();
         $this->assertSame(185, $content->fresh()->duration);
     }
 

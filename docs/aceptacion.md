@@ -2,7 +2,7 @@
 
 Fuentes de evidencia:
 - **Test**: tests automáticos (`php artisan test`, 39 tests / 417 aserciones, en `tests/Feature`).
-- **E2E prod**: recorrido real con Chrome (Playwright) contra https://kidstv.jonvadillo.com el 24/10/2026: panel en viewport móvil 390×844 y tele en 1920×1080 manejada solo con teclado. Las cuentas de prueba se eliminaron después.
+- **E2E prod**: recorrido real con Chrome (Playwright) contra el dominio anterior el 24/10/2026 (no valida la migración a NokoPlay): panel en viewport móvil 390×844 y tele en 1920×1080 manejada solo con teclado. Las cuentas de prueba se eliminaron después.
 - **LG real**: pendiente de ejecutar la lista de [webos.md §4](webos.md#4-probar-lista-de-verificación-en-tele-real) en un televisor LG; no hubo acceso a uno durante el desarrollo.
 
 | # | Flujo | Estado | Evidencia |
@@ -17,7 +17,7 @@ Fuentes de evidencia:
 | 8 | Borrar en el móvil → desaparece de la tele | ✅ | Test (archivo borrado, catálogo y reproducción 404). E2E prod: borrado de «Barras de colores» y desaparece del catálogo de Iker. |
 | 9 | Revocar una tele → pierde el acceso | ✅ | Test (API 401 y URL firmada 403). E2E prod: la tele muestra «Esta tele se ha desvinculado». |
 | 10 | Dos cuentas no acceden a datos ajenos | ✅ | Test `FamilyIsolationTest`: 404 en todas las rutas del panel sobre perfiles, contenidos, archivos, listas, teles y sesiones ajenas; validación impide asignar perfiles/listas/contenidos ajenos; la API de TV y las URLs firmadas no sirven datos de otra familia, ni manipulando el parámetro de dispositivo. |
-| 11 | Instalar en un LG real, vincular, navegar y reproducir | 📦 Listo · ⏳ LG | Paquete `kidstv-webos.ipk` generado con `ares-package` (sin errores) y publicado. Falta la prueba física. |
+| 11 | Instalar en un LG real, vincular, navegar y reproducir | 📦 Listo · ⏳ LG | Paquete `nokoplay-webos.ipk` generado con `ares-package` (sin errores) y publicado. Falta la prueba física. |
 | 12 | Instrucciones de instalación/actualización LG y ampliación a otras plataformas | ✅ | [webos.md](webos.md), [otras-plataformas.md](otras-plataformas.md). |
 
 ## Defectos encontrados y corregidos durante la verificación

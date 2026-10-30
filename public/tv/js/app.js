@@ -1,5 +1,5 @@
 /*
- * KidsTV TV · aplicación principal.
+ * NokoPlay TV · aplicación principal.
  * Pantallas: vinculación → perfiles → catálogo → reproductor, y zona de adultos con PIN.
  * Toda la navegación funciona con flechas, OK y Atrás; el ratón/puntero es opcional.
  */
@@ -410,9 +410,9 @@
             mount(
                 '<div class="screen screen-pairing">' +
                     '<div class="pair-text">' +
-                        '<div class="brand-big"><span class="logo"></span>KidsTV</div>' +
+                        '<div class="brand-big"><img src="img/logo-horizontal.png" alt="NokoPlay" width="390" height="100"></div>' +
                         '<h1>' + (self.saving ? 'Configura tu Zona de adultos' : 'Prepara su tele desde el móvil') + '</h1>' +
-                        '<p class="pair-step">' + (self.saving ? 'Conecta tu móvil u ordenador para descubrir todas las posibilidades de Kids TV.' : esc(t('pair.step1'))) + '</p>' +
+                        '<p class="pair-step">' + (self.saving ? 'Conecta tu móvil u ordenador para descubrir todas las posibilidades de NokoPlay.' : esc(t('pair.step1'))) + '</p>' +
                         (self.saving ? '<p class="muted small">Podrás guardar tu configuración, gestionar listas, establecer límites de uso y consultar la actividad.</p>' : '') +
                         '<p class="pair-url">' + esc(p.link_display) + '</p>' +
                         '<p class="pair-step">' + esc(t('pair.step2')) + '</p>' +
@@ -1148,8 +1148,8 @@
 
     screens.welcome = {
         enter: function () {
-            mount('<div class="screen screen-center setup-welcome"><div class="brand-big"><span class="logo"></span>KidsTV</div>' +
-                '<h1>Prepara Kids TV para tu familia</h1><p class="muted">Crea su perfil y elige sus series favoritas.</p>' +
+            mount('<div class="screen screen-center setup-welcome"><div class="brand-big"><img src="img/logo-horizontal.png" alt="NokoPlay" width="390" height="100"></div>' +
+                '<h1>Prepara NokoPlay para tu familia</h1><p class="muted">Crea su perfil y elige sus series favoritas.</p>' +
                 '<div class="setup-choices">' + setupChoice('Configurar desde el móvil', 'Escanea el código QR y configura todo cómodamente desde tu teléfono.', '<span class="setup-device setup-device-mobile"></span>', 'mobile', '', 'mobile') +
                 setupChoice('Configurar en esta tele', 'Crea el perfil y elige sus series favoritas con el mando.', '<span class="setup-device setup-device-tv"></span>', 'tv', '', 'tv') +
                 setupChoice('Ya tengo cuenta', 'Vincula esta tele a tu cuenta y recupera tus perfiles.', '<span class="setup-person"></span>', 'mobile', '', 'account') + '</div><p class="setup-hint">Usa ← → para elegir y pulsa OK para continuar</p></div>');
@@ -1241,13 +1241,13 @@
                 if (!(setupDraft.lists || []).length) { toast('Elige al menos una serie'); return; }
                 openDialog({ kind: 'setup', title: '¡Todo listo para empezar!',
                     text: 'Ya puedes disfrutar de las series que has elegido.',
-                    html: '<h3>¿Quieres aprovechar todo lo que ofrece Kids TV?</h3>' +
+                    html: '<h3>¿Quieres aprovechar todo lo que ofrece NokoPlay?</h3>' +
                         '<p>Desde el móvil podrás completar la configuración y acceder a opciones como:</p>' +
                         '<ul class="setup-benefits"><li>Guardar tu configuración y usarla en otras teles.</li>' +
                         '<li>Establecer límites de uso y consultar la actividad.</li>' +
                         '<li>Crear y gestionar listas de series personalizadas.</li>' +
                         '<li>Proteger la Zona de adultos con un PIN.</li></ul>' +
-                        '<p class="muted small">Te recomendamos hacerlo para disfrutar de todas las posibilidades de Kids TV.</p>',
+                        '<p class="muted small">Te recomendamos hacerlo para disfrutar de todas las posibilidades de NokoPlay.</p>',
                     buttons: [{ label: 'Configurar desde el móvil', action: function () { show('pairing'); } },
                         { label: 'Empezar a ver mis series', action: function () { screens.setup.finish(); } },
                         { label: 'Volver' }] });
@@ -1314,4 +1314,4 @@
     }
 
     boot();
-})(window, document, window.KidsTV);
+})(window, document, window.NokoPlay);

@@ -54,7 +54,7 @@ class Onboarding
     /** Un avatar que la familia aún no usa (o uno al azar), para no pedirlo en el primer paso. */
     public function pickAvatar(?Family $family): string
     {
-        $avatars = config('kidstv.avatars');
+        $avatars = config('nokoplay.avatars');
         $free = array_values(array_diff($avatars, $family ? $family->profiles()->pluck('avatar')->all() : [])) ?: $avatars;
 
         return $free[array_rand($free)];
@@ -69,7 +69,7 @@ class Onboarding
             }
 
             $family = Family::create(['name' => null]);
-            foreach (config('kidstv.default_lists') as $i => $list) {
+            foreach (config('nokoplay.default_lists') as $i => $list) {
                 $family->lists()->create(['name' => $list, 'position' => $i, 'languages' => [YouTubeSearch::defaultLanguage()]]);
             }
 
@@ -100,7 +100,7 @@ class Onboarding
             if (filled($draft['name'] ?? null) && $family->profiles()->count() < 12) {
                 $profile = $family->profiles()->create([
                     'name' => $draft['name'],
-                    'avatar' => in_array($draft['avatar'] ?? null, config('kidstv.avatars'), true) ? $draft['avatar'] : $this->pickAvatar($family),
+                    'avatar' => in_array($draft['avatar'] ?? null, config('nokoplay.avatars'), true) ? $draft['avatar'] : $this->pickAvatar($family),
                     'age_range' => array_key_exists($draft['age'] ?? '', VideoList::AGE_RANGES) ? $draft['age'] : null,
                     'position' => (int) $family->profiles()->max('position') + 1,
                 ]);

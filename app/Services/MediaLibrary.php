@@ -18,19 +18,19 @@ class MediaLibrary
 {
     public function maxBytes(string $kind): int
     {
-        $mb = $kind === Content::TYPE_AUDIO ? config('kidstv.max_audio_mb') : config('kidstv.max_video_mb');
+        $mb = $kind === Content::TYPE_AUDIO ? config('nokoplay.max_audio_mb') : config('nokoplay.max_video_mb');
 
         return $mb * 1024 * 1024;
     }
 
     public function quotaBytes(): int
     {
-        return config('kidstv.family_quota_mb') * 1024 * 1024;
+        return config('nokoplay.family_quota_mb') * 1024 * 1024;
     }
 
     public function extensions(string $kind): array
     {
-        return config($kind === Content::TYPE_AUDIO ? 'kidstv.audio_extensions' : 'kidstv.video_extensions');
+        return config($kind === Content::TYPE_AUDIO ? 'nokoplay.audio_extensions' : 'nokoplay.video_extensions');
     }
 
     /** Devuelve un mensaje de error si la familia o el servidor no pueden aceptar $bytes más. */
@@ -45,7 +45,7 @@ class MediaLibrary
         }
 
         $free = @disk_free_space(Storage::disk('local')->path(''));
-        if ($free !== false && $free - $bytes < config('kidstv.min_free_disk_mb') * 1024 * 1024) {
+        if ($free !== false && $free - $bytes < config('nokoplay.min_free_disk_mb') * 1024 * 1024) {
             return __('El servidor no tiene espacio suficiente en este momento. Inténtalo más tarde o con un archivo más pequeño.');
         }
 
@@ -97,10 +97,10 @@ class MediaLibrary
 
         $mime ??= $disk->mimeType($path) ?: 'application/octet-stream';
 
-        if (config('kidstv.accel_redirect')) {
+        if (config('nokoplay.accel_redirect')) {
             return response('', 200, [
                 'Content-Type' => $mime,
-                'X-Accel-Redirect' => config('kidstv.accel_prefix').$path,
+                'X-Accel-Redirect' => config('nokoplay.accel_prefix').$path,
                 'Cache-Control' => $cache,
                 'X-Robots-Tag' => 'noindex, nofollow',
             ]);

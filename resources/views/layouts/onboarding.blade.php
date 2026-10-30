@@ -6,8 +6,7 @@
 @section('body')
     <header class="ob-header">
         <a href="{{ route('home') }}" class="brand">
-            <img src="{{ asset('img/icon.svg') }}" alt="" width="32" height="32">
-            <span>KidsTV</span>
+            @include('partials.brand')
         </a>
         @hasSection('step')
             @include('onboarding.progress', ['step' => (int) $__env->yieldContent('step')])

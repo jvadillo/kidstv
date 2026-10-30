@@ -146,10 +146,10 @@ class TvOnboardingTest extends TestCase
         $this->travel(29)->days();
         $this->tv($token)->getJson('/api/tv/session')->assertOk();
         $this->travel(2)->days();
-        $this->artisan('kidstv:prune')->assertSuccessful();
+        $this->artisan('nokoplay:prune')->assertSuccessful();
         $this->assertNotNull($device->fresh());
         $this->travel(31)->days();
-        $this->artisan('kidstv:prune')->assertSuccessful();
+        $this->artisan('nokoplay:prune')->assertSuccessful();
         $this->assertNull($device->fresh());
     }
 }

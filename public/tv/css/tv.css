@@ -1,5 +1,5 @@
 /*
- * KidsTV TV. Diseñado a 1920x1080 en rem (1rem = 16px a 1080p; core.js reescala).
+ * NokoPlay TV. Diseñado a 1920x1080 en rem (1rem = 16px a 1080p; core.js reescala).
  * Sin variables CSS ni grid: compatible con Chromium 38 (LG webOS 3).
  */
 
@@ -45,14 +45,8 @@ p { font-size: 1.9rem; line-height: 1.35; margin: 0 0 1rem; }
 
 /* Arranque */
 .boot { position: absolute; left: 0; right: 0; top: 0; bottom: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-.boot p { font-size: 3rem; font-weight: 800; }
-.boot-logo, .logo {
-    width: 8rem; height: 8rem; border-radius: 2rem; background: #ffc83d; position: relative;
-}
-.boot-logo:after, .logo:after {
-    content: ""; position: absolute; left: 3rem; top: 2.2rem;
-    border-left: 3.2rem solid #2b2560; border-top: 1.8rem solid transparent; border-bottom: 1.8rem solid transparent;
-}
+.boot-brand { padding: 2rem; background: #ffffff; border-radius: 2rem; }
+.boot-brand img { display: block; width: 22rem; height: auto; }
 
 /* Spinner */
 .spinner {
@@ -84,9 +78,12 @@ p { font-size: 1.9rem; line-height: 1.35; margin: 0 0 1rem; }
 
 .screen-pairing { display: flex; align-items: center; padding: 0 9rem; }
 .pair-text { flex: 1; padding-right: 4rem; }
-.brand-big { display: flex; align-items: center; font-size: 3rem; font-weight: 800; margin-bottom: 3rem; }
-.brand-big .logo { width: 5rem; height: 5rem; border-radius: 1.3rem; margin-right: 1.5rem; }
-.brand-big .logo:after { left: 1.9rem; top: 1.35rem; border-left-width: 2rem; border-top-width: 1.15rem; border-bottom-width: 1.15rem; }
+.brand-big { display: inline-block; padding: .8rem 1.2rem; background: #ffffff; border-radius: 1.2rem; margin-bottom: 2rem; }
+.brand-big img { display: block; width: 24rem; height: auto; }
+.screen-pairing .brand-big { padding: .5rem .9rem; margin-bottom: 1.5rem; }
+.screen-pairing .brand-big img { width: 20rem; }
+.screen-pairing h1 { font-size: 3rem; }
+.screen-pairing .pair-step { font-size: 1.75rem; }
 .pair-step { margin: 0 0 0.6rem; color: #d8d6f3; }
 .pair-url { font-size: 2.4rem; font-weight: 800; color: #ffc83d; margin: 0 0 2rem; word-break: break-all; }
 .pair-code {

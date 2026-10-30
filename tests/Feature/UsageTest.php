@@ -68,7 +68,7 @@ class UsageTest extends TestCase
         $this->assertCount(2, $export['usage']);
         $this->assertSame('Tele', $export['usage'][0]['device']);
 
-        $this->artisan('kidstv:prune')->assertSuccessful();
+        $this->artisan('nokoplay:prune')->assertSuccessful();
         $this->assertSame(['reciente1'], Play::pluck('client_key')->all());
     }
 }

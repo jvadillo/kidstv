@@ -19,7 +19,7 @@ class ProfileController extends Controller
 
     public function create()
     {
-        return view('panel.profiles.form', ['profile' => new Profile(['avatar' => 'estrella']), 'avatars' => config('kidstv.avatars')]);
+        return view('panel.profiles.form', ['profile' => new Profile(['avatar' => 'estrella']), 'avatars' => config('nokoplay.avatars')]);
     }
 
     public function store(Request $request)
@@ -41,7 +41,7 @@ class ProfileController extends Controller
 
         return view('panel.profiles.edit', [
             'profile' => $profile,
-            'avatars' => config('kidstv.avatars'),
+            'avatars' => config('nokoplay.avatars'),
             'contents' => $family->contents()->with('list')->ordered()->get(),
             'assigned' => $profile->contents()->pluck('contents.id')->all(),
         ]);
@@ -84,7 +84,7 @@ class ProfileController extends Controller
     {
         return $request->validate([
             'name' => ['required', 'string', 'max:40'],
-            'avatar' => ['required', Rule::in(config('kidstv.avatars'))],
+            'avatar' => ['required', Rule::in(config('nokoplay.avatars'))],
             'age_range' => ['nullable', Rule::in(array_keys(VideoList::AGE_RANGES))],
         ], [
             'name.required' => __('Escribe un apodo o nombre para el perfil.'),

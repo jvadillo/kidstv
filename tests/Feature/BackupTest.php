@@ -25,17 +25,17 @@ class BackupTest extends TestCase
     {
         $this->freezeSecond();
 
-        $this->artisan('kidstv:backup')->assertSuccessful();
-        $this->artisan('kidstv:backup')->assertSuccessful();
-        $this->assertCount(2, glob(storage_path('backups/kidstv-*.sqlite')));
+        $this->artisan('nokoplay:backup')->assertSuccessful();
+        $this->artisan('nokoplay:backup')->assertSuccessful();
+        $this->assertCount(2, glob(storage_path('backups/nokoplay-*.sqlite')));
 
-        $this->artisan('kidstv:backup', ['--keep' => 1])->assertSuccessful();
-        $this->assertCount(1, glob(storage_path('backups/kidstv-*.sqlite')));
+        $this->artisan('nokoplay:backup', ['--keep' => 1])->assertSuccessful();
+        $this->assertCount(1, glob(storage_path('backups/nokoplay-*.sqlite')));
     }
 
     public function test_backup_is_scheduled_once_a_day_in_utc(): void
     {
-        $event = collect(app(Schedule::class)->events())->first(fn ($e) => str_contains($e->command, 'kidstv:backup'));
+        $event = collect(app(Schedule::class)->events())->first(fn ($e) => str_contains($e->command, 'nokoplay:backup'));
 
         $this->assertSame('40 1 * * *', $event->expression);
         $this->assertSame('UTC', $event->timezone);

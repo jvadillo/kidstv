@@ -1,5 +1,5 @@
 /* Textos de la app de TV. Para añadir un idioma, duplica el bloque "es". */
-window.KIDSTV_I18N = {
+window.NOKOPLAY_I18N = {
     es: {
         'pair.title': 'Conecta esta tele',
         'pair.step1': 'En tu móvil u ordenador, entra en',
@@ -70,7 +70,7 @@ window.KIDSTV_I18N = {
         'common.cancel': 'Cancelar',
         'common.retry': 'Reintentar',
         'common.exit': 'Salir',
-        'common.exitConfirm': '¿Salir de KidsTV?',
+        'common.exitConfirm': '¿Salir de NokoPlay?',
 
         'error.offline': 'Sin conexión a Internet',
         'error.offlineHint': 'Comprueba el wifi de la tele. Lo seguimos intentando…',
@@ -80,7 +80,7 @@ window.KIDSTV_I18N = {
         'error.genericHint': 'Vuelve a intentarlo en un momento.',
         'error.server': 'El servidor no responde',
         'error.blocked': 'Esta videoteca está suspendida',
-        'error.blockedHint': 'El adulto responsable puede escribir al soporte de KidsTV.',
+        'error.blockedHint': 'El adulto responsable puede escribir al soporte de NokoPlay.',
 
         'family.default': 'Tu videoteca'
     }

@@ -1,4 +1,4 @@
-/* KidsTV · comportamiento del panel de adultos (sin dependencias). */
+/* NokoPlay · comportamiento del panel de adultos (sin dependencias). */
 (function () {
     'use strict';
 

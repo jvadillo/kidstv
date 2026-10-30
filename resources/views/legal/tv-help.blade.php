@@ -4,7 +4,7 @@
 
 @section('content')
     <article class="prose">
-        <h1>{{ __('Usar KidsTV en la tele') }}</h1>
+        <h1>{{ __('Usar NokoPlay en la tele') }}</h1>
 
         <h2>{{ __('Opción 1: app para LG webOS') }}</h2>
         <p>{{ __('La app todavía no está en la tienda de LG, así que se instala en «modo desarrollador». Solo hay que hacerlo una vez por tele (y renovar el modo desarrollador periódicamente).') }}</p>
@@ -12,8 +12,8 @@
             <li>{{ __('Crea una cuenta gratuita en webostv.developer.lge.com e inicia sesión con ella en la tele.') }}</li>
             <li>{{ __('En la tienda de la tele (LG Content Store) instala la app «Developer Mode», ábrela, activa «Dev Mode Status» y reinicia la tele.') }}</li>
             <li>{{ __('Vuelve a abrir «Developer Mode», activa «Key Server» y anota la IP y la frase de acceso (passphrase).') }}</li>
-            <li>{{ __('Desde un ordenador en la misma red, instala el paquete kidstv-webos.ipk con las herramientas de LG (instrucciones detalladas en la documentación del proyecto, docs/webos.md).') }}</li>
-            <li>{{ __('Abre KidsTV en la tele: verás un código. Escríbelo en «Teles → Conectar tele» desde tu móvil.') }}</li>
+            <li>{{ __('Desde un ordenador en la misma red, instala el paquete nokoplay-webos.ipk con las herramientas de LG (instrucciones detalladas en la documentación del proyecto, docs/webos.md).') }}</li>
+            <li>{{ __('Abre NokoPlay en la tele: verás un código. Escríbelo en «Teles → Conectar tele» desde tu móvil.') }}</li>
         </ol>
         <p><strong>{{ __('Importante:') }}</strong> {{ __('el modo desarrollador de LG caduca si no se renueva (el contador aparece en la app «Developer Mode»; se amplía pulsando «Extend»). Si caduca, la tele desinstala las apps instaladas así y habrá que repetir el paso 4.') }}</p>
 

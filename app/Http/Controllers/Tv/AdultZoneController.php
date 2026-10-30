@@ -36,14 +36,14 @@ class AdultZoneController extends Controller
 
         if (! $family->checkPin((string) $request->input('pin'))) {
             $failures = $device->pin_failures + 1;
-            $threshold = config('kidstv.pin_max_failures_before_lock');
+            $threshold = config('nokoplay.pin_max_failures_before_lock');
             $device->pin_failures = min($failures, 255);
 
             // Espera progresiva: 30 s, 60 s, 120 s... hasta 15 minutos.
             if ($failures >= $threshold) {
                 $seconds = min(
-                    config('kidstv.pin_lock_base_seconds') * (2 ** ($failures - $threshold)),
-                    config('kidstv.pin_lock_max_seconds'),
+                    config('nokoplay.pin_lock_base_seconds') * (2 ** ($failures - $threshold)),
+                    config('nokoplay.pin_lock_max_seconds'),
                 );
                 $device->pin_locked_until = now()->addSeconds($seconds);
             }
@@ -63,11 +63,11 @@ class AdultZoneController extends Controller
         $device->forceFill(['pin_failures' => 0, 'pin_locked_until' => null])->save();
 
         $token = Str::random(40);
-        Cache::put($this->cacheKey($device), hash('sha256', $token), config('kidstv.adult_mode_idle_seconds'));
+        Cache::put($this->cacheKey($device), hash('sha256', $token), config('nokoplay.adult_mode_idle_seconds'));
 
         return response()->json([
             'adult_token' => $token,
-            'idle_seconds' => config('kidstv.adult_mode_idle_seconds'),
+            'idle_seconds' => config('nokoplay.adult_mode_idle_seconds'),
         ]);
     }
 
@@ -119,7 +119,7 @@ class AdultZoneController extends Controller
             return false;
         }
 
-        Cache::put($key, $hash, config('kidstv.adult_mode_idle_seconds'));
+        Cache::put($key, $hash, config('nokoplay.adult_mode_idle_seconds'));
 
         return true;
     }

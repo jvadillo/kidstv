@@ -179,7 +179,7 @@ class ContentController extends Controller
             'list_id' => $data['list_id'] ?? null,
             'status' => Content::STATUS_READY,
             'status_message' => $info['checked'] ? null : __('No se pudo comprobar con YouTube al añadirlo.'),
-            // Con la API configurada; si no, la duración se completa más tarde (kidstv:youtube-durations).
+            // Con la API configurada; si no, la duración se completa más tarde (nokoplay:youtube-durations).
             'duration' => $search->durations([$id])[$id] ?? null,
         ]);
         $content->profiles()->sync($data['profile_ids'] ?? []);
@@ -207,7 +207,7 @@ class ContentController extends Controller
             'kind' => $kind,
             'maxBytes' => $this->library->maxBytes($kind),
             'extensions' => $this->library->extensions($kind),
-            'chunkBytes' => config('kidstv.upload_chunk_mb') * 1024 * 1024,
+            'chunkBytes' => config('nokoplay.upload_chunk_mb') * 1024 * 1024,
             'storageUsed' => $this->family()->storageUsed(),
             'storageQuota' => $this->library->quotaBytes(),
         ]);

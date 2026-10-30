@@ -20,8 +20,7 @@
     <a class="skip-link" href="#main">{{ __('Saltar al contenido') }}</a>
     <header class="topbar">
         <a href="{{ route('panel') }}" class="brand">
-            <img src="{{ asset('img/icon.svg') }}" alt="" width="34" height="34">
-            <span>KidsTV</span>
+            @include('partials.brand')
         </a>
         <nav class="topnav" aria-label="{{ __('Secciones') }}">
             @foreach ($nav as [$route, $pattern, $label])

@@ -7,8 +7,10 @@
     <meta name="robots" content="noindex, nofollow">
     <meta name="theme-color" content="#2b2560">
     @stack('head')
-    <title>@yield('title', 'KidsTV') · {{ __('Videoteca familiar') }}</title>
-    <link rel="icon" href="{{ asset('img/icon.svg') }}" type="image/svg+xml">
+    <title>@yield('title', __('Videoteca familiar')) · NokoPlay</title>
+    <meta name="application-name" content="NokoPlay">
+    <link rel="icon" href="{{ asset('tv/img/icon.png') }}" type="image/png">
+    <link rel="apple-touch-icon" href="{{ asset('tv/img/apple-touch-icon.png') }}">
     <link rel="stylesheet" href="{{ asset('css/app.css') }}?v={{ filemtime(public_path('css/app.css')) }}">
     <script src="{{ asset('js/panel.js') }}?v={{ filemtime(public_path('js/panel.js')) }}" defer></script>
 </head>

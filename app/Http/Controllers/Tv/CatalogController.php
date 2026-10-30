@@ -38,7 +38,7 @@ class CatalogController extends Controller
                 'id' => $p->id, 'name' => $p->name, 'avatar' => $p->avatar,
                 'screen_time' => $this->screenTime->status($p->setRelation('family', $family)),
             ]),
-            'adult_idle_seconds' => config('kidstv.adult_mode_idle_seconds'),
+            'adult_idle_seconds' => config('nokoplay.adult_mode_idle_seconds'),
             'manage_url' => route('panel'),
         ]);
     }

@@ -1,20 +1,20 @@
 # Despliegue en el VPS compartido. Ver docs/despliegue.md.
-name: kidstv
+name: nokoplay
 
 x-app: &app
-  image: kidstv-app:${KIDSTV_RELEASE:-local}
+  image: nokoplay-app:${NOKOPLAY_RELEASE:-local}
   env_file: .env.production
   pull_policy: never
   environment:
     APP_ENV: production
     APP_DEBUG: "false"
     DB_CONNECTION: sqlite
-    DB_DATABASE: /var/www/html/storage/database/kidstv.sqlite
+    DB_DATABASE: /var/www/html/storage/database/nokoplay.sqlite
     SESSION_DRIVER: database
     CACHE_STORE: database
     QUEUE_CONNECTION: database
     SESSION_SECURE_COOKIE: "true"
-    KIDSTV_ACCEL_REDIRECT: "true"
+    NOKOPLAY_ACCEL_REDIRECT: "true"
     LOG_CHANNEL: stack
     LOG_STACK: daily,stderr
     LOG_DAILY_DAYS: "14"
@@ -55,12 +55,12 @@ services:
     depends_on: [app]
 
   web:
-    image: kidstv-web:${KIDSTV_RELEASE:-local}
+    image: nokoplay-web:${NOKOPLAY_RELEASE:-local}
     build:
       context: .
       dockerfile: ops/Dockerfile
       target: web
-    ports: ["127.0.0.1:${KIDSTV_PORT:-8086}:8080"]
+    ports: ["127.0.0.1:${NOKOPLAY_PORT:-8086}:8080"]
     volumes: [storage:/var/www/html/storage:ro]
     read_only: true
     tmpfs: ["/tmp:uid=101,gid=101,mode=1770,size=64m"]

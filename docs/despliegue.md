@@ -1,25 +1,25 @@
 # Despliegue y operación en el VPS
 
-KidsTV se ejecuta en el VPS compartido (`deploy@2.28.118.113`) como un proyecto de Docker Compose independiente, detrás del Caddy compartido que ya sirve las demás aplicaciones. No necesita `sudo`.
+NokoPlay se ejecuta en el VPS compartido (`deploy@2.28.118.113`) con un proyecto de Docker Compose independiente, detrás del Caddy compartido que ya sirve las demás aplicaciones. No necesita `sudo`.
 
 | Elemento | Valor |
 |---|---|
-| Código | `~/projects/kidstv` (clon de `git@github.com:jvadillo/kidstv.git`, rama `main`) |
-| Configuración secreta | `~/projects/kidstv/.env.production` (permisos 600, fuera de git) |
-| Contenedores | `kidstv-app-1`, `kidstv-worker-1`, `kidstv-scheduler-1`, `kidstv-web-1` |
+| Código | `~/projects/nokoplay` (directorio de destino; rama `main`) |
+| Configuración secreta | `~/projects/nokoplay/.env.production` (permisos 600, fuera de git) |
+| Contenedores | `nokoplay-app-1`, `nokoplay-worker-1`, `nokoplay-scheduler-1`, `nokoplay-web-1` |
 | Puerto interno | `127.0.0.1:8086` (solo accesible desde el propio VPS) |
-| Sitio Caddy | `~/projects/gateway/sites/kidstv.caddy` → `kidstv.jonvadillo.com` |
-| Datos | volumen Docker `kidstv_storage` (BD SQLite, archivos, copias, logs) |
+| Sitio Caddy | `~/projects/gateway/sites/nokoplay.caddy` → `nokoplay.jonvadillo.com` |
+| Datos | volumen Docker `nokoplay_storage` (BD SQLite, archivos, copias, logs) |
 | Límites | app 384 MB / worker 320 MB / scheduler 128 MB / web 64 MB de RAM |
 
 ## 1. Instalación desde cero
 
-Requisitos: Docker con Compose v2, acceso de `deploy` a GitHub por SSH, el Caddy compartido funcionando (`~/projects/gateway`) y un registro DNS `A` de `kidstv.jonvadillo.com` hacia la IP del VPS.
+Requisitos: Docker con Compose v2, acceso de `deploy` a GitHub por SSH, el Caddy compartido funcionando (`~/projects/gateway`) y un registro DNS `A` de `nokoplay.jonvadillo.com` hacia la IP del VPS.
 
 ```bash
 cd ~/projects
-git clone git@github.com:jvadillo/kidstv.git
-cd kidstv
+git clone <URL_DEL_REPOSITORIO> nokoplay
+cd nokoplay
 
 # Configuración
 cp ops/env.production.example .env.production
@@ -35,18 +35,18 @@ bash ops/deploy.sh --no-pull
 bash ops/install-site.sh
 ```
 
-Caddy obtiene el certificado TLS automáticamente en cuanto el DNS apunta al VPS. Comprobación: `curl -I https://kidstv.jonvadillo.com/up` → `200`.
+Caddy obtiene el certificado TLS automáticamente en cuanto el DNS apunta al VPS. Comprobación: `curl -I https://nokoplay.jonvadillo.com/up` → `200`.
 
 > **Importante:** guarda una copia de `APP_KEY` fuera del servidor. Sin ella no se pueden descifrar las sesiones ni las vinculaciones pendientes de una copia de seguridad.
 
 ## 2. Actualizar a una nueva versión
 
 ```bash
-cd ~/projects/kidstv
+cd ~/projects/nokoplay
 bash ops/deploy.sh
 ```
 
-El script hace `git pull --ff-only`, construye las imágenes etiquetadas con el commit (`kidstv-app:<sha>`), ejecuta las migraciones, recrea los contenedores, reinicia la cola, comprueba `/up` y borra imágenes antiguas (conserva las dos últimas).
+El script hace `git pull --ff-only`, construye las imágenes etiquetadas con el commit (`nokoplay-app:<sha>`), ejecuta las migraciones, recrea los contenedores, reinicia la cola, comprueba `/up` y borra imágenes antiguas (conserva las dos últimas).
 
 **Volver a la versión anterior:**
 
@@ -56,7 +56,7 @@ git checkout <sha> && bash ops/deploy.sh --no-pull
 git checkout main                    # cuando se publique la corrección
 ```
 
-Las migraciones de KidsTV solo añaden estructura; si una versión futura incluye una migración destructiva se indicará en su commit.
+Las migraciones de NokoPlay solo añaden estructura; si una versión futura incluye una migración destructiva se indicará en su commit.
 
 Los cambios en la app de TV (`public/tv`) llegan a los navegadores y a la pantalla `/tv/` al desplegar. La app **instalada** en televisores LG lleva su propia copia del código: ver [webos.md](webos.md#actualizar-la-app) para reinstalarla. El catálogo, en cambio, se actualiza siempre sin reinstalar.
 
@@ -68,10 +68,10 @@ El acceso depende de que los correos lleguen. Opciones en `.env.production`:
 ```env
 MAIL_MAILER=resend
 RESEND_API_KEY=re_xxxxxxxx
-MAIL_FROM_ADDRESS=no-reply@kidstv.jonvadillo.com
-MAIL_FROM_NAME=KidsTV
+MAIL_FROM_ADDRESS=no-reply@nokoplay.jonvadillo.com
+MAIL_FROM_NAME=NokoPlay
 ```
-Configurado en producción el 25/10/2026 con una clave de Resend **solo de envío** autorizada para el dominio `kidstv.jonvadillo.com` (no sirve para `jonvadillo.com` ni para otros subdominios). La clave vive únicamente en `.env.production` del servidor; si se cambia, actualízala ahí y redespliega.
+Verifica `nokoplay.jonvadillo.com` en Resend y utiliza una clave **solo de envío** autorizada para ese dominio. La autorización de otro dominio no se transfiere al nuevo. La clave vive únicamente en `.env.production` del servidor; si se cambia, actualízala ahí y redespliega.
 
 **SMTP genérico:**
 ```env
@@ -84,7 +84,7 @@ MAIL_PASSWORD=...
 
 **Sin proveedor (solo uso personal o pruebas):** `MAIL_MAILER=log`. Los correos se escriben en `storage/logs/mail-AAAA-MM-DD.log`:
 ```bash
-docker exec kidstv-app-1 sh -c 'grep -h "digo: " storage/logs/mail-*.log | tail -3'
+docker exec nokoplay-app-1 sh -c 'grep -h "digo: " storage/logs/mail-*.log | tail -3'
 ```
 
 Tras cambiar `.env.production`: `bash ops/deploy.sh --no-pull` (o `docker compose -f compose.production.yml up -d --force-recreate app worker scheduler`).
@@ -94,7 +94,7 @@ Tras cambiar `.env.production`: `bash ops/deploy.sh --no-pull` (o `docker compos
 El panel incluye un buscador de YouTube que usa la **YouTube Data API v3** de Google. Sin clave, la función se oculta y los adultos añaden vídeos pegando el enlace.
 
 Obtener la clave (cuenta de Google, gratis):
-1. Entra en <https://console.cloud.google.com/>, crea un proyecto (p. ej. «KidsTV»).
+1. Entra en <https://console.cloud.google.com/>, crea un proyecto (p. ej. «NokoPlay»).
 2. *APIs y servicios → Biblioteca* → busca **YouTube Data API v3** → **Habilitar**.
 3. *APIs y servicios → Credenciales → Crear credenciales → Clave de API*.
 4. Edita la clave y **restríngela**: *Restricciones de API* → solo «YouTube Data API v3»; *Restricciones de aplicación* → «Direcciones IP» → `2.28.118.113`.
@@ -108,19 +108,19 @@ Obtener la clave (cuenta de Google, gratis):
 
 ## 4. Administración diaria
 
-Todos los comandos desde `~/projects/kidstv`; abrevia con `alias kc='docker compose -f compose.production.yml'`.
+Todos los comandos desde `~/projects/nokoplay`; abrevia con `alias kc='docker compose -f compose.production.yml'`.
 
 | Tarea | Comando |
 |---|---|
 | Estado de los contenedores | `kc ps` |
-| Logs de la aplicación | `docker exec kidstv-app-1 sh -c 'tail -f storage/logs/laravel-*.log'` |
+| Logs de la aplicación | `docker exec nokoplay-app-1 sh -c 'tail -f storage/logs/laravel-*.log'` |
 | Logs del procesado de vídeos | `kc logs -f worker` |
 | Logs de acceso HTTP | `kc logs -f web` |
-| Entrar sin correo (cuenta existente) | `kc exec app php artisan kidstv:login-link correo@ejemplo.com` |
-| Nombrar administrador (panel `/admin`) | `kc exec app php artisan kidstv:admin correo@ejemplo.com` (`--revoke` para quitarlo) |
-| Completar la duración de los vídeos de YouTube | `kc exec app php artisan kidstv:youtube-durations` (automático cada día a las 04:10; requiere `YOUTUBE_API_KEY`) |
-| Limpiar códigos/sesiones/subidas caducadas y uso de hace más de 12 meses | `kc exec app php artisan kidstv:prune` (automático cada hora) |
-| Copia de la base de datos | `kc exec app php artisan kidstv:backup` (automático cada día a las 01:40 UTC) |
+| Entrar sin correo (cuenta existente) | `kc exec app php artisan nokoplay:login-link correo@ejemplo.com` |
+| Nombrar administrador (panel `/admin`) | `kc exec app php artisan nokoplay:admin correo@ejemplo.com` (`--revoke` para quitarlo) |
+| Completar la duración de los vídeos de YouTube | `kc exec app php artisan nokoplay:youtube-durations` (automático cada día a las 04:10; requiere `YOUTUBE_API_KEY`) |
+| Limpiar códigos/sesiones/subidas caducadas y uso de hace más de 12 meses | `kc exec app php artisan nokoplay:prune` (automático cada hora) |
+| Copia de la base de datos | `kc exec app php artisan nokoplay:backup` (automático cada día a las 01:40 UTC) |
 | Trabajos fallidos | `kc exec app php artisan queue:failed` / `queue:retry all` |
 | Consola | `kc exec app php artisan tinker` |
 | Espacio usado por archivos | `kc exec app du -sh storage/app/private` |
@@ -137,35 +137,35 @@ El disco del VPS es compartido (unos 6 GB libres en el momento del despliegue). 
 
 | Variable | Valor por defecto | Significado |
 |---|---|---|
-| `KIDSTV_MAX_VIDEO_MB` | 500 | Tamaño máximo de un vídeo |
-| `KIDSTV_MAX_AUDIO_MB` | 60 | Tamaño máximo de un audio |
-| `KIDSTV_FAMILY_QUOTA_MB` | 3072 | Espacio total por familia |
-| `KIDSTV_MIN_FREE_DISK_MB` | 1536 | Espacio libre que debe quedar en el disco tras una subida |
+| `NOKOPLAY_MAX_VIDEO_MB` | 500 | Tamaño máximo de un vídeo |
+| `NOKOPLAY_MAX_AUDIO_MB` | 60 | Tamaño máximo de un audio |
+| `NOKOPLAY_FAMILY_QUOTA_MB` | 3072 | Espacio total por familia |
+| `NOKOPLAY_MIN_FREE_DISK_MB` | 1536 | Espacio libre que debe quedar en el disco tras una subida |
 
 El último protege a las demás aplicaciones del VPS: aunque una familia tenga cuota, no se acepta un archivo si dejaría el disco por debajo de ese margen.
 
 ## 5. Copias de seguridad y restauración
 
-- **Automática:** cada noche (01:40 UTC) `kidstv:backup` crea `storage/backups/kidstv-<fecha>.sqlite` (copia consistente con `VACUUM INTO`) y conserva las 7 últimas. Está en el mismo disco: protege frente a errores, no frente a la pérdida del servidor.
+- **Automática:** cada noche (01:40 UTC) `nokoplay:backup` crea `storage/backups/nokoplay-<fecha>.sqlite` (copia consistente con `VACUUM INTO`) y conserva las 7 últimas. Está en el mismo disco: protege frente a errores, no frente a la pérdida del servidor.
 - **Manual / fuera del contenedor:**
   ```bash
-  bash ops/backup.sh            # BD → ~/backups/kidstv/kidstv-<fecha>.sqlite
-  bash ops/backup.sh --media    # además, archivos → ~/backups/kidstv/kidstv-media-<fecha>.tar.gz
+  bash ops/backup.sh            # BD → ~/backups/nokoplay/nokoplay-<fecha>.sqlite
+  bash ops/backup.sh --media    # además, archivos → ~/backups/nokoplay/nokoplay-media-<fecha>.tar.gz
   ```
-  Copia después `~/backups/kidstv` a otro equipo (`scp`/`rsync`) junto con `.env.production`.
+  Copia después `~/backups/nokoplay` a otro equipo (`scp`/`rsync`) junto con `.env.production`.
 
 **Restaurar la base de datos:**
 ```bash
 kc stop app worker scheduler
-docker run --rm -v kidstv_storage:/s -v ~/backups/kidstv:/b alpine \
-  sh -c 'cp /b/kidstv-AAAAMMDD-HHMMSS.sqlite /s/database/kidstv.sqlite && rm -f /s/database/kidstv.sqlite-wal /s/database/kidstv.sqlite-shm && chown 82:82 /s/database/kidstv.sqlite'
+docker run --rm -v nokoplay_storage:/s -v ~/backups/nokoplay:/b alpine \
+  sh -c 'cp /b/nokoplay-AAAAMMDD-HHMMSS.sqlite /s/database/nokoplay.sqlite && rm -f /s/database/nokoplay.sqlite-wal /s/database/nokoplay.sqlite-shm && chown 82:82 /s/database/nokoplay.sqlite'
 kc start app worker scheduler
 ```
 
 **Restaurar archivos:**
 ```bash
-docker run --rm -v kidstv_storage:/s -v ~/backups/kidstv:/b alpine \
-  sh -c 'tar xzf /b/kidstv-media-AAAAMMDD-HHMMSS.tar.gz -C /s/app && chown -R 82:82 /s/app/private'
+docker run --rm -v nokoplay_storage:/s -v ~/backups/nokoplay:/b alpine \
+  sh -c 'tar xzf /b/nokoplay-media-AAAAMMDD-HHMMSS.tar.gz -C /s/app && chown -R 82:82 /s/app/private'
 ```
 
 ## 6. Seguridad aplicada
@@ -181,8 +181,8 @@ docker run --rm -v kidstv_storage:/s -v ~/backups/kidstv:/b alpine \
 
 | Síntoma | Causa probable / solución |
 |---|---|
-| No llegan los códigos | `MAIL_MAILER`/`RESEND_API_KEY` incorrectos o dominio sin verificar; revisa `storage/logs/laravel-*.log`. Mientras tanto, `kidstv:login-link`. |
+| No llegan los códigos | `MAIL_MAILER`/`RESEND_API_KEY` incorrectos o dominio sin verificar; revisa `storage/logs/laravel-*.log`. Mientras tanto, `nokoplay:login-link`. |
 | Vídeo en «Procesando» indefinidamente | El worker está parado: `kc ps`, `kc logs worker`, `kc restart worker`. |
-| «El servidor no tiene espacio suficiente» | Disco del VPS por debajo de `KIDSTV_MIN_FREE_DISK_MB`. Libera espacio (`docker image prune`, logs) o reduce el margen. |
+| «El servidor no tiene espacio suficiente» | Disco del VPS por debajo de `NOKOPLAY_MIN_FREE_DISK_MB`. Libera espacio (`docker image prune`, logs) o reduce el margen. |
 | 502 en la web | `kc ps`; si `app` reinicia en bucle, `kc logs app` (p. ej. `APP_KEY` vacía). |
 | Certificado no emitido | DNS aún no apunta al VPS; `docker logs web-gateway-caddy-1 --tail 50`. |

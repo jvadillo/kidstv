@@ -38,7 +38,7 @@
         <section class="card card-highlight setup-card">
             <div>
                 <h2>@include('partials.icon', ['name' => 'tv']) {{ __('Conecta la tele de :names', ['names' => $profiles->pluck('name')->join(', ', ' y ')]) }}</h2>
-                <p class="muted">{{ __('Ya está preparada: solo falta abrir KidsTV en la tele y escribir aquí su código.') }}</p>
+                <p class="muted">{{ __('Ya está preparada: solo falta abrir NokoPlay en la tele y escribir aquí su código.') }}</p>
             </div>
             <div class="form-actions">
                 <a href="{{ route('onboarding.connect') }}" class="btn btn-accent">{{ __('Conectar mi tele') }}</a>

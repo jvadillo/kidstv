@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="referrer" content="strict-origin-when-cross-origin">
     <meta name="robots" content="noindex, nofollow">
-    <title>YouTube · KidsTV</title>
+    <title>YouTube · NokoPlay</title>
     <link rel="stylesheet" href="{{ asset('tv-bridge/youtube.css') }}?v={{ filemtime(public_path('tv-bridge/youtube.css')) }}">
 </head>
 <body>

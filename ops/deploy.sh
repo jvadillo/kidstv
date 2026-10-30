@@ -5,16 +5,26 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 
 COMPOSE="docker compose -f compose.production.yml"
-PORT="${KIDSTV_PORT:-8086}"
+PORT="${NOKOPLAY_PORT:-8086}"
 
 [ -f .env.production ] || { echo "Falta .env.production (ver ops/env.production.example)"; exit 1; }
+
+# Un cambio de nombre de Compose crea otro volumen. No arrancar una base vacía
+# sobre una instalación existente: primero copiar los datos y detener el proyecto anterior.
+for container in $(docker ps -q --filter "publish=${PORT}"); do
+    project=$(docker inspect --format '{{index .Config.Labels "com.docker.compose.project"}}' "$container")
+    if [ "$project" != "nokoplay" ]; then
+        echo "El puerto ${PORT} pertenece a otro proyecto. Completa docs/migracion-nokoplay.md antes de desplegar."
+        exit 1
+    fi
+done
 
 if [ "${1:-}" != "--no-pull" ]; then
     git pull --ff-only
 fi
 
-export KIDSTV_RELEASE="$(git rev-parse --short HEAD)"
-echo "==> Construyendo versión ${KIDSTV_RELEASE}"
+export NOKOPLAY_RELEASE="$(git rev-parse --short HEAD)"
+echo "==> Construyendo versión ${NOKOPLAY_RELEASE}"
 $COMPOSE build
 
 echo "==> Migraciones"
@@ -28,7 +38,7 @@ $COMPOSE up -d --remove-orphans --force-recreate
 echo "==> Comprobando salud"
 for i in $(seq 1 30); do
     if curl -fsS "http://127.0.0.1:${PORT}/up" >/dev/null 2>&1; then
-        echo "OK: KidsTV ${KIDSTV_RELEASE} responde en 127.0.0.1:${PORT}"
+        echo "OK: NokoPlay ${NOKOPLAY_RELEASE} responde en 127.0.0.1:${PORT}"
         break
     fi
     [ "$i" = 30 ] && { echo "ERROR: la aplicación no responde"; $COMPOSE logs --tail=50; exit 1; }
@@ -36,7 +46,7 @@ for i in $(seq 1 30); do
 done
 
 # Conserva solo las dos últimas imágenes de cada servicio.
-for repo in kidstv-app kidstv-web; do
+for repo in nokoplay-app nokoplay-web; do
     docker images "$repo" --format '{{.CreatedAt}}\t{{.Repository}}:{{.Tag}}' | sort -r | tail -n +3 | cut -f2 \
-        | grep -v ":${KIDSTV_RELEASE}$" | xargs -r docker rmi >/dev/null 2>&1 || true
+        | grep -v ":${NOKOPLAY_RELEASE}$" | xargs -r docker rmi >/dev/null 2>&1 || true
 done

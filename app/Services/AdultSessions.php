@@ -29,7 +29,7 @@ class AdultSessions
             'user_agent' => Str::limit((string) $request->userAgent(), 490, ''),
             'ip_address' => $request->ip(),
             'last_used_at' => now(),
-            'expires_at' => now()->addDays(config('kidstv.auth_session_days')),
+            'expires_at' => now()->addDays(config('nokoplay.auth_session_days')),
         ]);
 
         Auth::login($user);
@@ -65,7 +65,7 @@ class AdultSessions
             return;
         }
 
-        $plain = $request->cookie(config('kidstv.auth_cookie'));
+        $plain = $request->cookie(config('nokoplay.auth_cookie'));
         if (! is_string($plain) || $plain === '') {
             return;
         }
@@ -74,7 +74,7 @@ class AdultSessions
 
         if (! $session || $session->isExpired() || ! $session->user || $session->user->isBlocked()) {
             $session?->delete();
-            Cookie::queue(Cookie::forget(config('kidstv.auth_cookie')));
+            Cookie::queue(Cookie::forget(config('nokoplay.auth_cookie')));
 
             return;
         }
@@ -95,7 +95,7 @@ class AdultSessions
         Auth::guard('web')->logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
-        Cookie::queue(Cookie::forget(config('kidstv.auth_cookie')));
+        Cookie::queue(Cookie::forget(config('nokoplay.auth_cookie')));
     }
 
     public function revokeOthers(Request $request, User $user): int
@@ -114,7 +114,7 @@ class AdultSessions
     {
         $at = (int) $request->session()->get(self::CONFIRMED_KEY, 0);
 
-        return $at > now()->subMinutes(config('kidstv.sensitive_confirmation_minutes'))->timestamp;
+        return $at > now()->subMinutes(config('nokoplay.sensitive_confirmation_minutes'))->timestamp;
     }
 
     private function touch(Request $request, AuthSession $session, bool $force = false, ?string $plain = null): void
@@ -126,11 +126,11 @@ class AdultSessions
         $session->forceFill([
             'last_used_at' => now(),
             'ip_address' => $request->ip(),
-            'expires_at' => now()->addDays(config('kidstv.auth_session_days')),
+            'expires_at' => now()->addDays(config('nokoplay.auth_session_days')),
         ])->save();
 
         // Renovación deslizante de la cookie (solo cuando conocemos el valor en claro).
-        $plain ??= $request->cookie(config('kidstv.auth_cookie'));
+        $plain ??= $request->cookie(config('nokoplay.auth_cookie'));
         if (is_string($plain) && $plain !== '') {
             $this->queueCookie($plain);
         }
@@ -139,9 +139,9 @@ class AdultSessions
     private function queueCookie(string $plain): void
     {
         Cookie::queue(cookie(
-            name: config('kidstv.auth_cookie'),
+            name: config('nokoplay.auth_cookie'),
             value: $plain,
-            minutes: config('kidstv.auth_session_days') * 24 * 60,
+            minutes: config('nokoplay.auth_session_days') * 24 * 60,
             secure: config('session.secure'),
             httpOnly: true,
             sameSite: 'lax',

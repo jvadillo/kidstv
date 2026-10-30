@@ -61,7 +61,7 @@ class AuthFlowTest extends TestCase
         $user = User::where('email', 'nueva@example.com')->firstOrFail();
         $this->assertAuthenticatedAs($user);
         $this->assertNotNull($user->terms_accepted_at);
-        $this->assertCount(count(config('kidstv.default_lists')), $user->family->lists);
+        $this->assertCount(count(config('nokoplay.default_lists')), $user->family->lists);
         $this->get('/panel')->assertOk()->assertSee('Añadir vídeo de YouTube');
     }
 
@@ -164,7 +164,7 @@ class AuthFlowTest extends TestCase
         $mail = $this->requestCode('ana@example.com');
 
         $response = $this->post('/entrar/codigo', ['code' => $mail->code]);
-        $plain = (string) $response->getCookie(config('kidstv.auth_cookie'))?->getValue();
+        $plain = (string) $response->getCookie(config('nokoplay.auth_cookie'))?->getValue();
         // getCookie() descifra pero puede conservar el prefijo de integridad «hash|valor».
         $plain = str_contains($plain, '|') ? substr($plain, strrpos($plain, '|') + 1) : $plain;
         $this->assertSame(64, strlen($plain));
@@ -172,13 +172,13 @@ class AuthFlowTest extends TestCase
         // «Al día siguiente», sin sesión de Laravel pero con la cookie persistente.
         $this->resetClient();
         $this->travel(1)->day();
-        $this->withCookie(config('kidstv.auth_cookie'), $plain)->get('/panel')->assertOk();
+        $this->withCookie(config('nokoplay.auth_cookie'), $plain)->get('/panel')->assertOk();
         $this->assertAuthenticatedAs($user);
 
         // Tras revocar la sesión desde otro dispositivo, la cookie deja de servir.
         AuthSession::query()->delete();
         $this->resetClient();
-        $this->withCookie(config('kidstv.auth_cookie'), $plain)->get('/panel')->assertRedirect('/entrar');
+        $this->withCookie(config('nokoplay.auth_cookie'), $plain)->get('/panel')->assertRedirect('/entrar');
     }
 
     public function test_revoking_current_session_logs_out_and_others_can_be_revoked(): void

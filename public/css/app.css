@@ -1,4 +1,4 @@
-/* KidsTV · panel de adultos. Móvil primero, sin dependencias externas. */
+/* NokoPlay · panel de adultos. Móvil primero, sin dependencias externas. */
 
 :root {
     --bg: #f6f1e7;
@@ -109,7 +109,17 @@ ul, ol { padding-left: 1.25rem; }
 }
 
 .brand { display: inline-flex; align-items: center; gap: .5rem; font-weight: 800; font-size: 1.15rem; color: var(--ink); text-decoration: none; }
-.brand img { border-radius: 10px; }
+.brand { flex-shrink: 0; }
+.brand .brand-logo { display: block; width: 156px; height: 40px; border-radius: 0; }
+.guest-header .brand-logo { width: 195px; height: 50px; }
+@media (prefers-color-scheme: dark) {
+    .brand { background: #ffffff; padding: 6px 10px; border-radius: 12px; }
+}
+@media (max-width: 380px) {
+    .topbar { gap: .5rem; padding-inline: .75rem; }
+    .topbar .brand-logo { width: 125px; height: auto; }
+    .ob-header .brand-logo { width: 117px; height: auto; }
+}
 
 .topnav { display: none; gap: .25rem; flex: 1; }
 .topnav a { padding: .45rem .8rem; border-radius: 999px; text-decoration: none; color: var(--ink-2); font-weight: 600; }
@@ -703,7 +713,6 @@ input[type=search]:focus { border-color: var(--primary); outline: none; box-shad
 
 .onboarding { background: radial-gradient(900px 480px at 50% -180px, var(--primary-soft), transparent 70%) var(--bg); }
 .ob-header { display: flex; align-items: center; gap: 1rem; width: 100%; max-width: 1100px; margin: 0 auto; padding: .75rem 1rem; }
-.ob-header .brand span { display: none; }
 .ob-header-link { font-weight: 700; font-size: .88rem; color: var(--ink-2); text-decoration: none; white-space: nowrap; }
 .ob-header-link:hover { color: var(--primary); }
 .ob-progress { flex: 1; display: flex; gap: .4rem; list-style: none; max-width: 380px; margin: 0 auto; padding: 0; }
@@ -712,7 +721,11 @@ input[type=search]:focus { border-color: var(--primary); outline: none; box-shad
 .ob-progress li.done::before { background: var(--primary); }
 .ob-progress li.current { color: var(--ink); }
 .ob-progress li.current::before { background: var(--accent); }
-@media (min-width: 600px) { .ob-header .brand span { display: inline; } }
+@media (max-width: 599px) {
+    .ob-header { flex-wrap: wrap; gap: .6rem; }
+    .ob-header-link { margin-left: auto; }
+    .ob-progress { order: 3; flex-basis: 100%; max-width: none; }
+}
 
 .ob-main { width: 100%; max-width: 520px; margin: 0 auto; padding: 1rem 1rem 3rem; flex: 1; }
 .ob-main-wide { max-width: 1100px; }

@@ -16,7 +16,7 @@ El servidor ya acepta `platform` = `webos`, `tizen`, `androidtv` o `web` al pedi
 ## Pasos genéricos para una plataforma nueva
 
 1. Crea `tv-apps/<plataforma>/` con su manifiesto e iconos (`build.mjs` copia `appinfo.json`, `config.xml`, `icon.png` y `largeIcon.png` si existen).
-2. `node tv-apps/build.mjs <plataforma> --server https://kidstv.jonvadillo.com` → `tv-apps/<plataforma>/dist/`.
+2. `node tv-apps/build.mjs <plataforma> --server https://nokoplay.jonvadillo.com` → `tv-apps/<plataforma>/dist/`.
 3. Empaqueta `dist/` con la herramienta del fabricante.
 4. Revisa en `core.js` los códigos de tecla del mando (Atrás, multimedia) y la forma de cerrar la app.
 5. Pasa la lista de verificación de [webos.md](webos.md#4-probar-lista-de-verificación-en-tele-real) en un dispositivo real.
@@ -31,14 +31,14 @@ El servidor ya acepta `platform` = `webos`, `tizen`, `androidtv` o `web` al pedi
 
 ## Android TV / Google TV
 
-- Aplicación Android mínima (Kotlin) con una `Activity` a pantalla completa y un `WebView` que cargue `file:///android_asset/index.html` (el contenido de `dist/` en `assets/`) o directamente `https://kidstv.jonvadillo.com/tv/`.
+- Aplicación Android mínima (Kotlin) con una `Activity` a pantalla completa y un `WebView` que cargue `file:///android_asset/index.html` (el contenido de `dist/` en `assets/`) o directamente `https://nokoplay.jonvadillo.com/tv/`.
 - Ajustes del WebView: `javaScriptEnabled`, `domStorageEnabled`, `mediaPlaybackRequiresUserGesture = false`; `WebChromeClient` para vídeo a pantalla completa.
 - Mapear el botón Atrás: en `onBackPressed` / `OnBackPressedCallback`, inyectar un `KeyboardEvent` con `keyCode` 27 en el WebView (la app ya lo trata como Atrás) y, para salir, exponer una interfaz JS que llame a `finish()`.
 - Declarar `android.software.leanback` y `LEANBACK_LAUNCHER` en el manifiesto con un banner de 320×180.
 
 ## Otros (Fire TV, Hisense VIDAA, navegadores)
 
-Cualquier dispositivo con un navegador moderno puede usar `https://kidstv.jonvadillo.com/tv/` directamente. Fire TV admite el mismo enfoque que Android TV.
+Cualquier dispositivo con un navegador moderno puede usar `https://nokoplay.jonvadillo.com/tv/` directamente. Fire TV admite el mismo enfoque que Android TV.
 
 ## Qué no hace falta tocar
 

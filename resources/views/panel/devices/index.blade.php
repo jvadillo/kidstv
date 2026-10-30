@@ -11,7 +11,7 @@
     @if ($devices->isEmpty())
         <div class="empty-state">
             <p>{{ __('Todavía no has conectado ningún televisor.') }}</p>
-            <p class="muted">{{ __('Abre la app KidsTV en la tele: mostrará un código. Luego pulsa «Conectar tele» aquí y escríbelo.') }}</p>
+            <p class="muted">{{ __('Abre la app NokoPlay en la tele: mostrará un código. Luego pulsa «Conectar tele» aquí y escríbelo.') }}</p>
         </div>
     @else
         <ul class="card-list">
@@ -50,11 +50,11 @@
 
     <section class="section card">
         <h2>{{ __('App para televisores LG (webOS)') }}</h2>
-        <p>{{ __('La app de KidsTV se instala en la tele en modo desarrollador (todavía no está en la tienda de LG). Las instrucciones paso a paso están en la ayuda.') }}</p>
+        <p>{{ __('La app de NokoPlay se instala en la tele en modo desarrollador (todavía no está en la tienda de LG). Las instrucciones paso a paso están en la ayuda.') }}</p>
         <div class="form-actions">
             <a href="{{ route('help.tv') }}" class="btn btn-ghost">{{ __('Cómo instalarla') }}</a>
             @if ($ipkAvailable)
-                <a href="{{ asset(config('kidstv.webos_ipk')) }}" class="btn btn-ghost" download>{{ __('Descargar paquete .ipk') }}</a>
+                <a href="{{ asset(config('nokoplay.webos_ipk')) }}" class="btn btn-ghost" download>{{ __('Descargar paquete .ipk') }}</a>
             @endif
         </div>
         <p class="small muted">{{ __('También puedes usar cualquier navegador como «tele» con el botón «Probar modo TV».') }}</p>

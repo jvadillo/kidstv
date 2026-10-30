@@ -1,20 +1,20 @@
 /*
- * KidsTV TV · utilidades comunes.
+ * NokoPlay TV · utilidades comunes.
  * Escrito en ES5 sin dependencias para funcionar en navegadores de Smart TV antiguos
  * (LG webOS 3+ / Chromium 38, Samsung Tizen, Android TV WebView).
  */
 (function (window, document) {
     'use strict';
 
-    var config = window.KIDSTV_CONFIG || {};
+    var config = window.NOKOPLAY_CONFIG || {};
     config.platform = config.platform || 'web';
 
-    var K = window.KidsTV = { config: config };
+    var K = window.NokoPlay = { config: config };
 
     /* ---------- Texto e i18n ---------- */
 
     var lang = (config.lang || 'es');
-    var dict = (window.KIDSTV_I18N && window.KIDSTV_I18N[lang]) || {};
+    var dict = (window.NOKOPLAY_I18N && window.NOKOPLAY_I18N[lang]) || {};
 
     K.t = function (key, params) {
         var text = dict[key] || key;
@@ -58,12 +58,12 @@
 
     K.store = {
         get: function (key) {
-            try { return window.localStorage.getItem('kidstv.' + key); } catch (e) { return null; }
+            try { return window.localStorage.getItem('nokoplay.' + key); } catch (e) { return null; }
         },
         set: function (key, value) {
             try {
-                if (value === null || value === undefined) window.localStorage.removeItem('kidstv.' + key);
-                else window.localStorage.setItem('kidstv.' + key, value);
+                if (value === null || value === undefined) window.localStorage.removeItem('nokoplay.' + key);
+                else window.localStorage.setItem('nokoplay.' + key, value);
             } catch (e) { /* almacenamiento no disponible */ }
         }
     };

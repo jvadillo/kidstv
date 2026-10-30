@@ -6,7 +6,7 @@
     <div class="auth-card">
         <h1>{{ __('Revisa tu correo') }}</h1>
         <p>{!! __('Hemos enviado un código a <strong>:email</strong>. Escríbelo aquí o pulsa el botón del correo.', ['email' => e($email)]) !!}</p>
-        <p class="small muted">{{ __('Caduca en :minutes minutos. Si no lo ves, mira en la carpeta de spam o promociones.', ['minutes' => config('kidstv.login_token_ttl_minutes')]) }}</p>
+        <p class="small muted">{{ __('Caduca en :minutes minutos. Si no lo ves, mira en la carpeta de spam o promociones.', ['minutes' => config('nokoplay.login_token_ttl_minutes')]) }}</p>
 
         <form method="POST" action="{{ route('login.verify') }}" class="stack">
             @csrf

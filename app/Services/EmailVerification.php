@@ -36,14 +36,14 @@ class EmailVerification
             'link_hash' => hash('sha256', $link),
             'code_hash' => Hash::make($code),
             'ip_address' => $ip,
-            'expires_at' => now()->addMinutes(config('kidstv.login_token_ttl_minutes')),
+            'expires_at' => now()->addMinutes(config('nokoplay.login_token_ttl_minutes')),
         ]);
 
         Mail::to($email)->send(new VerificationCodeMail(
             purpose: $purpose,
             code: $code,
             link: $purpose === LoginToken::PURPOSE_LOGIN ? route('login.link', $link) : null,
-            minutes: config('kidstv.login_token_ttl_minutes'),
+            minutes: config('nokoplay.login_token_ttl_minutes'),
         ));
 
         return $token;
@@ -60,7 +60,7 @@ class EmailVerification
             ->latest('id')
             ->first();
 
-        $max = config('kidstv.login_code_max_attempts');
+        $max = config('nokoplay.login_code_max_attempts');
 
         if (! $token || $token->used_at !== null) {
             throw ValidationException::withMessages([$field => __('Este código ya no es válido. Solicita uno nuevo.')]);

@@ -119,12 +119,12 @@ class ProcessUploadedMedia implements ShouldQueue
 
     private function toolsAvailable(): bool
     {
-        return is_executable(config('kidstv.ffprobe')) && is_executable(config('kidstv.ffmpeg'));
+        return is_executable(config('nokoplay.ffprobe')) && is_executable(config('nokoplay.ffmpeg'));
     }
 
     private function probe(string $path): ?array
     {
-        $process = new Process([config('kidstv.ffprobe'), '-v', 'error', '-print_format', 'json', '-show_format', '-show_streams', $path]);
+        $process = new Process([config('nokoplay.ffprobe'), '-v', 'error', '-print_format', 'json', '-show_format', '-show_streams', $path]);
         $process->setTimeout(60)->run();
 
         if (! $process->isSuccessful()) {
@@ -141,7 +141,7 @@ class ProcessUploadedMedia implements ShouldQueue
     {
         $tmp = $path.'.faststart.mp4';
         $process = new Process([
-            config('kidstv.ffmpeg'), '-v', 'error', '-y', '-i', $path,
+            config('nokoplay.ffmpeg'), '-v', 'error', '-y', '-i', $path,
             '-map', '0:v:0', '-map', '0:a?', '-c', 'copy', '-movflags', '+faststart', $tmp,
         ]);
         $process->setTimeout(600)->run();
@@ -156,7 +156,7 @@ class ProcessUploadedMedia implements ShouldQueue
 
     private function extractCover(string $source, string $target, ?int $videoDuration): bool
     {
-        $args = [config('kidstv.ffmpeg'), '-v', 'error', '-y'];
+        $args = [config('nokoplay.ffmpeg'), '-v', 'error', '-y'];
         if ($videoDuration !== null) {
             $args = [...$args, '-ss', (string) max(1, (int) ($videoDuration * 0.15))];
         }

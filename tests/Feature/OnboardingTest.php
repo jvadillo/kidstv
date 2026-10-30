@@ -118,7 +118,7 @@ class OnboardingTest extends TestCase
         $this->assertNotNull($user->terms_accepted_at);
         $nora = $user->family->profiles()->sole();
         $this->assertSame(['Nora', '3-6', '3–6 años'], [$nora->name, $nora->age_range, $nora->ageLabel()]);
-        $this->assertContains($nora->avatar, config('kidstv.avatars'));
+        $this->assertContains($nora->avatar, config('nokoplay.avatars'));
 
         // Las listas, en el orden en que se eligieron y visibles para Nora.
         $links = $user->family->lists()->whereNotNull('source_id')->get();

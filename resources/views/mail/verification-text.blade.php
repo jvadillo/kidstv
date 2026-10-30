@@ -1,4 +1,4 @@
-KidsTV · {{ __('Videoteca familiar') }}
+NokoPlay · {{ __('Videoteca familiar') }}
 
 {{ $intro }}
 

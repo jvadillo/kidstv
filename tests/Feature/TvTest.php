@@ -99,7 +99,7 @@ class TvTest extends TestCase
         $url = $this->tv($token)->getJson('/api/tv/contents/'.$video->id.'/play?profile='.$profile->id)->assertOk()->json('url');
         $this->assertStringContainsString('signature=', $url);
         parse_str(parse_url($url, PHP_URL_QUERY), $query);
-        $ttl = config('kidstv.tv_media_url_ttl_minutes') * 60;
+        $ttl = config('nokoplay.tv_media_url_ttl_minutes') * 60;
         $this->assertGreaterThan(now()->timestamp + $ttl - 1, (int) $query['expires']);
         $this->assertLessThanOrEqual(now()->timestamp + 2 * $ttl, (int) $query['expires']);
 
@@ -158,7 +158,7 @@ class TvTest extends TestCase
         $this->tv($token)->withHeader('X-Adult-Token', $adultToken)->getJson('/api/tv/adult/status')->assertJson(['unlocked' => true]);
 
         // Se bloquea por inactividad.
-        $this->travel(config('kidstv.adult_mode_idle_seconds') + 1)->seconds();
+        $this->travel(config('nokoplay.adult_mode_idle_seconds') + 1)->seconds();
         $this->tv($token)->withHeader('X-Adult-Token', $adultToken)->getJson('/api/tv/adult/catalog')->assertForbidden();
     }
 

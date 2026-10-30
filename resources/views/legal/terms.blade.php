@@ -8,7 +8,7 @@
         <p class="muted small">{{ __('Versión 1.0 · Pendiente de revisión legal antes de abrir el servicio al público.') }}</p>
 
         <h2>{{ __('El servicio') }}</h2>
-        <p>{{ __('KidsTV es una videoteca familiar privada: una persona adulta selecciona vídeos, audios y enlaces de YouTube y los ofrece a sus hijos en el televisor. Es un servicio gratuito, en fase inicial, que se ofrece tal cual y sin garantía de disponibilidad continua.') }}</p>
+        <p>{{ __('NokoPlay es una videoteca familiar privada: una persona adulta selecciona vídeos, audios y enlaces de YouTube y los ofrece a sus hijos en el televisor. Es un servicio gratuito, en fase inicial, que se ofrece tal cual y sin garantía de disponibilidad continua.') }}</p>
 
         <h2>{{ __('Tu cuenta') }}</h2>
         <ul>

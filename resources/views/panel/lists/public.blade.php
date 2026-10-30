@@ -12,7 +12,7 @@
     <div class="page-head">
         <h1>{{ __('Listas públicas') }}</h1>
     </div>
-    <p class="muted">{{ __('Listas de vídeos preparadas por el equipo de KidsTV. Al añadir una, aparece en tu tele como una fila más y se mantiene al día sola: si se añaden o quitan vídeos, cambian también en tu videoteca.') }}</p>
+    <p class="muted">{{ __('Listas de vídeos preparadas por el equipo de NokoPlay. Al añadir una, aparece en tu tele como una fila más y se mantiene al día sola: si se añaden o quitan vídeos, cambian también en tu videoteca.') }}</p>
 
     @if ($total === 0)
         <p class="empty">{{ __('Todavía no hay listas públicas.') }}</p>

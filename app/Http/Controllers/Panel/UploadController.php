@@ -54,7 +54,7 @@ class UploadController extends Controller
 
         return response()->json([
             'id' => $upload->id,
-            'chunk_size' => config('kidstv.upload_chunk_mb') * 1024 * 1024,
+            'chunk_size' => config('nokoplay.upload_chunk_mb') * 1024 * 1024,
             'chunk_url' => route('uploads.chunk', $upload->id),
             'complete_url' => route('uploads.complete', $upload->id),
         ], 201);
@@ -65,7 +65,7 @@ class UploadController extends Controller
         $upload = $this->findUpload($upload);
         $offset = (int) $request->header('X-Upload-Offset', -1);
         $length = (int) $request->header('Content-Length', 0);
-        $maxChunk = config('kidstv.upload_chunk_mb') * 1024 * 1024;
+        $maxChunk = config('nokoplay.upload_chunk_mb') * 1024 * 1024;
 
         // Reintento de un fragmento ya recibido: se confirma sin volver a escribirlo.
         if ($offset >= 0 && $offset + $length <= $upload->received) {
@@ -101,7 +101,7 @@ class UploadController extends Controller
 
         $tempPath = Storage::disk('local')->path($upload->tempPath());
         $mime = (new \finfo(FILEINFO_MIME_TYPE))->file($tempPath) ?: 'application/octet-stream';
-        $allowedMimes = config($upload->kind === Content::TYPE_AUDIO ? 'kidstv.audio_mimes' : 'kidstv.video_mimes');
+        $allowedMimes = config($upload->kind === Content::TYPE_AUDIO ? 'nokoplay.audio_mimes' : 'nokoplay.video_mimes');
 
         if (! in_array($mime, $allowedMimes, true)) {
             $this->discard($upload);

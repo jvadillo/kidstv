@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>KidsTV</title>
+    <title>NokoPlay</title>
 </head>
 <body style="margin:0;padding:0;background:#f6f1e7;font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:#1f2133;">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f6f1e7;padding:32px 12px;">
@@ -12,7 +12,7 @@
             <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:480px;background:#ffffff;border-radius:16px;padding:32px;">
                 <tr>
                     <td>
-                        <p style="margin:0 0 4px;font-size:20px;font-weight:700;color:#2b2560;">KidsTV</p>
+                        <img src="{{ asset('tv/img/logo-horizontal.png') }}" alt="NokoPlay" width="195" height="50" style="display:block;max-width:100%;height:auto;margin:0 0 12px;">
                         <p style="margin:0 0 24px;font-size:14px;color:#5d5f73;">{{ __('Videoteca familiar') }}</p>
                         <p style="margin:0 0 20px;font-size:16px;line-height:1.5;">{{ $intro }}</p>
                         <p style="margin:0 0 8px;font-size:14px;color:#5d5f73;">{{ __('Tu código') }}</p>

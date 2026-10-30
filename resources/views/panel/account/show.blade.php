@@ -35,7 +35,7 @@
                     <option value="always" @selected(old('youtube_controls', $family->youtube_controls) === 'always')>{{ __('Siempre visibles') }}</option>
                     <option value="hidden" @selected(old('youtube_controls', $family->youtube_controls) === 'hidden')>{{ __('Ocultos') }}</option>
                 </select>
-                <p id="youtube_controls_hint" class="hint">{{ __('La barra de KidsTV muestra pausa, avance y progreso debajo del vídeo. En automático aparece al usar el mando y se oculta tras unos segundos. Aunque la ocultes, el mando sigue funcionando. Se aplica en todas tus teles al abrir el siguiente vídeo.') }}</p>
+                <p id="youtube_controls_hint" class="hint">{{ __('La barra de NokoPlay muestra pausa, avance y progreso debajo del vídeo. En automático aparece al usar el mando y se oculta tras unos segundos. Aunque la ocultes, el mando sigue funcionando. Se aplica en todas tus teles al abrir el siguiente vídeo.') }}</p>
             </div>
             @php($limitMode = old('daily_limit_mode', $family->daily_limit_mode))
             <fieldset class="field daily-limit" aria-describedby="daily_limit_hint">

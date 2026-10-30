@@ -3,9 +3,9 @@
  * servidor (/tv/). Los paquetes para televisores (webOS, etc.) generan su propio
  * config.js con la dirección absoluta del servidor (ver tv-apps/).
  */
-window.KIDSTV_CONFIG = {
+window.NOKOPLAY_CONFIG = {
     apiBase: '',
     platform: 'web',
     avatarBase: '/avatars/',
-    version: '1.4.0'
+    version: '2.0.0'
 };

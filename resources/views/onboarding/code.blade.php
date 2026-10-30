@@ -24,7 +24,7 @@
             <button class="btn btn-primary btn-lg btn-block">{{ __('Guardar su tele') }}</button>
         </form>
 
-        <p class="small muted center">{{ __('Caduca en :minutes minutos. Si no lo ves, mira en la carpeta de spam o promociones.', ['minutes' => config('kidstv.login_token_ttl_minutes')]) }}</p>
+        <p class="small muted center">{{ __('Caduca en :minutes minutos. Si no lo ves, mira en la carpeta de spam o promociones.', ['minutes' => config('nokoplay.login_token_ttl_minutes')]) }}</p>
         <div class="auth-secondary">
             <form method="POST" action="{{ route('login.resend') }}">
                 @csrf

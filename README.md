@@ -1,10 +1,10 @@
-# KidsTV · Videoteca familiar para Smart TV
+# NokoPlay · Videoteca familiar para Smart TV
 
 Aplicación web (Laravel 13) en la que una persona adulta se registra solo con su correo, crea perfiles infantiles y selecciona vídeos propios (MP4), audios (MP3/M4A) y vídeos de YouTube para que sus hijos los vean en la tele, con el mando a distancia y sin salir de lo aprobado.
 
-- **Producción:** https://kidstv.jonvadillo.com
-- **App de TV en el navegador:** https://kidstv.jonvadillo.com/tv/
-- **Paquete para LG webOS:** `public/downloads/kidstv-webos.ipk` (también descargable desde *Teles* en el panel)
+- **Producción:** https://nokoplay.jonvadillo.com
+- **App de TV en el navegador:** https://nokoplay.jonvadillo.com/tv/
+- **Paquete para LG webOS:** `public/downloads/nokoplay-webos.ipk` (también descargable desde *Teles* en el panel)
 - **Requisitos funcionales de partida:** [`requisitos_videoteca_familiar_claude_code.md`](requisitos_videoteca_familiar_claude_code.md)
 
 ## Documentación
@@ -32,7 +32,7 @@ También se puede comenzar desde la TV, con el mando y reproducción provisional
 - **Actividad**: tiempo de pantalla por día, semana o mes (total, medias, gráfico y navegación a periodos anteriores), lo que más ve cada niño (por tiempo o por veces, hasta el top 10), cuándo lo ha visto y tiempo por listas; para un niño o para todos. Junto al título, «Viendo ahora» si el niño elegido (o cualquiera, con «Todos») está viendo algo en ese momento; se actualiza cada minuto.
 - Cuenta: PIN parental, cambio de correo, sesiones abiertas, exportación en JSON y eliminación de la cuenta (con revalidación por correo).
 
-**Panel de administración** (`/admin`, solo cuentas nombradas con `kidstv:admin`):
+**Panel de administración** (`/admin`, solo cuentas nombradas con `nokoplay:admin`):
 - Resumen de uso: minutos vistos (hoy, 7 y 30 días, gráfico diario), cuentas nuevas, familias activas, televisores, biblioteca y espacio, vídeos de listas públicas más vistos.
 - Usuarios: búsqueda y orden por actividad, uso o espacio; ficha con uso, perfiles, teles y listas; bloquear/desbloquear (sin panel y con las teles sin servicio), dar o quitar permisos de administrador y eliminar la cuenta.
 - Listas públicas: crear, publicar una lista existente, editar y dejar de publicar; los vídeos se gestionan desde la biblioteca.
@@ -54,9 +54,9 @@ También se puede comenzar desde la TV, con el mando y reproducción provisional
 ```
                  Internet (HTTPS)
                         │
-          Caddy compartido del VPS (TLS, kidstv.jonvadillo.com)
+          Caddy compartido del VPS (TLS, nokoplay.jonvadillo.com)
                         │ 127.0.0.1:8086
-┌───────────────────────┴──────────────────────── docker compose "kidstv" ─┐
+┌───────────────────────┴──────────────────────── docker compose "nokoplay" ─┐
 │ web (nginx)  ── estáticos, /tv/, X-Accel-Redirect de archivos privados   │
 │     │ FastCGI                                                            │
 │ app (php-fpm 8.4, Laravel 13) ── panel, API /api/tv, URLs firmadas       │
@@ -101,7 +101,7 @@ composer install
 cp .env.example .env && php artisan key:generate
 touch database/database.sqlite && php artisan migrate --seed   # cuenta de ejemplo: familia@example.com
 php artisan serve                                              # http://localhost:8000
-php artisan kidstv:login-link familia@example.com              # enlace de acceso sin enviar correo
+php artisan nokoplay:login-link familia@example.com              # enlace de acceso sin enviar correo
 ```
 
 Con `MAIL_MAILER=log`, los correos (códigos) se escriben en `storage/logs/`. La app de TV en local se abre desde el panel con «Probar modo TV».

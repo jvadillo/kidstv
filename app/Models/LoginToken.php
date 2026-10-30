@@ -32,6 +32,6 @@ class LoginToken extends Model
     {
         return $this->used_at === null
             && $this->expires_at->isFuture()
-            && $this->attempts < config('kidstv.login_code_max_attempts');
+            && $this->attempts < config('nokoplay.login_code_max_attempts');
     }
 }

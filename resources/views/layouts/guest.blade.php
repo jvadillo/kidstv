@@ -5,8 +5,7 @@
 @section('body')
     <header class="guest-header">
         <a href="{{ route('home') }}" class="brand">
-            <img src="{{ asset('img/icon.svg') }}" alt="" width="36" height="36">
-            <span>KidsTV</span>
+            @include('partials.brand')
         </a>
     </header>
     <main class="guest-main">

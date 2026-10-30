@@ -16,8 +16,8 @@ RUN apk add --no-cache ffmpeg libpng libjpeg-turbo libwebp freetype \
  && docker-php-ext-configure gd --with-jpeg --with-webp --with-freetype \
  && docker-php-ext-install -j"$(nproc)" gd pcntl opcache \
  && apk del .build-deps
-COPY ops/php/php.ini /usr/local/etc/php/conf.d/zz-kidstv.ini
-COPY ops/php/fpm-pool.conf /usr/local/etc/php-fpm.d/zz-kidstv.conf
+COPY ops/php/php.ini /usr/local/etc/php/conf.d/zz-nokoplay.ini
+COPY ops/php/fpm-pool.conf /usr/local/etc/php-fpm.d/zz-nokoplay.conf
 WORKDIR /var/www/html
 COPY --from=vendor --chown=www-data:www-data /app /var/www/html
 RUN mkdir -p storage/app/private storage/database storage/backups storage/framework/cache/data \

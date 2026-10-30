@@ -121,7 +121,7 @@ class AccountController extends Controller
         $data = $request->validate([
             'email' => [
                 'required', 'string', 'max:254',
-                config('kidstv.email_dns_check') ? 'email:rfc,dns' : 'email:rfc',
+                config('nokoplay.email_dns_check') ? 'email:rfc,dns' : 'email:rfc',
                 Rule::unique('users', 'email'),
             ],
         ], [

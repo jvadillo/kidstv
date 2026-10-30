@@ -36,7 +36,7 @@ class PairingController extends Controller
             'secret_hash' => hash('sha256', $secret),
             'platform' => $data['platform'] ?? 'web',
             'user_agent' => Str::limit((string) $request->userAgent(), 490, ''),
-            'expires_at' => now()->addMinutes(config('kidstv.pairing_ttl_minutes')),
+            'expires_at' => now()->addMinutes(config('nokoplay.pairing_ttl_minutes')),
         ]);
         $device = $request->attributes->get('device');
         $draft = $data['draft'] ?? null;
@@ -54,7 +54,7 @@ class PairingController extends Controller
             'code' => $pairing->code,
             'code_display' => $pairing->formattedCode(),
             'secret' => $secret,
-            'expires_in' => config('kidstv.pairing_ttl_minutes') * 60,
+            'expires_in' => config('nokoplay.pairing_ttl_minutes') * 60,
             'link_url' => route('onboarding.tv'),
             'link_display' => preg_replace('~^https?://~', '', route('onboarding.tv')),
             'qr_url' => route('tv.pairing.qr', $pairing->id),

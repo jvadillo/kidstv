@@ -9,7 +9,7 @@
 
     <div class="pair-layout">
         <ol class="howto card">
-            <li>{{ __('Abre la app KidsTV en la tele (o la dirección /tv en su navegador).') }}</li>
+            <li>{{ __('Abre la app NokoPlay en la tele (o la dirección /tv en su navegador).') }}</li>
             <li>{{ __('Aparecerá un código de 6 letras y números, y un código QR.') }}</li>
             <li>{{ __('Escanea el QR con este móvil o escribe aquí el código.') }}</li>
         </ol>

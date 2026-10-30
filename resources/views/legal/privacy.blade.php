@@ -30,7 +30,7 @@
         <p>{{ __('Si usas el buscador de YouTube del panel, el texto que buscas se envía a YouTube (Google) desde nuestro servidor, sin ningún dato tuyo ni de tu familia, y los resultados se guardan en caché durante una hora. La tele nunca tiene buscador.') }}</p>
 
         <h2>{{ __('Cuánto tiempo') }}</h2>
-        <p>{{ __('Mientras mantengas la cuenta. Los códigos de acceso caducan en minutos y se eliminan en 24 horas; las sesiones caducan tras :days días sin uso. Al eliminar la cuenta borramos de inmediato perfiles, contenidos, archivos y datos de uso; las copias de seguridad del servidor, si existen, se sobrescriben en un plazo máximo de 30 días.', ['days' => config('kidstv.auth_session_days')]) }}</p>
+        <p>{{ __('Mientras mantengas la cuenta. Los códigos de acceso caducan en minutos y se eliminan en 24 horas; las sesiones caducan tras :days días sin uso. Al eliminar la cuenta borramos de inmediato perfiles, contenidos, archivos y datos de uso; las copias de seguridad del servidor, si existen, se sobrescriben en un plazo máximo de 30 días.', ['days' => config('nokoplay.auth_session_days')]) }}</p>
 
         <h2>{{ __('Tus derechos') }}</h2>
         <p>{{ __('Desde «Cuenta» puedes exportar todos tus datos, cambiar tu correo y eliminar la cuenta. Para cualquier otra solicitud (acceso, rectificación, oposición, limitación) escribe al responsable del servicio. También puedes reclamar ante la Agencia Española de Protección de Datos.') }}</p>

@@ -18,12 +18,12 @@ trait ValidatesContentMetadata
             'list_id' => ['nullable', 'integer', Rule::exists('lists', 'id')->where('family_id', $familyId)->whereNull('source_id')],
             'profile_ids' => ['array'],
             'profile_ids.*' => ['integer', Rule::exists('profiles', 'id')->where('family_id', $familyId)],
-            'cover' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:'.(config('kidstv.max_cover_mb') * 1024)],
+            'cover' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:'.(config('nokoplay.max_cover_mb') * 1024)],
         ], [
             'title.required' => __('Escribe un título.'),
             'cover.image' => __('La portada tiene que ser una imagen (JPG, PNG o WebP).'),
             'cover.mimes' => __('La portada tiene que ser una imagen JPG, PNG o WebP.'),
-            'cover.max' => __('La portada no puede ocupar más de :max MB.', ['max' => config('kidstv.max_cover_mb')]),
+            'cover.max' => __('La portada no puede ocupar más de :max MB.', ['max' => config('nokoplay.max_cover_mb')]),
         ]);
     }
 }

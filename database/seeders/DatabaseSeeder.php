@@ -14,7 +14,7 @@ class DatabaseSeeder extends Seeder
         $user = User::factory()->create(['email' => 'familia@example.com', 'name' => 'Familia de prueba']);
         $family = $user->family;
 
-        foreach (config('kidstv.default_lists') as $i => $name) {
+        foreach (config('nokoplay.default_lists') as $i => $name) {
             $family->lists()->create(['name' => $name, 'position' => $i]);
         }
 

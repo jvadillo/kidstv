@@ -16,7 +16,7 @@ class DeviceController extends Controller
     {
         return view('panel.devices.index', [
             'devices' => $this->family()->devices()->latest('last_seen_at')->latest('id')->get(),
-            'ipkAvailable' => is_file(public_path(config('kidstv.webos_ipk'))),
+            'ipkAvailable' => is_file(public_path(config('nokoplay.webos_ipk'))),
         ]);
     }
 

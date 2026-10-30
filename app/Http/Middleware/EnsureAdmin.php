@@ -8,7 +8,7 @@ use Symfony\Component\HttpFoundation\Response;
 
 /**
  * Panel de administración de la plataforma. Para el resto de adultos responde como si
- * no existiera. Los administradores se nombran desde el servidor (kidstv:admin).
+ * no existiera. Los administradores se nombran desde el servidor (nokoplay:admin).
  */
 class EnsureAdmin
 {

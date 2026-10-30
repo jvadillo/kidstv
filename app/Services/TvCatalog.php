@@ -141,7 +141,7 @@ class TvCatalog
      */
     private function signed(Content $content, string $variant, Device $device): string
     {
-        $window = config('kidstv.tv_media_url_ttl_minutes') * 60;
+        $window = config('nokoplay.tv_media_url_ttl_minutes') * 60;
         $expires = (intdiv(now()->timestamp, $window) + 2) * $window;
 
         // Debe ser una fecha: un entero se interpretaría como «segundos a partir de ahora».
