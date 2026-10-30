@@ -1,0 +1,21 @@
+{
+    "id": "/tv/",
+    "name": "NokoPlay TV",
+    "short_name": "NokoPlay TV",
+    "description": "La videoteca de los peques a pantalla completa, con lo que la familia ha elegido para ellos.",
+    "lang": "es",
+    "dir": "ltr",
+    "start_url": "/tv/",
+    "scope": "/tv/",
+    "display": "fullscreen",
+    "display_override": ["fullscreen", "standalone"],
+    "background_color": "#15133a",
+    "theme_color": "#15133a",
+    "categories": ["kids", "entertainment"],
+    "icons": [
+        { "src": "/img/pwa/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+        { "src": "/img/pwa/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+        { "src": "/img/pwa/maskable-192.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
+        { "src": "/img/pwa/maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+    ]
+}

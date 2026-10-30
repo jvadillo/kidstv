@@ -28,7 +28,7 @@
                 <a href="{{ route($route) }}" @class(['active' => request()->routeIs($pattern)]) @if(request()->routeIs($pattern)) aria-current="page" @endif>{{ $label }}</a>
             @endforeach
         </nav>
-        <form method="POST" action="{{ route('devices.browser') }}" class="topbar-try" target="_blank">
+        <form method="POST" action="{{ route('devices.browser') }}" class="topbar-try" target="_blank" data-tv-launch>
             @csrf
             <button class="btn btn-sm btn-accent" title="{{ __('Abre la videoteca infantil en este navegador, como si fuera una tele') }}">@include('partials.icon', ['name' => 'tv']) {{ __('Modo TV') }}<span class="sr-only">{{ __('(se abre en otra pestaña)') }}</span></button>
         </form>

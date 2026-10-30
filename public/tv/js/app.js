@@ -15,6 +15,7 @@
     var ICON_LOCK = '<svg viewBox="0 0 24 24" class="ico"><rect x="5" y="11" width="14" height="9" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3" fill="none" stroke="currentColor" stroke-width="2"/></svg>';
     var ICON_NOTE = '<svg viewBox="0 0 24 24" class="ico"><path d="M9 18V5l11-2v13" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="6" cy="18" r="3" fill="currentColor"/><circle cx="17" cy="16" r="3" fill="currentColor"/></svg>';
     var ICON_PLAY = '<svg viewBox="0 0 24 24" class="ico"><path d="M8 5v14l11-7z" fill="currentColor"/></svg>';
+    var ICON_BACK = '<svg viewBox="0 0 24 24" class="ico"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
     var ICON_HOURGLASS = '<svg viewBox="0 0 24 24" class="ico"><path d="M6 3h12M6 21h12M8 3v3c0 2.5 4 4 4 6s-4 3.5-4 6v3M16 3v3c0 2.5-4 4-4 6s4 3.5 4 6v3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M9.5 7h5L12 10zM9 20c0-1.8 3-2.6 3-3.6 0 1 3 1.8 3 3.6z" fill="currentColor"/></svg>';
     var ICON_STAR = '<svg viewBox="0 0 24 24"><path d="M12 2l2.9 6.6 7.1.6-5.4 4.7 1.6 7L12 17.3 5.8 20.9l1.6-7L2 9.2l7.1-.6z" fill="currentColor"/></svg>';
     // Pantalla de descanso: una tele dormida con estrellas y «zetas» (animado con CSS).
@@ -118,6 +119,7 @@
         S.screen = name;
         Nav.onFocus = null;
         screens[name].enter(arg || {});
+        guardBack();
     }
 
     function mount(html) {
@@ -150,6 +152,7 @@
         overlay.className = 'overlay';
         Nav.setRoot(overlay);
         Nav.restore();
+        guardBack();
     }
 
     function closeDialog(silent) {
@@ -604,6 +607,8 @@
 
     /** Desplaza la fila para que la tarjeta enfocada quede visible, asomando la siguiente. */
     function slideRow(rowEl, card) {
+        // En móvil, tableta u ordenador las filas tienen desplazamiento nativo (ver rowFades).
+        if (K.pointerUi) return;
         var track = rowEl.querySelector('.row-track');
         var viewport = rowEl.querySelector('.row-viewport');
         var key = rowEl.getAttribute('data-row');
@@ -628,8 +633,32 @@
         rowEl.classList.toggle('more-right', offset < max - 1);
     }
 
+    /** Desplazamiento nativo: el difuminado de los bordes sigue a la posición de la fila. */
+    function rowFades(rowEl) {
+        var viewport = rowEl.querySelector('.row-viewport');
+        var max = viewport.scrollWidth - viewport.clientWidth;
+        rowEl.classList.toggle('more-left', viewport.scrollLeft > 1);
+        rowEl.classList.toggle('more-right', viewport.scrollLeft < max - 1);
+    }
+
+    // Se recuerda dónde se dejó cada fila (y la lista entera) para volver ahí tras ver algo.
+    if (K.pointerUi) {
+        document.addEventListener('scroll', function (e) {
+            var el = e.target;
+            if (!el || !el.classList) return;
+            S.lastKeyAt = new Date().getTime();
+            if (el.classList.contains('row-viewport')) {
+                S.rowOffsets[el.parentNode.getAttribute('data-row')] = el.scrollLeft;
+                rowFades(el.parentNode);
+            } else if (el.classList.contains('rows')) {
+                S.rowOffsets._rows = el.scrollTop;
+            }
+        }, true);
+    }
+
     /** Desplaza la lista de filas para que la fila enfocada quede arriba. */
     function slideRows(rowEl) {
+        if (K.pointerUi) return;
         var list = app.querySelector('.rows');
         var inner = app.querySelector('.rows-inner');
         if (!list || !inner) return;
@@ -684,7 +713,7 @@
                     (S.adultCatalog ? '' : '<div class="btn btn-quiet btn-icon focusable" data-action="adult" data-key="adult" title="' + esc(t('adult.button')) + '">' + ICON_LOCK + '</div>') +
                 '</header>' +
                 (S.adultCatalog ? '<div class="adult-banner">' + esc(t('catalog.adultBanner')) + '</div>' : '') +
-                '<div class="rows"><div class="rows-inner">' + this.rowsHtml() + '</div></div>' +
+                '<div class="rows' + (K.pointerUi ? ' scroll-y' : '') + '"><div class="rows-inner">' + this.rowsHtml() + '</div></div>' +
             '</div>';
 
             mount(html);
@@ -693,10 +722,16 @@
             var rowEls = app.querySelectorAll('.row');
             app.querySelector('.screen-catalog').classList.add('no-anim');
             for (var r = 0; r < rowEls.length; r++) {
+                if (K.pointerUi) {
+                    rowEls[r].querySelector('.row-viewport').scrollLeft = S.rowOffsets[rowEls[r].getAttribute('data-row')] || 0;
+                    rowFades(rowEls[r]);
+                    continue;
+                }
                 var remembered = S.rowMemory[rowEls[r].getAttribute('data-row')];
                 var card = (remembered && rowEls[r].querySelector('[data-key="' + remembered + '"]')) || rowEls[r].querySelector('.card');
                 if (card) slideRow(rowEls[r], card);
             }
+            if (K.pointerUi) app.querySelector('.rows').scrollTop = S.rowOffsets._rows || 0;
 
             Nav.onFocus = function (el) {
                 var rowEl = K.closest(el, 'row');
@@ -727,7 +762,7 @@
                 var row = S.rows[r];
                 html += '<section class="row" data-row="' + esc(row.key) + '">' +
                     '<h2 class="row-title">' + esc(row.title) + ' <span class="row-count">' + row.items.length + '</span></h2>' +
-                    '<div class="row-viewport"><div class="row-track">';
+                    '<div class="row-viewport' + (K.pointerUi ? ' scroll-x' : '') + '"><div class="row-track">';
                 for (var i = 0; i < row.items.length; i++) {
                     var it = row.items[i];
                     // Como en YouTube: la duración abajo a la derecha (el tipo de contenido no le dice nada al peque).
@@ -823,8 +858,11 @@
             var self = this;
             S.playing = item;
             S.memory.catalog = 'c-' + item.id;
-            mount('<div class="screen screen-player"></div>');
-            var container = app.querySelector('.screen-player');
+            // Sin mando (móvil, tableta, ordenador), un botón en pantalla para volver al catálogo.
+            mount('<div class="screen screen-player"><div class="player-host"></div>' +
+                (K.pointerUi ? '<div class="player-close focusable" role="button" data-action="exit" aria-label="' + esc(t('common.back')) + '">' + ICON_BACK + '</div>' : '') +
+            '</div>');
+            var container = app.querySelector('.player-host');
             watchStart(item);
             var opts = {
                 onPlaying: watchPlaying,
@@ -869,6 +907,9 @@
             });
         },
         leave: function () { stopPlayer(); },
+        action: function (action) {
+            if (action === 'exit') this.exit();
+        },
         key: function (name) {
             return S.player ? S.player.key(name) : false;
         }
@@ -906,7 +947,8 @@
             mount(
                 '<div class="screen screen-pin">' +
                     '<div class="pin-side">' + ICON_LOCK + '<h1>' + esc(t('pin.title')) + '</h1><p class="muted">' + esc(t('pin.prompt')) + '</p>' +
-                    '<div class="pin-dots"></div><p class="pin-message" role="alert"></p></div>' +
+                    '<div class="pin-dots"></div><p class="pin-message" role="alert"></p>' +
+                    (K.pointerUi ? '<div class="btn btn-quiet focusable pin-back" data-action="back" data-key="back">' + ICON_BACK + '<span>' + esc(t('common.back')) + '</span></div>' : '') + '</div>' +
                     '<div class="pin-pad">' + pad + '</div>' +
                 '</div>'
             );
@@ -975,7 +1017,13 @@
             S.timers.pinLock = setInterval(tick, 1000);
         },
         leave: function () { clearTimer('pinLock'); },
-        action: function (action, arg) { if (action === 'pin') this.press(arg); },
+        back: function () {
+            show(this.from === 'catalog' && S.profile ? 'catalog' : this.from === 'timeup' ? 'timeup' : 'profiles', {});
+        },
+        action: function (action, arg) {
+            if (action === 'pin') this.press(arg);
+            else if (action === 'back') this.back();
+        },
         key: function (name, e) {
             if (name === 'digit') {
                 this.press(K.keyDigit(e));
@@ -985,7 +1033,7 @@
             }
             if (name === 'back') {
                 if (this.digits.length) { this.press('del'); return true; }
-                show(this.from === 'catalog' && S.profile ? 'catalog' : this.from === 'timeup' ? 'timeup' : 'profiles', {});
+                this.back();
                 return true;
             }
             return false;
@@ -1001,13 +1049,17 @@
                 ['unlink', t('adultMenu.unlink')],
                 ['exit', t('adultMenu.exit')]
             ];
+            if (K.pointerUi) {
+                if (K.installPrompt || K.installManually()) items.splice(3, 0, ['install', t('adultMenu.install')]);
+                items.splice(3, 0, ['panel', t('adultMenu.panel')]);
+            }
             var html = '<div class="screen screen-adult"><div class="adult-menu">' + ICON_LOCK + '<h1>' + esc(t('adultMenu.title')) + '</h1>';
             for (var i = 0; i < items.length; i++) {
                 html += '<div class="menu-item focusable' + (items[i][0] === 'unlink' ? ' menu-danger' : '') + '" data-action="menu" data-arg="' + items[i][0] + '" data-key="m-' + items[i][0] + '">' + esc(items[i][1]) + '</div>';
             }
             html += '</div><div class="adult-info">' +
                 '<p>' + esc(t('adultMenu.manage')) + '</p><p class="pair-url">' + esc(serverHost()) + '</p>' +
-                '<p class="muted">' + esc(t('adultMenu.autolock', { s: S.adult ? S.adult.idle : 120 })) + '</p>' +
+                '<p class="muted">' + esc(t(K.pointerUi ? 'adultMenu.autolockTouch' : 'adultMenu.autolock', { s: S.adult ? S.adult.idle : 120 })) + '</p>' +
             '</div></div>';
             mount(html);
             Nav.restore(S.memory.adultMenu);
@@ -1055,6 +1107,18 @@
                     ],
                     focus: 1
                 });
+            } else if (arg === 'panel') {
+                lockAdult(true);
+                window.location.href = (K.config.apiBase || '') + '/panel';
+            } else if (arg === 'install') {
+                var prompt = K.installPrompt;
+                if (!prompt) {
+                    openDialog({ title: t('adultMenu.installTitle'), text: t('adultMenu.installIos') });
+                    return;
+                }
+                K.installPrompt = null;
+                prompt.prompt();
+                if (prompt.userChoice) prompt.userChoice.then(function () { if (S.screen === 'adultMenu' && !dialog) show('adultMenu'); });
             } else if (arg === 'exit') {
                 lockAdult();
             }
@@ -1094,7 +1158,13 @@
         S.lastKeyAt = new Date().getTime();
         pingAdult();
         e.preventDefault();
+        if (name === 'back') lastBackKey = S.lastKeyAt;
+        // La primera flecha tras tocar la pantalla solo muestra dónde está el foco.
+        if (Nav.showFocus() && (name === 'left' || name === 'right' || name === 'up' || name === 'down')) return;
+        handleKey(name, e);
+    });
 
+    function handleKey(name, e) {
         if (dialog) {
             if (name === 'back') { if (!offline.visible) closeDialog(); return; }
             if (name === 'ok') { activate(Nav.current); return; }
@@ -1107,7 +1177,7 @@
 
         if (name === 'left' || name === 'right' || name === 'up' || name === 'down') Nav.move(name);
         else if (name === 'ok') activate(Nav.current);
-    });
+    }
 
     function activate(el) {
         if (!el) return;
@@ -1118,9 +1188,14 @@
         if (screen && screen.action) screen.action(action, arg, el);
     }
 
+    // Con el puntero encima no se desplaza nada: en móvil y ordenador las filas se mueven con el dedo o la rueda.
     document.addEventListener('mouseover', function (e) {
+        if (K.recentTouch()) return;
         var el = K.closest(e.target, 'focusable');
-        if (el && el !== Nav.current && (!dialog || K.closest(el, 'overlay'))) Nav.focus(el);
+        if (el && el !== Nav.current && (!dialog || K.closest(el, 'overlay'))) {
+            K.touching = false;
+            Nav.focus(el, K.pointerUi);
+        }
     });
 
     document.addEventListener('click', function (e) {
@@ -1128,9 +1203,43 @@
         if (!el) return;
         if (dialog && !K.closest(el, 'overlay')) return;
         S.lastKeyAt = new Date().getTime();
-        Nav.focus(el);
+        Nav.focus(el, K.pointerUi);
         activate(el);
     });
+
+    if (K.pointerUi) {
+        document.addEventListener('touchstart', function () {
+            S.lastKeyAt = new Date().getTime();
+            pingAdult();
+        }, { passive: true });
+    }
+
+    /* ---------- Atrás del sistema (gesto o botón de Android, Alt+← en el ordenador) ---------- */
+
+    // Fuera de las pantallas principales se guarda una entrada en el historial: el Atrás del
+    // sistema la consume y se trata como la tecla Atrás, en lugar de salir de la videoteca.
+    var ROOT_SCREENS = { profiles: true, welcome: true, blocked: true, timeup: true };
+    var backGuard = false;
+    var lastBackKey = 0;
+
+    function guardBack() {
+        if (!K.pointerUi || backGuard || !window.history || !window.history.pushState) return;
+        if (ROOT_SCREENS[S.screen] && !dialog) return;
+        try {
+            window.history.pushState({ nokoplay: 'back' }, '');
+            backGuard = true;
+        } catch (ignore) { /* historial no disponible */ }
+    }
+
+    if (K.pointerUi) {
+        window.addEventListener('popstate', function () {
+            if (!backGuard) return;
+            backGuard = false;
+            // Algunos navegadores envían también la tecla Atrás: no se trata dos veces.
+            if (new Date().getTime() - lastBackKey > 400) handleKey('back');
+            guardBack();
+        });
+    }
 
     /* ---------- Primeros pasos con el mando ---------- */
 

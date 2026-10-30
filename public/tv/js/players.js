@@ -110,7 +110,17 @@
         function onVisibility() { if (document.hidden && !media.paused) media.pause(); }
         document.addEventListener('visibilitychange', onVisibility);
 
-        container.querySelector('.player').addEventListener('click', toggle);
+        // Con el dedo, el primer toque solo muestra los controles; tocar la barra salta a ese punto.
+        container.querySelector('.player').addEventListener('click', function (e) {
+            var bar = K.closest(e.target, 'player-progress');
+            if (bar) {
+                var rect = bar.getBoundingClientRect();
+                if (rect.width > 0) seek((e.clientX - rect.left) / rect.width * (media.duration || 0) - media.currentTime);
+                return;
+            }
+            if (K.touching && !isAudio && !controls.classList.contains('visible')) { showControls(); return; }
+            toggle();
+        });
 
         return {
             key: function (name) {
@@ -148,7 +158,7 @@
             '<div class="player player-youtube">' +
                 '<iframe class="yt-frame" src="' + esc(item.youtube_player) + '" allow="autoplay; encrypted-media" tabindex="-1" frameborder="0"></iframe>' +
                 '<div class="player-spinner visible"><div class="spinner"></div><p>' + esc(t('player.ytLoading')) + '</p></div>' +
-                '<div class="yt-notice visible">' + esc(t('player.ytNotice')) + ' · ' + esc(t('player.back')) + '</div>' +
+                '<div class="yt-notice visible">' + esc(t('player.ytNotice')) + (K.pointerUi ? '' : ' · ' + esc(t('player.back'))) + '</div>' +
             '</div>';
 
         var frame = container.querySelector('.yt-frame');

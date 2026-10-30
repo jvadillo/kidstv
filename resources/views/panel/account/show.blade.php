@@ -82,6 +82,19 @@
         </form>
     </section>
 
+    {{-- Lo muestra panel.js solo si este navegador permite instalar la aplicación. --}}
+    <section class="section" data-pwa-install hidden>
+        <h2>{{ __('Aplicación') }}</h2>
+        <div class="card settings-row">
+            <div>
+                <strong>{{ __('Instala NokoPlay en este dispositivo') }}</strong>
+                <span class="muted small">{{ __('Ábrelo desde la pantalla de inicio, a pantalla completa, como cualquier otra app.') }}</span>
+                <span class="muted small block" data-pwa-install-ios hidden>{{ __('En iPhone o iPad: pulsa Compartir en Safari y elige «Añadir a pantalla de inicio».') }}</span>
+            </div>
+            <button type="button" class="btn btn-sm btn-primary" data-pwa-install-button hidden>{{ __('Instalar') }}</button>
+        </div>
+    </section>
+
     <section class="section">
         <h2>{{ __('Seguridad y administración') }}</h2>
         <ul class="card-list account-security">

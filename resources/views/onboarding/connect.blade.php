@@ -42,7 +42,7 @@
 
         <div class="ob-or"><span>{{ __('o') }}</span></div>
 
-        <form method="POST" action="{{ route('devices.browser') }}" target="_blank">
+        <form method="POST" action="{{ route('devices.browser') }}" target="_blank" data-tv-launch>
             @csrf
             <button class="btn btn-ghost btn-block">{{ __('Probarla ahora en este navegador') }}</button>
         </form>

@@ -11,6 +11,10 @@
     <meta name="application-name" content="NokoPlay">
     <link rel="icon" href="{{ asset('tv/img/icon.png') }}" type="image/png">
     <link rel="apple-touch-icon" href="{{ asset('tv/img/apple-touch-icon.png') }}">
+    <link rel="manifest" href="{{ asset('manifest.webmanifest') }}">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="NokoPlay">
     <link rel="stylesheet" href="{{ asset('css/app.css') }}?v={{ filemtime(public_path('css/app.css')) }}">
     @stack('styles')
     <script src="{{ asset('js/panel.js') }}?v={{ filemtime(public_path('js/panel.js')) }}" defer></script>

@@ -11,6 +11,31 @@
 
     var K = window.NokoPlay = { config: config };
 
+    /* ---------- Tipo de dispositivo ---------- */
+
+    // En una tele (app empaquetada o navegador de Smart TV) todo va con el mando. En un móvil,
+    // tableta u ordenador («Modo TV» desde el panel) las filas se desplazan con el dedo, la rueda
+    // o el trackpad, y hay botones en pantalla para volver.
+    var TV_AGENT = /SmartTV|SMART-TV|Tizen|Web0S|WebOS|NetCast|HbbTV|BRAVIA|CrKey|Android TV|GoogleTV|AFT[A-Z]|VIDAA|Viera|Roku|PlayStation|Xbox/i;
+    K.pointerUi = config.platform === 'web' && !TV_AGENT.test(navigator.userAgent || '');
+    if (K.pointerUi) document.documentElement.className += ' pointer-ui';
+
+    // Tras tocar la pantalla no se dibuja el marco de foco (es cosa del mando y del teclado).
+    K.touching = K.pointerUi && !!(window.matchMedia && window.matchMedia('(pointer: coarse)').matches);
+    var lastTouch = 0;
+    if (K.pointerUi) {
+        document.addEventListener('touchstart', function () {
+            lastTouch = new Date().getTime();
+            if (K.touching) return;
+            K.touching = true;
+            if (Nav.current) Nav.current.classList.remove('focused');
+        }, { passive: true, capture: true });
+    }
+    /** Los eventos de ratón que el navegador simula justo después de un toque no cuentan como ratón. */
+    K.recentTouch = function () {
+        return new Date().getTime() - lastTouch < 1000;
+    };
+
     /* ---------- Texto e i18n ---------- */
 
     var lang = (config.lang || 'es');
@@ -158,13 +183,26 @@
         return out;
     };
 
-    Nav.focus = function (el) {
+    /** noScroll: el puntero ya está encima, no hace falta desplazar nada para verlo. */
+    Nav.focus = function (el, noScroll) {
         if (!el) return;
         if (Nav.current && Nav.current !== el) Nav.current.classList.remove('focused');
         Nav.current = el;
-        el.classList.add('focused');
-        Nav.ensureVisible(el);
+        if (!K.touching) el.classList.add('focused');
+        if (!noScroll && !K.touching) Nav.ensureVisible(el);
         if (typeof Nav.onFocus === 'function') Nav.onFocus(el);
+    };
+
+    /** Al volver a usar el mando o el teclado tras tocar la pantalla, reaparece el marco de foco. */
+    Nav.showFocus = function () {
+        if (!K.touching) return false;
+        K.touching = false;
+        if (Nav.current && Nav.current.parentNode) {
+            Nav.current.classList.add('focused');
+            Nav.ensureVisible(Nav.current);
+            return true;
+        }
+        return false;
     };
 
     /** Enfoca el elemento con data-key igual a key; si no existe, el primero. */
@@ -247,8 +285,10 @@
     function rescale() {
         var w = window.innerWidth || 1920;
         var h = window.innerHeight || 1080;
-        var scale = Math.min(w / 1920, h / 1080);
-        document.documentElement.style.fontSize = Math.max(6, 16 * scale) + 'px';
+        var size = 16 * Math.min(w / 1920, h / 1080);
+        // En móviles y tabletas el lado corto manda: tarjetas y textos legibles también en vertical.
+        if (K.pointerUi) size = Math.max(size, Math.min(Math.min(w, h) / 52, 10));
+        document.documentElement.style.fontSize = Math.max(6, size) + 'px';
     }
     rescale();
     window.addEventListener('resize', rescale);
@@ -267,4 +307,33 @@
         } catch (e) { /* continúa */ }
         window.close();
     };
+
+    /* ---------- Aplicación instalable (móvil, tableta u ordenador) ---------- */
+
+    K.installPrompt = null;
+
+    K.standalone = function () {
+        var media = window.matchMedia;
+        return navigator.standalone === true ||
+            !!(media && (media('(display-mode: fullscreen)').matches || media('(display-mode: standalone)').matches));
+    };
+
+    /** En iPhone y iPad no hay botón de instalar: se explica cómo añadirla a la pantalla de inicio. */
+    K.installManually = function () {
+        var ios = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+        return ios && !K.standalone();
+    };
+
+    if (K.pointerUi) {
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function () {
+                navigator.serviceWorker.register('/sw.js', { scope: '/' })['catch'](function () { /* sin modo sin conexión */ });
+            });
+        }
+        window.addEventListener('beforeinstallprompt', function (e) {
+            e.preventDefault();
+            K.installPrompt = e;
+        });
+        window.addEventListener('appinstalled', function () { K.installPrompt = null; });
+    }
 })(window, document);

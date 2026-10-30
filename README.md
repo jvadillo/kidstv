@@ -14,6 +14,7 @@ Aplicación web (Laravel 13) en la que una persona adulta se registra solo con s
 | [docs/despliegue.md](docs/despliegue.md) | Instalar, configurar, desplegar, administrar, actualizar y hacer copias en el VPS |
 | [docs/webos.md](docs/webos.md) | Generar, instalar, probar y actualizar la app en televisores LG webOS |
 | [docs/otras-plataformas.md](docs/otras-plataformas.md) | Cómo llevar la app de TV a Samsung Tizen, Android TV y otros |
+| [docs/pwa.md](docs/pwa.md) | App instalable (PWA) y «Modo TV» en móviles, tabletas y ordenadores |
 | [docs/limitaciones.md](docs/limitaciones.md) | Limitaciones conocidas (YouTube, navegadores de Smart TV, servidor) |
 | [docs/aceptacion.md](docs/aceptacion.md) | Estado de verificación de cada flujo de aceptación |
 
@@ -31,6 +32,7 @@ También se puede comenzar desde la TV, con el mando y reproducción provisional
 - **Límite diario de tele** (*Cuenta → Preferencias*): sin límite, un tiempo compartido entre todos los niños (lo que ve cada uno gasta el de todos) o un límite para cada niño, cada uno con su control deslizante (de 5 min a 5 h). Se suma lo visto en todas las teles, sin contar la Zona de adultos.
 - **Actividad**: tiempo de pantalla por día, semana o mes (total, medias, gráfico y navegación a periodos anteriores), lo que más ve cada niño (por tiempo o por veces, hasta el top 10), cuándo lo ha visto y tiempo por listas; para un niño o para todos. Junto al título, «Viendo ahora» si el niño elegido (o cualquiera, con «Todos») está viendo algo en ese momento; se actualiza cada minuto.
 - Cuenta: PIN parental, cambio de correo, sesiones abiertas, exportación en JSON y eliminación de la cuenta (con revalidación por correo).
+- **App instalable (PWA)**: el panel se puede añadir a la pantalla de inicio (botón *Instalar* en *Cuenta* cuando el navegador lo permite) y se abre a pantalla completa; sin conexión muestra un aviso en lugar del error del navegador. [Detalles](docs/pwa.md).
 
 **Panel de administración** (`/admin`, solo cuentas nombradas con `nokoplay:admin`):
 - Resumen de uso: minutos vistos (hoy, 7 y 30 días, gráfico diario), cuentas nuevas, familias activas, televisores, biblioteca y espacio, vídeos de listas públicas más vistos.
@@ -42,6 +44,7 @@ También se puede comenzar desde la TV, con el mando y reproducción provisional
 - Selección de perfil → catálogo con una fila por lista (carrusel horizontal, como en las plataformas de vídeo; la duración en cada miniatura) → reproductor.
 - Informa del tiempo reproducido y del perfil que lo ve, para el límite diario de cada niño y la pantalla *Actividad* (las estadísticas de administración solo usan totales).
 - Navegación completa con flechas, OK y Atrás (también puntero/ratón opcional), foco visible y restaurado al volver del reproductor.
+- En móviles, tabletas y ordenadores («Modo TV» desde el panel) las filas y la lista se deslizan con el dedo, la rueda o el trackpad, hay botones en pantalla para volver (reproductor y PIN) y el gesto Atrás del sistema funciona como la tecla Atrás. Se puede instalar aparte como «NokoPlay TV» a pantalla completa para los peques.
 - Vídeo y audio propios a pantalla completa con pausa, avance/retroceso de 10 s; YouTube con el reproductor oficial (modo privacidad mejorada).
 - Barra de pausa, avance y progreso para YouTube: automática, siempre visible u oculta, configurable para toda la familia desde *Cuenta → Preferencias*.
 - Al terminar vuelve al catálogo (reproducción automática solo si el adulto la activa).
@@ -116,9 +119,9 @@ docker run --rm -it -v "$PWD":/app -w /app composer:2 sh -c "composer install &&
 
 ```bash
 php artisan test
-node --test tests/JavaScript/youtube-player.test.cjs
+node --test tests/JavaScript/
 ```
 
-Las pruebas JavaScript comprueban los modos de visibilidad, progreso, mando y puntero con la API de YouTube simulada, sin acceso a la red.
+Las pruebas JavaScript comprueban los modos de visibilidad, progreso, mando y puntero con la API de YouTube simulada, las estrategias de caché del service worker y la detección de tele frente a móvil/ordenador en la app de TV, sin acceso a la red.
 
 49 tests / 472 aserciones cubren alta y acceso por correo, sesión persistente y revocación, aislamiento entre familias (panel, API de TV y archivos), vinculación de televisores, catálogo por perfil, URLs firmadas y su caducidad, PIN con espera progresiva, subida por fragmentos, YouTube, borrado de contenido y de cuenta, y el buscador de YouTube (filtros, caché, duplicados, cuota agotada). Además se hizo un recorrido end-to-end real contra producción con Chrome (ver [docs/aceptacion.md](docs/aceptacion.md)).

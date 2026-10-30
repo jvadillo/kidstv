@@ -80,8 +80,9 @@ function resize(source, width, height) {
     return { width, height, pixels };
 }
 const symbol = readPng('isotipoPNG.png');
-function icon(size, white = false) {
-    const inset = Math.max(1, Math.round(size * .07));
+// padding: margen alrededor del isotipo (los iconos «maskable» necesitan una zona segura del 80 %).
+function icon(size, white = false, padding = .07) {
+    const inset = Math.max(1, Math.round(size * padding));
     const width = size - inset * 2, height = Math.round(width * symbol.height / symbol.width);
     const scaled = resize(symbol, width, height), pixels = Buffer.alloc(size * size * 4, white ? 255 : 0);
     const top = Math.floor((size - height) / 2);
@@ -97,6 +98,13 @@ writeFileSync(join(assets, 'logo-vertical.png'), png(resize(readPng('logoPNG.png
 writeFileSync(join(assets, 'icon.png'), icon(256));
 writeFileSync(join(assets, 'apple-touch-icon.png'), icon(180, true));
 writeFileSync(join(root, 'tv-apps/webos/icon.png'), icon(80, true));
+// Iconos de la aplicación instalable (PWA): normales y «maskable» para Android.
+const pwa = join(root, 'public/img/pwa');
+mkdirSync(pwa, { recursive: true });
+for (const size of [192, 512]) {
+    writeFileSync(join(pwa, `icon-${size}.png`), icon(size, true));
+    writeFileSync(join(pwa, `maskable-${size}.png`), icon(size, true, .2));
+}
 writeFileSync(join(root, 'tv-apps/webos/largeIcon.png'), icon(130, true));
 const sizes = [16, 32, 48, 256], images = sizes.map(size => icon(size));
 const header = Buffer.alloc(6 + sizes.length * 16);

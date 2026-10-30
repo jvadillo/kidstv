@@ -381,3 +381,102 @@ p { font-size: 1.9rem; line-height: 1.35; margin: 0 0 1rem; }
 .setup-card.selected .setup-check { display: block; }
 .setup-card.focused { outline: none; border-color: #ffc83d; box-shadow: 0 0 0 .2rem #ffc83d; background: #3e3568; }
 .setup-empty { padding: 2rem; color: #d1cde9; }
+
+/* ---------- Móvil, tableta u ordenador («Modo TV» desde el panel) ----------
+ * core.js añade .pointer-ui fuera de las teles. Las filas usan desplazamiento nativo (dedo,
+ * rueda, trackpad) en lugar de moverse con el foco del mando. Navegadores modernos: aquí sí
+ * se pueden usar min(), max-content o scroll-snap.
+ */
+.pointer-ui, .pointer-ui body { overscroll-behavior: none; -webkit-tap-highlight-color: transparent; }
+.pointer-ui .focusable { cursor: pointer; touch-action: manipulation; }
+.pointer-ui .focusable:active { opacity: 0.85; }
+
+.pointer-ui .rows, .pointer-ui .profiles-wrap {
+    overflow-x: hidden; overflow-y: auto; -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain; scrollbar-width: none;
+}
+/* Lo que pasa por debajo de la cabecera se difumina en lugar de cortarse. */
+.pointer-ui .rows { -webkit-mask-image: linear-gradient(to bottom, transparent, #000 2rem); mask-image: linear-gradient(to bottom, transparent, #000 2rem); }
+.pointer-ui .rows-inner, .pointer-ui .row-track { -webkit-transform: none !important; transform: none !important; -webkit-transition: none; transition: none; }
+.pointer-ui .row-viewport {
+    overflow-x: auto; overflow-y: hidden; -webkit-overflow-scrolling: touch;
+    overscroll-behavior-x: contain; scrollbar-width: none;
+    scroll-snap-type: x proximity; scroll-padding: 0 6rem;
+}
+.pointer-ui .rows::-webkit-scrollbar, .pointer-ui .profiles-wrap::-webkit-scrollbar, .pointer-ui .row-viewport::-webkit-scrollbar { display: none; }
+/* El carril mide lo que sus tarjetas, para que el margen final también se pueda ver. */
+.pointer-ui .row-track { width: -webkit-max-content; width: max-content; }
+.pointer-ui .card { scroll-snap-align: start; }
+.pointer-ui .card:last-child { margin-right: 0; }
+
+/* Reproductor: botón para volver (no hay tecla Atrás). */
+.player-host { position: absolute; left: 0; top: 0; right: 0; bottom: 0; }
+.player-close {
+    position: absolute; left: 2.5rem; top: 2.5rem; z-index: 5;
+    width: 5.5rem; height: 5.5rem; min-width: 44px; min-height: 44px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    background: rgba(0, 0, 0, 0.55); color: #ffffff; font-size: 3rem; opacity: 0.85;
+}
+.player-close .ico { width: 1em; height: 1em; min-width: 24px; min-height: 24px; }
+.player-close.focused { background: #ffc83d; color: #1e1a3f; opacity: 1; }
+.pointer-ui .player-hint { display: none; }
+.pointer-ui .player-progress { cursor: pointer; }
+/* Zona táctil más alta que la barra visible. */
+.pointer-ui .player-progress:before { content: ''; position: absolute; left: 0; right: 0; top: -2rem; bottom: -2rem; }
+
+.pin-back { margin: 1rem 0 0; }
+
+/* Diálogos y avisos que no se salen de pantallas estrechas. */
+.pointer-ui .overlay { padding: 2rem; }
+.pointer-ui .dialog { max-height: 100%; overflow-y: auto; padding: 4rem 3rem; }
+.pointer-ui .dialog-buttons { display: flex; flex-wrap: wrap; justify-content: center; }
+.pointer-ui .dialog-buttons .btn { margin: 0.75rem; }
+.pointer-ui .info-list { width: auto; max-width: 60rem; }
+.pointer-ui .toast { max-width: 92vw; margin-left: calc(min(60rem, 92vw) / -2); }
+.pointer-ui .limit-warning { max-width: 92vw; margin-left: calc(min(72rem, 92vw) / -2); }
+
+/* En vertical (móvil o tableta), lo que en la tele va lado a lado pasa a ir en columna. */
+@media (orientation: portrait) {
+    .pointer-ui .screen-center, .pointer-ui .screen-pairing, .pointer-ui .screen-pin,
+    .pointer-ui .screen-adult, .pointer-ui .setup-welcome {
+        display: flex; flex-direction: column; align-items: stretch; justify-content: flex-start;
+        padding: 5rem 3rem; overflow-y: auto; -webkit-overflow-scrolling: touch;
+    }
+    /* Centrado vertical que no recorta el principio cuando el contenido no cabe. */
+    .pointer-ui .screen-center { align-items: center; justify-content: center; justify-content: safe center; }
+
+    .pointer-ui .catalog-header { padding: 0 2.5rem; }
+    .pointer-ui .adult-banner { left: 2.5rem; right: 2.5rem; height: auto; line-height: 1.3; padding: 0.8rem 1.5rem; }
+    .pointer-ui .row-title { padding: 1.4rem 2.5rem 0; }
+    .pointer-ui .row-track { padding: 0 2.5rem; }
+    .pointer-ui .row-viewport { scroll-padding: 0 2.5rem; }
+
+    .pointer-ui .screen-profiles { display: flex; flex-direction: column; padding: 4rem 2.5rem 0; }
+    .pointer-ui .screen-profiles .screen-title { margin-bottom: 2rem; }
+    .pointer-ui .profiles-wrap { position: relative; top: auto; bottom: auto; flex: 1; min-height: 0; }
+    .pointer-ui .profiles-grid { padding: 1.5rem 0 14rem; }
+    .pointer-ui .profile-card { width: 18rem; margin: 0 1rem 2.5rem; }
+    .pointer-ui .profile-avatar { width: 12rem; height: 12rem; }
+    .pointer-ui .adult-corner { right: 2.5rem; bottom: 3rem; }
+
+    .pointer-ui .pair-text { padding-right: 0; }
+    .pointer-ui .pair-code { font-size: 5rem; letter-spacing: 0.3rem; padding: 1rem 2rem; }
+    .pointer-ui .pair-qr { width: auto; margin-top: 2rem; }
+    .pointer-ui .qr-box { display: inline-block; }
+
+    .pointer-ui .pin-side { width: auto; padding: 0; text-align: center; }
+    .pointer-ui .pin-pad { margin: 2rem auto 0; flex-shrink: 0; }
+
+    .pointer-ui .adult-menu { width: auto; }
+    .pointer-ui .adult-info { flex: none; padding: 3rem 0 0; }
+
+    .pointer-ui .setup-choices { flex-direction: column; }
+    .pointer-ui .setup-choice { flex: none; min-height: 0; }
+    .pointer-ui .setup-choice + .setup-choice { margin-left: 0; margin-top: 1.5rem; }
+    .pointer-ui .setup-screen { padding: 3.5rem 3rem; }
+    .pointer-ui .setup-progress li { margin-right: 1.5rem; }
+    .pointer-ui .setup-name-form { width: auto; }
+    .pointer-ui .setup-card { width: 48%; }
+    .pointer-ui .setup-grid > .setup-card { margin: 0 2% 1.5rem 0; }
+    .pointer-ui .setup-footer .btn + .btn { margin-left: 1rem; }
+}

@@ -582,7 +582,52 @@
         });
     }
 
+    // Aplicación instalable: service worker, botón «Instalar» en Cuenta y, ya instalada,
+    // el Modo TV se abre en la misma ventana (una pestaña nueva saldría de la app).
+    function initPwa() {
+        if ('serviceWorker' in navigator) {
+            var register = function () { navigator.serviceWorker.register('/sw.js').catch(function () {}); };
+            if (document.readyState === 'complete') register();
+            else window.addEventListener('load', register);
+        }
+
+        var standalone = navigator.standalone === true || ['standalone', 'fullscreen', 'minimal-ui'].some(function (mode) {
+            return window.matchMedia('(display-mode: ' + mode + ')').matches;
+        });
+        if (standalone) {
+            document.querySelectorAll('form[data-tv-launch]').forEach(function (form) { form.removeAttribute('target'); });
+        }
+
+        var section = document.querySelector('[data-pwa-install]');
+        if (!section || standalone) return;
+        var button = section.querySelector('[data-pwa-install-button]');
+        var deferred = null;
+
+        var ios = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+        if (ios) {
+            section.querySelector('[data-pwa-install-ios]').hidden = false;
+            section.hidden = false;
+        }
+
+        window.addEventListener('beforeinstallprompt', function (e) {
+            e.preventDefault();
+            deferred = e;
+            button.hidden = false;
+            section.hidden = false;
+        });
+        button.addEventListener('click', function () {
+            if (!deferred) return;
+            deferred.prompt();
+            // Si se descarta, el navegador puede volver a ofrecerlo más adelante (otro beforeinstallprompt).
+            deferred.userChoice.then(function () { section.hidden = !ios; });
+            deferred = null;
+            button.hidden = true;
+        });
+        window.addEventListener('appinstalled', function () { section.hidden = true; });
+    }
+
     onReady(function () {
+        initPwa();
         initListSorting();
         initOnboardingCatalog();
         initTvPreview();

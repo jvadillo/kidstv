@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="robots" content="noindex, nofollow">
+    <meta name="theme-color" content="#2b2560">
+    <title>Sin conexión · NokoPlay</title>
+    <link rel="icon" href="/img/pwa/icon-192.png" type="image/png">
+    <style>
+        :root { --bg: #F3F7FE; --surface: #ffffff; --ink: #28235E; --ink-2: #5B5A7A; --primary: #1F6FE0; }
+        @media (prefers-color-scheme: dark) {
+            :root { --bg: #14132a; --surface: #1f1d3d; --ink: #f3f1fb; --ink-2: #b6b3cf; --primary: #8fb8ff; }
+        }
+        * { box-sizing: border-box; }
+        html, body { margin: 0; min-height: 100%; }
+        body {
+            display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 24px 16px;
+            background: var(--bg); color: var(--ink);
+            font-family: ui-rounded, "Nunito", "Segoe UI", system-ui, -apple-system, Roboto, sans-serif;
+        }
+        main { width: 100%; max-width: 420px; padding: 32px 24px; border-radius: 20px; background: var(--surface); text-align: center; box-shadow: 0 4px 14px rgba(31, 33, 51, .08); }
+        img { display: block; width: 96px; height: 96px; margin: 0 auto 16px; border-radius: 22px; }
+        h1 { margin: 0 0 8px; font-size: 1.5rem; }
+        p { margin: 0 0 24px; color: var(--ink-2); line-height: 1.45; }
+        a { display: inline-block; padding: 12px 24px; border-radius: 999px; background: var(--primary); color: #ffffff; font-weight: 700; text-decoration: none; }
+        a:focus-visible { outline: 3px solid var(--ink); outline-offset: 3px; }
+    </style>
+</head>
+<body>
+    <main>
+        <img src="/img/pwa/icon-192.png" alt="" width="96" height="96">
+        <h1>Sin conexión a Internet</h1>
+        <p>NokoPlay necesita conexión para mostrar tu videoteca. Comprueba el wifi o los datos móviles y vuelve a intentarlo.</p>
+        <a href="">Reintentar</a>
+    </main>
+    <script>window.addEventListener('online', function () { window.location.reload(); });</script>
+</body>
+</html>
