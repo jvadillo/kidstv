@@ -13,7 +13,7 @@ class ProfileController extends Controller
     public function index()
     {
         return view('panel.profiles.index', [
-            'profiles' => $this->family()->profiles()->withCount('contents')->get(),
+            'profiles' => $this->family()->profiles()->withCount('contents')->with(['lists.source' => fn ($q) => $q->withCount(['contents' => fn ($q) => $q->ready()])])->get(),
         ]);
     }
 

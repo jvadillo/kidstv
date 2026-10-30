@@ -176,7 +176,7 @@ class AccountTest extends TestCase
         $profile = $this->profile($user->family);
         $content = $this->youtubeContent($user->family);
         $this->get('/panel/bienvenida')->assertRedirect('/empezar');
-        $this->get('/panel')->assertOk()->assertSee('Conecta la tele de Ane');
+        $this->get('/panel')->assertOk()->assertSee('Conecta tu televisión')->assertSee('Gestiona lo que ven Ane');
         $this->get('/panel/perfiles/'.$profile->id)->assertOk();
         $this->get('/panel/contenidos/'.$content->id)->assertOk()->assertSee('youtube-nocookie.com/embed/aqz-KE-bpKQ', false);
     }

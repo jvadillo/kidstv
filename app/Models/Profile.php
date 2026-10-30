@@ -32,6 +32,14 @@ class Profile extends Model
         return $range ? VideoList::ageRangeLabel(...$range) : null;
     }
 
+    /** Recuento de presentación: incluye los contenidos de listas públicas asignadas. */
+    public function assignedContentCount(): int
+    {
+        return (int) $this->contents_count + $this->lists->sum(fn (VideoList $list) =>
+            $list->isLinked() && $list->isAvailable() ? (int) $list->source->contents_count : 0
+        );
+    }
+
     public function family(): BelongsTo
     {
         return $this->belongsTo(Family::class);

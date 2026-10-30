@@ -13,7 +13,7 @@ class DashboardController extends Controller
 
         return view('panel.dashboard', [
             'family' => $family,
-            'profiles' => $family->profiles()->withCount('contents')->get(),
+            'profiles' => $family->profiles()->withCount('contents')->with(['lists.source' => fn ($q) => $q->withCount(['contents' => fn ($q) => $q->ready()])])->get(),
             'recent' => $family->contents()->with('list')->latest('id')->limit(6)->get(),
             'contentCount' => $family->contents()->count(),
             'linkedCount' => $family->lists()->whereNotNull('source_id')->count(),

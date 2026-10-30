@@ -40,7 +40,7 @@ class AdminTest extends TestCase
             'content_type' => Content::TYPE_YOUTUBE, 'client_key' => 'abcdefgh2', 'seconds' => 2400]);
 
         $this->actingAsAdult($admin);
-        $this->get('/panel')->assertSee(route('admin.dashboard'), false);
+        $this->get('/panel/cuenta')->assertSee(route('admin.dashboard'), false);
         $this->get('/admin')->assertOk()
             ->assertSee('Minutos vistos hoy')
             ->assertSee('1 h 05 min')

@@ -12,6 +12,7 @@
     <link rel="icon" href="{{ asset('tv/img/icon.png') }}" type="image/png">
     <link rel="apple-touch-icon" href="{{ asset('tv/img/apple-touch-icon.png') }}">
     <link rel="stylesheet" href="{{ asset('css/app.css') }}?v={{ filemtime(public_path('css/app.css')) }}">
+    @stack('styles')
     <script src="{{ asset('js/panel.js') }}?v={{ filemtime(public_path('js/panel.js')) }}" defer></script>
 </head>
 <body class="@yield('body-class')">

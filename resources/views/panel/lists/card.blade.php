@@ -39,7 +39,7 @@
                 @endforeach
             </span>
         @elseif ($count > 0)
-            <span class="small warn-text">{{ __('Ningún perfil la ve todavía') }}</span>
+            <span class="small warn-text list-unassigned">@include('partials.icon', ['name' => 'info']) {{ __('Sin perfil asignado') }}</span>
         @endif
     </div>
     <span class="list-card-go">@include('partials.icon', ['name' => 'right'])</span>

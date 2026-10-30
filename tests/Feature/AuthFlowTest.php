@@ -62,7 +62,7 @@ class AuthFlowTest extends TestCase
         $this->assertAuthenticatedAs($user);
         $this->assertNotNull($user->terms_accepted_at);
         $this->assertCount(count(config('nokoplay.default_lists')), $user->family->lists);
-        $this->get('/panel')->assertOk()->assertSee('Añadir vídeo de YouTube');
+        $this->get('/panel')->assertOk()->assertSee('YouTube')->assertSee(youtube_add_url(), false);
     }
 
     public function test_existing_adult_logs_in_with_single_use_link(): void

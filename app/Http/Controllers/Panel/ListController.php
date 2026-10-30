@@ -89,7 +89,7 @@ class ListController extends Controller
             }
         }
 
-        return back();
+        return $request->expectsJson() ? response()->json(['ok' => true]) : back();
     }
 
     public function destroy(int $list)

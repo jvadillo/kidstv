@@ -4,35 +4,23 @@
 
 @php
     $url = fn (array $changes) => route('contents.index', array_filter(array_merge($filters, $changes)));
-    $filtered = $profile || $kind;
+    $filtered = $profile || $kind || $query !== '';
 @endphp
 
 @section('content')
-    <div class="page-head">
-        <h1>{{ __('Biblioteca') }}</h1>
-        <div class="page-head-actions library-actions">
-            <details class="menu" data-menu>
-                <summary class="btn btn-primary btn-sm">@include('partials.icon', ['name' => 'plus'])<span class="sr-only">{{ __('Añadir') }}</span> {{ __('Lista') }}</summary>
-                <div class="menu-panel">
-                    <a href="{{ route('lists.public') }}" class="menu-item menu-item-2">
-                        @include('partials.icon', ['name' => 'globe'])
-                        <span><span class="block">{{ __('Añadir lista pública') }}</span><span class="muted small">{{ __('Preparada por NokoPlay, se mantiene al día sola') }}</span></span>
-                    </a>
-                    <a href="{{ route('lists.create') }}" class="menu-item menu-item-2">
-                        @include('partials.icon', ['name' => 'lock'])
-                        <span><span class="block">{{ __('Crear lista privada') }}</span><span class="muted small">{{ __('Con tus vídeos y audios') }}</span></span>
-                    </a>
-                </div>
-            </details>
-            <details class="menu" data-menu>
-                <summary class="btn btn-primary btn-sm">@include('partials.icon', ['name' => 'plus'])<span class="sr-only">{{ __('Añadir') }}</span> {{ __('Vídeo') }}</summary>
-                <div class="menu-panel">
-                    @include('panel.contents.add-options', ['noAudio' => true])
-                </div>
-            </details>
-            <a href="{{ route('contents.upload.create', ['kind' => 'audio']) }}" class="btn btn-primary btn-sm">@include('partials.icon', ['name' => 'plus'])<span class="sr-only">{{ __('Añadir') }}</span> {{ __('Audio') }}</a>
-        </div>
-    </div>
+    <div class="library-page">
+    <div class="page-head"><h1>{{ __('Biblioteca') }}</h1></div>
+
+    <form method="GET" action="{{ route('contents.index') }}" class="library-search" role="search">
+        <label for="library-search" class="sr-only">{{ __('Buscar listas, vídeos o audios') }}</label>
+        @if ($profile)<input type="hidden" name="perfil" value="{{ $profile->id }}">@endif
+        @if ($kind)<input type="hidden" name="tipo" value="{{ $kind }}">@endif
+        <button type="submit" aria-label="{{ __('Buscar en la biblioteca') }}">@include('partials.icon', ['name' => 'search'])</button>
+        <input type="search" id="library-search" name="q" value="{{ $query }}" maxlength="100" placeholder="{{ __('Buscar listas, vídeos o audios') }}">
+    </form>
+    @if ($query !== '')
+        <p class="small muted">{{ __('Resultados para «:query»', ['query' => $query]) }} · <a class="search-clear" href="{{ $url(['q' => null]) }}">{{ __('Borrar búsqueda') }}</a></p>
+    @endif
 
     @if (! $empty && (auth()->user()->isAdmin() || $profiles->count() > 1))
         <div class="library-filters">
@@ -64,50 +52,54 @@
         </div>
     @elseif ($cards->isEmpty() && ! $unlisted)
         <div class="empty-state">
-            <p>{{ $profile ? __(':name todavía no ve ninguna de estas listas.', ['name' => $profile->name]) : __('No hay listas de este tipo.') }}</p>
+            <p>{{ $query !== '' ? __('No hay listas ni contenidos que coincidan con tu búsqueda.') : ($profile ? __(':name todavía no ve ninguna de estas listas.', ['name' => $profile->name]) : __('No hay listas de este tipo.')) }}</p>
             <a href="{{ route('contents.index') }}" class="btn btn-ghost">{{ __('Ver todas las listas') }}</a>
         </div>
     @else
         <section class="section" aria-labelledby="tus-listas">
-            <h2 id="tus-listas">{{ $profile ? __('Lo que ve :name', ['name' => $profile->name]) : __('Tus listas') }}</h2>
-            <ul class="list-cards">
+            <div class="section-head">
+                <h2 id="tus-listas">{{ $profile ? __('Lo que ve :name', ['name' => $profile->name]) : __('Tus listas') }}</h2>
+                <span class="muted small">{{ trans_choice(':count lista|:count listas', $cards->count()) }}</span>
+            </div>
+            <ul class="list-cards" @unless($filtered) data-sortable-lists @endunless>
                 @foreach ($cards as $card)
                     @php($list = $card['list'])
-                    <li class="list-card-item">
+                    <li class="list-card-item" data-list-id="{{ $list->id }}">
                         @include('panel.lists.card', $card + [
                             'url' => route('lists.show', $list),
                             'name' => $list->displayName(),
                             'coverUrl' => $list->isLinked() && $card['first']?->cover_path ? route('lists.public.cover', [$list->source_id, $card['first']]) : null,
                         ])
-                        {{-- Con un filtro las vecinas pueden estar ocultas: se ordena viendo todas. --}}
                         @unless ($filtered)
-                            <div class="reorder">
-                                <form method="POST" action="{{ route('lists.move', $list) }}">
-                                    @csrf
-                                    <input type="hidden" name="direction" value="up">
-                                    <button class="btn btn-icon" @disabled($loop->first) aria-label="{{ __('Subir la lista «:name»', ['name' => $list->displayName()]) }}">@include('partials.icon', ['name' => 'up'])</button>
-                                </form>
-                                <form method="POST" action="{{ route('lists.move', $list) }}">
-                                    @csrf
-                                    <input type="hidden" name="direction" value="down">
-                                    <button class="btn btn-icon" @disabled($loop->last) aria-label="{{ __('Bajar la lista «:name»', ['name' => $list->displayName()]) }}">@include('partials.icon', ['name' => 'down'])</button>
-                                </form>
-                            </div>
+                            <details class="menu list-order-menu" data-menu>
+                                <summary class="btn btn-icon drag-handle" aria-label="{{ __('Ordenar la lista «:name»', ['name' => $list->displayName()]) }}" aria-describedby="list-order-help" data-move-url="{{ route('lists.move', $list) }}">@include('partials.icon', ['name' => 'grip'])</summary>
+                                <div class="menu-panel menu-panel-end">
+                                    <form method="POST" action="{{ route('lists.move', $list) }}">
+                                        @csrf
+                                        <input type="hidden" name="direction" value="up">
+                                        <button class="btn btn-text btn-block" @disabled($loop->first) aria-label="{{ __('Subir la lista «:name»', ['name' => $list->displayName()]) }}">{{ __('Subir lista') }}</button>
+                                    </form>
+                                    <form method="POST" action="{{ route('lists.move', $list) }}">
+                                        @csrf
+                                        <input type="hidden" name="direction" value="down">
+                                        <button class="btn btn-text btn-block" @disabled($loop->last) aria-label="{{ __('Bajar la lista «:name»', ['name' => $list->displayName()]) }}">{{ __('Bajar lista') }}</button>
+                                    </form>
+                                </div>
+                            </details>
                         @endunless
                     </li>
                 @endforeach
                 @if ($unlisted)
                     <li class="list-card-item">
                         @include('panel.lists.card', $unlisted + ['list' => null, 'url' => route('lists.unlisted'), 'name' => __('Sin lista')])
-                        {{-- En la tele siempre van al final: no se ordenan. --}}
-                        @unless ($filtered)<div class="reorder" aria-hidden="true"></div>@endunless
                     </li>
                 @endif
             </ul>
             @if ($filtered)
                 <p class="hint list-cards-hint">{!! __('Para ordenar las listas, <a href=":url">vuelve a verlas todas</a>.', ['url' => route('contents.index')]) !!}</p>
-            @elseif ($cards->count() > 1)
-                <p class="hint list-cards-hint">{{ __('Usa las flechas para ordenar las listas: así aparecen en la tele.') }}</p>
+            @else
+                <p id="list-order-help" class="hint list-cards-hint">{{ __('Arrastra el asa para ordenar las listas o púlsala para subir y bajar. Así aparecen en la tele.') }}</p>
+                <p class="sr-only" role="status" data-sort-status></p>
             @endif
         </section>
     @endif
@@ -122,4 +114,14 @@
             <span class="btn btn-sm btn-ghost">{{ __('Ver') }}</span>
         </a>
     @endif
+
+    <details class="menu library-add" data-menu>
+        <summary class="btn btn-primary">@include('partials.icon', ['name' => 'plus']) {{ __('Añadir') }}</summary>
+        <div class="menu-panel menu-panel-end">
+            <a href="{{ route('lists.public') }}" class="menu-item">@include('partials.icon', ['name' => 'globe']) {{ __('Añadir lista pública') }}</a>
+            <a href="{{ route('lists.create') }}" class="menu-item">@include('partials.icon', ['name' => 'lock']) {{ __('Crear lista privada') }}</a>
+            @include('panel.contents.add-options')
+        </div>
+    </details>
+    </div>
 @endsection

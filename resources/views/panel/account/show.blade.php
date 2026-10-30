@@ -3,13 +3,14 @@
 @section('title', __('Cuenta'))
 
 @section('content')
+    <div class="account-page">
     <div class="page-head">
         <h1>{{ __('Cuenta y seguridad') }}</h1>
     </div>
 
     <section class="section">
         <h2>{{ __('Preferencias') }}</h2>
-        <form method="POST" action="{{ route('account.update') }}" class="stack card narrow">
+        <form method="POST" action="{{ route('account.update') }}" class="stack card account-preferences">
             @csrf
             @method('PUT')
             <div class="field">
@@ -21,14 +22,14 @@
                 <input type="text" id="family_name" name="family_name" value="{{ old('family_name', $family->name) }}" maxlength="60" placeholder="{{ __('Por ejemplo: La tele de casa') }}">
             </div>
             <input type="hidden" name="autoplay_next" value="0">
-            <label class="check">
-                <input type="checkbox" name="autoplay_next" value="1" @checked($family->autoplay_next)>
-                <span>
-                    {{ __('Reproducir automáticamente el siguiente contenido') }}
-                    <span class="hint block">{{ __('Desactivado (recomendado): al terminar un vídeo, la tele vuelve al catálogo.') }}</span>
-                </span>
-            </label>
-            <div class="field">
+            <div class="switch-field account-divider">
+                <div>
+                    <label for="autoplay_next">{{ __('Reproducir automáticamente el siguiente contenido') }}</label>
+                    <p id="autoplay_hint" class="hint">{{ __('Desactivado (recomendado): al terminar un vídeo, la tele vuelve al catálogo.') }}</p>
+                </div>
+                <input type="checkbox" role="switch" class="switch" id="autoplay_next" name="autoplay_next" value="1" aria-describedby="autoplay_hint" @checked(old('autoplay_next', $family->autoplay_next))>
+            </div>
+            <div class="field account-divider">
                 <label for="youtube_controls">{{ __('Controles de YouTube en la tele') }}</label>
                 <select id="youtube_controls" name="youtube_controls" aria-describedby="youtube_controls_hint">
                     <option value="auto" @selected(old('youtube_controls', $family->youtube_controls) === 'auto')>{{ __('Automáticos') }}</option>
@@ -38,7 +39,7 @@
                 <p id="youtube_controls_hint" class="hint">{{ __('La barra de NokoPlay muestra pausa, avance y progreso debajo del vídeo. En automático aparece al usar el mando y se oculta tras unos segundos. Aunque la ocultes, el mando sigue funcionando. Se aplica en todas tus teles al abrir el siguiente vídeo.') }}</p>
             </div>
             @php($limitMode = old('daily_limit_mode', $family->daily_limit_mode))
-            <fieldset class="field daily-limit" aria-describedby="daily_limit_hint">
+            <fieldset class="field daily-limit account-divider" aria-describedby="daily_limit_hint">
                 <legend>{{ __('Límite diario de tele') }}</legend>
                 <p id="daily_limit_hint" class="hint">{{ __('Cuando quede poco tiempo, la tele avisa; al terminar, muestra una pantalla de descanso hasta el día siguiente. Se suma lo visto en todas las teles; lo que veas desde la Zona de adultos no cuenta.') }}</p>
                 <label class="check">
@@ -77,13 +78,22 @@
                     @endforelse
                 </div>
             </fieldset>
-            <div class="form-actions"><button class="btn btn-primary">{{ __('Guardar') }}</button></div>
+            <div class="form-actions"><button class="btn btn-primary btn-block">{{ __('Guardar cambios') }}</button></div>
         </form>
     </section>
 
     <section class="section">
-        <h2>{{ __('Seguridad') }}</h2>
-        <ul class="card-list">
+        <h2>{{ __('Seguridad y administración') }}</h2>
+        <ul class="card-list account-security">
+            @if ($user->isAdmin())
+                <li class="card">
+                    <a href="{{ route('admin.dashboard') }}" class="account-link">
+                        <span class="account-link-icon">@include('partials.icon', ['name' => 'shield'])</span>
+                        <strong class="grow">{{ __('Administración') }}</strong>
+                        @include('partials.icon', ['name' => 'right'])
+                    </a>
+                </li>
+            @endif
             <li class="card settings-row">
                 <div>
                     <strong>{{ __('PIN parental') }}</strong>
@@ -152,6 +162,7 @@
 
     <form method="POST" action="{{ route('logout') }}" class="section">
         @csrf
-        <button class="btn btn-ghost btn-block">{{ __('Cerrar sesión en este navegador') }}</button>
+        <button class="btn btn-ghost btn-block">{{ __('Cerrar sesión') }}</button>
     </form>
+    </div>
 @endsection

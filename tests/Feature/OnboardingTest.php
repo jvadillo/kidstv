@@ -176,7 +176,7 @@ class OnboardingTest extends TestCase
         Mail::assertNothingSent();
         $this->assertSame('Leo', $user->family->profiles()->sole()->name);
         $this->assertTrue($user->family->lists()->where('source_id', $this->pocoyo->id)->exists());
-        $this->get('/panel')->assertOk()->assertSee('Conecta la tele de Leo')->assertSee('0–3 años');
+        $this->get('/panel')->assertOk()->assertSee('Conecta tu televisión')->assertSee('Gestiona lo que ven Leo')->assertSee('0–3 años');
 
         // «Conectar mi tele» lleva directamente a escribir el código de la tele.
         $this->prepareTv('Mia', '3-6', [$this->bluey], 'connect');

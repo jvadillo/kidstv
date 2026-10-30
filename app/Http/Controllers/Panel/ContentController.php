@@ -29,6 +29,9 @@ class ContentController extends Controller
     public function index(Request $request)
     {
         $family = $this->family();
+        $query = mb_substr(trim((string) $request->query('q', '')), 0, 100);
+        $matches = fn ($name, $items) => $query === '' || mb_stripos($name, $query) !== false
+            || $items->contains(fn (Content $item) => mb_stripos($item->title, $query) !== false);
         $profiles = $family->profiles;
         $profile = $profiles->count() > 1 ? $profiles->firstWhere('id', $request->integer('perfil')) : null;
         $kind = $request->user()->isAdmin() && in_array($request->query('tipo'), ['publicas', 'privadas'], true) ? $request->query('tipo') : null;
@@ -38,17 +41,18 @@ class ContentController extends Controller
         $cards = $family->lists()
             ->with(['profiles:id', 'source.contents' => fn ($q) => $q->ready()->ordered()])
             ->get()
-            ->map(function (VideoList $list) use ($byList, $profiles) {
+            ->map(function (VideoList $list) use ($byList, $profiles, $matches) {
                 // Una lista pública añadida decide quién la ve; en las propias, cada contenido.
                 $items = $list->isLinked()
                     ? ($list->isAvailable() ? $list->source->contents : collect())
                     : $byList->get($list->id, collect());
                 $profileIds = $list->isLinked() ? $list->profiles->pluck('id') : $items->flatMap->profiles->pluck('id');
 
-                return ['list' => $list] + $this->summary($items, $profiles->whereIn('id', $profileIds));
+                return ['list' => $list, 'matches' => $matches($list->displayName(), $items)] + $this->summary($items, $profiles->whereIn('id', $profileIds));
             });
 
         $unlisted = $byList->get(0, collect());
+        $unlistedMatches = $matches(__('Sin lista'), $unlisted);
         $unlisted = $unlisted->isEmpty() ? null : $this->summary($unlisted, $profiles->whereIn('id', $unlisted->flatMap->profiles->pluck('id')));
         $empty = $cards->isEmpty() && ! $unlisted;
 
@@ -57,13 +61,14 @@ class ContentController extends Controller
             && (! $kind || ($kind === 'publicas') === (bool) ($list?->is_public || $list?->isLinked()));
 
         return view('panel.contents.index', [
-            'cards' => $cards->filter(fn ($card) => $shows($card['list'], $card['profiles']))->values(),
-            'unlisted' => $unlisted && $shows(null, $unlisted['profiles']) ? $unlisted : null,
+            'cards' => $cards->filter(fn ($card) => $card['matches'] && $shows($card['list'], $card['profiles']))->values(),
+            'unlisted' => $unlisted && $unlistedMatches && $shows(null, $unlisted['profiles']) ? $unlisted : null,
             'empty' => $empty,
             'profiles' => $profiles,
             'profile' => $profile,
             'kind' => $kind,
-            'filters' => ['perfil' => $profile?->id, 'tipo' => $kind],
+            'query' => $query,
+            'filters' => ['perfil' => $profile?->id, 'tipo' => $kind, 'q' => $query],
             'publicCount' => VideoList::public()->where('family_id', '!=', $family->id)->count(),
         ]);
     }

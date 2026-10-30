@@ -4,13 +4,24 @@
 
 @section('content')
     <div class="page-head">
-        <h1>{{ $family->name ?: __('Tu videoteca') }}</h1>
+        <h1>{{ auth()->user()->name ? __('Hola, :name', ['name' => auth()->user()->name]) : __('Hola') }}</h1>
     </div>
+    <p class="dashboard-intro muted">{{ $profiles->isNotEmpty() ? __('Gestiona lo que ven :names en la tele.', ['names' => $profiles->pluck('name')->unique()->join(', ', ' y ')]) : __('Prepara su videoteca y elige lo que ven en la tele.') }}</p>
 
-    <section class="actions-grid" aria-label="{{ __('Acciones rápidas') }}">
+    <section class="connect-card" aria-labelledby="connect-title">
+        <span class="connect-icon">@include('partials.icon', ['name' => 'tv'])</span>
+        <div class="grow">
+            <h2 id="connect-title">{{ __('Conecta tu televisión') }}</h2>
+            <p>{{ __('Vincúlala con un código en un minuto.') }}</p>
+        </div>
+        <a href="{{ route('devices.pair') }}" class="btn btn-accent">{{ __('Conectar') }}</a>
+    </section>
+
+    <h2 class="quick-actions-title">{{ __('Añadir a la videoteca') }}</h2>
+    <section class="actions-grid dashboard-actions" aria-label="{{ __('Añadir a la videoteca') }}">
         <a href="{{ youtube_add_url() }}" class="action-tile tile-youtube">
             @include('partials.icon', ['name' => 'youtube'])
-            <span>{{ __('Añadir vídeo de YouTube') }}</span>
+            <span>{{ __('YouTube') }}</span>
         </a>
         <a href="{{ route('contents.upload.create', 'video') }}" class="action-tile tile-video">
             @include('partials.icon', ['name' => 'video'])
@@ -19,10 +30,6 @@
         <a href="{{ route('contents.upload.create', 'audio') }}" class="action-tile tile-audio">
             @include('partials.icon', ['name' => 'audio'])
             <span>{{ __('Subir audio') }}</span>
-        </a>
-        <a href="{{ route('devices.pair') }}" class="action-tile tile-tv">
-            @include('partials.icon', ['name' => 'tv'])
-            <span>{{ __('Conectar televisión') }}</span>
         </a>
     </section>
 
@@ -34,39 +41,36 @@
             </div>
             <a href="{{ route('onboarding.profile') }}" class="btn btn-primary">{{ __('Empezar') }} @include('partials.icon', ['name' => 'right'])</a>
         </section>
-    @elseif ($devices->isEmpty())
-        <section class="card card-highlight setup-card">
-            <div>
-                <h2>@include('partials.icon', ['name' => 'tv']) {{ __('Conecta la tele de :names', ['names' => $profiles->pluck('name')->join(', ', ' y ')]) }}</h2>
-                <p class="muted">{{ __('Ya está preparada: solo falta abrir NokoPlay en la tele y escribir aquí su código.') }}</p>
-            </div>
-            <div class="form-actions">
-                <a href="{{ route('onboarding.connect') }}" class="btn btn-accent">{{ __('Conectar mi tele') }}</a>
-                <form method="POST" action="{{ route('devices.browser') }}" target="_blank">
-                    @csrf
-                    <button class="btn btn-ghost">{{ __('Probar en este navegador') }}</button>
-                </form>
-            </div>
-        </section>
     @endif
 
     <section class="section">
         <div class="section-head">
             <h2>{{ __('Perfiles') }}</h2>
-            <a href="{{ route('profiles.create') }}" class="btn btn-sm btn-ghost">@include('partials.icon', ['name' => 'plus']) {{ __('Nuevo') }}</a>
+            <a href="{{ route('profiles.create') }}" class="btn btn-sm btn-text">@include('partials.icon', ['name' => 'plus']) {{ __('Nuevo') }}</a>
         </div>
         @if ($profiles->isEmpty())
             <p class="empty">{{ __('Aún no hay perfiles infantiles.') }}</p>
         @else
-            <div class="profile-row">
+            <ul class="card-list dashboard-profiles">
                 @foreach ($profiles as $profile)
-                    <a href="{{ route('profiles.edit', $profile) }}" class="profile-pill">
-                        @include('partials.avatar', ['avatar' => $profile->avatar, 'size' => 64])
-                        <strong>{{ $profile->name }}</strong>
-                        <span class="muted small">{{ $profile->ageLabel() ?? trans_choice(':count contenido|:count contenidos', $profile->contents_count) }}</span>
-                    </a>
+                    @php $assignedCount = $profile->assignedContentCount(); @endphp
+                    <li>
+                        <a href="{{ route('profiles.edit', $profile) }}" class="card card-link compact-profile">
+                            @include('partials.avatar', ['avatar' => $profile->avatar, 'size' => 48])
+                            <span class="grow">
+                                <strong>{{ $profile->name }}</strong>
+                                @if ($profile->ageLabel())<span class="muted"> · {{ $profile->ageLabel() }}</span>@endif
+                                <span class="muted block">{{ $assignedCount ? trans_choice(':count contenido|:count contenidos', $assignedCount) : __('Sin contenidos todavía') }}</span>
+                            </span>
+                            @if ($assignedCount)
+                                @include('partials.icon', ['name' => 'right'])
+                            @else
+                                <span class="assign-label">{{ __('Asignar') }}</span>
+                            @endif
+                        </a>
+                    </li>
                 @endforeach
-            </div>
+            </ul>
         @endif
     </section>
 
@@ -103,7 +107,7 @@
             <a href="{{ route('devices.index') }}" class="btn btn-sm btn-ghost">{{ __('Gestionar') }}</a>
         </div>
         @if ($devices->isEmpty())
-            <p class="empty">{{ __('Ningún televisor conectado todavía. Puedes probar la videoteca desde este navegador con «Probar modo TV».') }}</p>
+            <p class="empty">{{ __('Ningún televisor conectado todavía. Puedes probar la videoteca desde este navegador con «Modo TV».') }}</p>
         @else
             <ul class="device-list">
                 @foreach ($devices as $device)

@@ -2,6 +2,10 @@
 
 @section('body-class', 'panel')
 
+@push('styles')
+    <link rel="stylesheet" href="{{ asset('css/panel.css') }}?v={{ filemtime(public_path('css/panel.css')) }}">
+@endpush
+
 @php
     $nav = [
         ['panel', 'panel', __('Inicio'), 'home'],
@@ -9,11 +13,8 @@
         ['profiles.index', 'profiles.*', __('Perfiles'), 'kids'],
         ['activity', 'activity', __('Actividad'), 'chart'],
         // Las teles se gestionan desde Cuenta.
-        ['account.show', ['account.*', 'devices.*'], __('Cuenta'), 'user'],
+        ['account.show', ['account.*', 'devices.*', 'admin.*'], __('Cuenta'), 'user'],
     ];
-    if (auth()->user()?->isAdmin()) {
-        $nav[] = ['admin.dashboard', 'admin.*', __('Admin'), 'shield'];
-    }
 @endphp
 
 @section('body')
@@ -24,12 +25,12 @@
         </a>
         <nav class="topnav" aria-label="{{ __('Secciones') }}">
             @foreach ($nav as [$route, $pattern, $label])
-                <a href="{{ route($route) }}" @class(['active' => request()->routeIs($pattern)])>{{ $label }}</a>
+                <a href="{{ route($route) }}" @class(['active' => request()->routeIs($pattern)]) @if(request()->routeIs($pattern)) aria-current="page" @endif>{{ $label }}</a>
             @endforeach
         </nav>
         <form method="POST" action="{{ route('devices.browser') }}" class="topbar-try" target="_blank">
             @csrf
-            <button class="btn btn-sm btn-accent" title="{{ __('Abre la videoteca infantil en este navegador, como si fuera una tele') }}">{{ __('Probar modo TV') }}</button>
+            <button class="btn btn-sm btn-accent" title="{{ __('Abre la videoteca infantil en este navegador, como si fuera una tele') }}">@include('partials.icon', ['name' => 'tv']) {{ __('Modo TV') }}<span class="sr-only">{{ __('(se abre en otra pestaña)') }}</span></button>
         </form>
     </header>
 
@@ -46,7 +47,7 @@
 
     <nav class="tabbar" aria-label="{{ __('Secciones') }}" style="--tabs: {{ count($nav) }}">
         @foreach ($nav as [$route, $pattern, $label, $icon])
-            <a href="{{ route($route) }}" @class(['active' => request()->routeIs($pattern)])>
+            <a href="{{ route($route) }}" @class(['active' => request()->routeIs($pattern)]) @if(request()->routeIs($pattern)) aria-current="page" @endif>
                 @include('partials.icon', ['name' => $icon])
                 <span>{{ $label }}</span>
             </a>

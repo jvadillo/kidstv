@@ -505,7 +505,85 @@
         });
     }
 
+    // El asa admite ratón/táctil; su menú conserva formularios para teclado y sin JS.
+    function initListSorting() {
+        var list = document.querySelector('[data-sortable-lists]');
+        if (!list) return;
+        var status = document.querySelector('[data-sort-status]');
+        var busy = false;
+        list.querySelectorAll('.drag-handle').forEach(function (handle) {
+            var drag = null;
+            var suppressClick = false;
+            handle.addEventListener('click', function (event) {
+                if (suppressClick || busy) { event.preventDefault(); suppressClick = false; }
+            });
+            handle.addEventListener('pointerdown', function (event) {
+                if (busy || event.button !== 0) return;
+                var items = Array.from(list.querySelectorAll('[data-list-id]'));
+                drag = { y: event.clientY, items: items, from: items.indexOf(handle.closest('[data-list-id]')), to: -1, moved: false };
+                handle.setPointerCapture(event.pointerId);
+            });
+            handle.addEventListener('pointermove', function (event) {
+                if (!drag) return;
+                if (Math.abs(event.clientY - drag.y) < 8 && !drag.moved) return;
+                drag.moved = true;
+                handle.closest('details').open = false;
+                drag.items[drag.from].classList.add('is-dragging');
+                drag.to = drag.items.reduce(function (nearest, item, index) {
+                    var rect = item.getBoundingClientRect();
+                    var current = drag.items[nearest].getBoundingClientRect();
+                    return Math.abs(event.clientY - (rect.top + rect.height / 2)) < Math.abs(event.clientY - (current.top + current.height / 2)) ? index : nearest;
+                }, drag.from);
+                drag.items.forEach(function (item, index) { item.classList.toggle('drop-target', index === drag.to && index !== drag.from); });
+                if (event.clientY < 80) window.scrollBy(0, -16);
+                if (event.clientY > window.innerHeight - 150) window.scrollBy(0, 16);
+            });
+            function cancel() {
+                if (!drag) return;
+                drag.items.forEach(function (item) { item.classList.remove('is-dragging', 'drop-target'); });
+                drag = null;
+            }
+            handle.addEventListener('pointercancel', cancel);
+            handle.addEventListener('keydown', function (event) { if (event.key === 'Escape') cancel(); });
+            handle.addEventListener('pointerup', async function () {
+                if (!drag) return;
+                var move = drag;
+                suppressClick = move.moved;
+                cancel();
+                if (!move.moved || move.to === move.from || move.to < 0) return;
+                busy = true;
+                list.setAttribute('aria-busy', 'true');
+                status.textContent = 'Guardando el orden…';
+                try {
+                    for (var step = 0; step < Math.abs(move.to - move.from); step++) {
+                        var response = await requestJson('POST', handle.dataset.moveUrl, new URLSearchParams({ direction: move.to < move.from ? 'up' : 'down' }));
+                        if (!response.ok || !response.data.ok) throw new Error('No se pudo guardar el orden. Recarga la página para comprobarlo antes de volver a intentarlo.');
+                        // Refleja cada movimiento confirmado, incluso si el siguiente falla.
+                        var item = handle.closest('[data-list-id]');
+                        if (move.to < move.from) list.insertBefore(item, item.previousElementSibling);
+                        else list.insertBefore(item.nextElementSibling, item);
+                    }
+                    status.textContent = 'Orden guardado.';
+                } catch (error) {
+                    status.classList.remove('sr-only');
+                    status.classList.add('warn-text');
+                    status.textContent = 'No se pudo guardar todo el orden. Recarga la página para comprobarlo antes de volver a intentarlo.';
+                } finally {
+                    busy = false;
+                    list.removeAttribute('aria-busy');
+                    var items = list.querySelectorAll('[data-list-id]');
+                    items.forEach(function (item, index) {
+                        item.querySelector('[value="up"]').form.querySelector('button').disabled = index === 0;
+                        item.querySelector('[value="down"]').form.querySelector('button').disabled = index === items.length - 1;
+                    });
+                    handle.focus({ preventScroll: true });
+                }
+            });
+        });
+    }
+
     onReady(function () {
+        initListSorting();
         initOnboardingCatalog();
         initTvPreview();
         initCodeAutosubmit();
