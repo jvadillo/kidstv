@@ -252,6 +252,10 @@ p { font-size: 1.9rem; line-height: 1.35; margin: 0 0 1rem; }
 .dialog { width: 90rem; max-width: 90%; background: #26215c; border-radius: 3rem; padding: 5rem; text-align: center; box-shadow: 0 2rem 6rem rgba(0, 0, 0, 0.5); }
 .dialog-error { border-top: 0.8rem solid #ff8a7a; }
 .dialog-buttons { margin-top: 3rem; }
+.dialog-setup h3 { font-size: 1.9rem; margin: 2rem 0 1rem; }
+.setup-benefits { font-size: 1.9rem; line-height: 1.35; text-align: left; margin: 0 0 1.5rem; padding-left: 2rem; }
+.dialog-setup .dialog-buttons .btn:first-child { background: #ffc83d; color: #211c42; }
+.dialog-setup .btn.focused { outline: .2rem solid #fff; }
 .info-list { text-align: left; font-size: 2rem; margin: 2rem auto 0; width: 60rem; }
 .info-list dt { color: #b9b6dd; font-size: 1.6rem; margin-top: 1.2rem; }
 .info-list dd { margin: 0; font-weight: 700; word-break: break-all; }

@@ -411,13 +411,14 @@
                 '<div class="screen screen-pairing">' +
                     '<div class="pair-text">' +
                         '<div class="brand-big"><span class="logo"></span>KidsTV</div>' +
-                        '<h1>' + (self.saving ? 'Guarda y protege su tele' : 'Prepara su tele desde el móvil') + '</h1>' +
-                        '<p class="pair-step">' + esc(t('pair.step1')) + '</p>' +
+                        '<h1>' + (self.saving ? 'Configura tu Zona de adultos' : 'Prepara su tele desde el móvil') + '</h1>' +
+                        '<p class="pair-step">' + (self.saving ? 'Conecta tu móvil u ordenador para descubrir todas las posibilidades de Kids TV.' : esc(t('pair.step1'))) + '</p>' +
+                        (self.saving ? '<p class="muted small">Podrás guardar tu configuración, gestionar listas, establecer límites de uso y consultar la actividad.</p>' : '') +
                         '<p class="pair-url">' + esc(p.link_display) + '</p>' +
                         '<p class="pair-step">' + esc(t('pair.step2')) + '</p>' +
                         '<p class="pair-code">' + esc(p.code_display) + '</p>' +
                         '<p class="muted pair-expiry"></p>' +
-                        '<p class="muted small">' + (self.saving ? 'Verifica tu correo y crea el PIN para la Zona de adultos. Si ya tienes cuenta, usa ese correo.' : 'Escanea el QR o abre esta dirección e introduce el código. Si ya tienes cuenta, podrás usar tus perfiles.') + '</p>' +
+                        '<p class="muted small">' + (self.saving ? 'Para terminar, verifica tu correo electrónico y crea un PIN para proteger el acceso a la Zona de adultos. Si ya tienes cuenta, utiliza el mismo correo.' : 'Escanea el QR o abre esta dirección e introduce el código. Si ya tienes cuenta, podrás usar tus perfiles.') + '</p>' +
                         '<button class="btn focusable autofocus" data-action="back">Volver</button>' +
                     '</div>' +
                     '<div class="pair-qr">' +
@@ -1148,10 +1149,10 @@
     screens.welcome = {
         enter: function () {
             mount('<div class="screen screen-center setup-welcome"><div class="brand-big"><span class="logo"></span>KidsTV</div>' +
-                '<h1>Prepara los vídeos que verá tu hija o hijo</h1><p class="muted">Elige sus series favoritas y prepara su tele.</p>' +
-                '<div class="setup-choices">' + setupChoice('Continuar con el móvil', 'Escanea un QR y configura todo cómodamente.', '<span class="setup-device setup-device-mobile"></span>', 'mobile', '', 'mobile') +
-                setupChoice('Continuar en esta tele', 'Elige su nombre y sus series con el mando.', '<span class="setup-device setup-device-tv"></span>', 'tv', '', 'tv') +
-                setupChoice('Ya tengo cuenta', 'Conecta esta tele y recupera tus perfiles.', '<span class="setup-person"></span>', 'mobile', '', 'account') + '</div><p class="setup-hint">Usa ← → para elegir y pulsa OK para continuar</p></div>');
+                '<h1>Prepara Kids TV para tu familia</h1><p class="muted">Crea su perfil y elige sus series favoritas.</p>' +
+                '<div class="setup-choices">' + setupChoice('Configurar desde el móvil', 'Escanea el código QR y configura todo cómodamente desde tu teléfono.', '<span class="setup-device setup-device-mobile"></span>', 'mobile', '', 'mobile') +
+                setupChoice('Configurar en esta tele', 'Crea el perfil y elige sus series favoritas con el mando.', '<span class="setup-device setup-device-tv"></span>', 'tv', '', 'tv') +
+                setupChoice('Ya tengo cuenta', 'Vincula esta tele a tu cuenta y recupera tus perfiles.', '<span class="setup-person"></span>', 'mobile', '', 'account') + '</div><p class="setup-hint">Usa ← → para elegir y pulsa OK para continuar</p></div>');
             Nav.restore();
         },
         action: function (action) { show(action === 'tv' ? 'setup' : 'pairing'); },
@@ -1168,21 +1169,21 @@
             var self = this;
             var stepIndex = this.step === 'name' ? 0 : this.step === 'age' ? 1 : 2;
             var html = '<div class="screen setup-screen setup-' + this.step + '"><ol class="setup-progress" aria-label="Preparar su tele">';
-            var steps = ['Su nombre', 'Su edad', 'Sus series'];
+            var steps = ['Nombre', 'Edad', 'Series'];
             for (var s = 0; s < steps.length; s++) html += '<li class="' + (s === stepIndex ? 'active' : s < stepIndex ? 'complete' : '') + '"' + (s === stepIndex ? ' aria-current="step"' : '') + '><span>' + (s < stepIndex ? '✓' : s + 1) + '</span>' + steps[s] + '</li>';
             html += '</ol><div class="setup-content">';
             if (this.step === 'name') {
-                html += '<h1>¿Para quién es la tele?</h1><p class="muted">Su nombre o apodo. Solo lo verá tu familia.</p>' +
+                html += '<h1>¿Quién usará este perfil?</h1><p class="muted">Escribe su nombre o el apodo que usáis en casa.</p>' +
                     '<div class="setup-name-form"><label for="setup-name">Nombre o apodo</label><input id="setup-name" class="focusable setup-input" data-action="edit" data-key="name" maxlength="40" autocomplete="off" placeholder="Por ejemplo, Nora" value="' + esc(setupDraft.name || '') + '">' +
-                    '<p class="setup-hint">Pulsa OK para escribir. Al terminar, pulsa Continuar.</p><div class="setup-actions">' + setupButton('Continuar', 'next') + '</div></div>';
+                    '<p class="setup-hint">Pulsa OK para escribir con el mando.</p><div class="setup-actions">' + setupButton('Continuar', 'next') + '</div></div>';
             } else if (this.step === 'age') {
                 html += '<h1>¿Cuántos años tiene?</h1><p class="muted">Te propondremos series adecuadas para su edad.</p><div class="setup-choices setup-ages">';
                 var ages = [['0-3', '0–3 años'], ['3-6', '3–6 años'], ['7-12', '7–12 años']];
                 for (var a = 0; a < ages.length; a++) html += setupChoice(ages[a][1], ['Primeros descubrimientos', 'Imaginar y aprender', 'Explorar nuevas historias'][a], ages[a][1].split(' ')[0], 'age', ages[a][0], ages[a][0], setupDraft.age === ages[a][0]);
                 html += '</div><p class="setup-hint">Usa ← → y pulsa OK para elegir su edad</p>';
             } else {
-                html += '<h1>¿Qué le gusta ver?</h1><p class="muted">Pulsa OK para seleccionar sus series. Después elige «Empezar a ver».</p>';
-                html += '<div class="setup-toolbar">' + setupButton('Empezar a ver (' + (setupDraft.lists || []).length + ')', 'finish') +
+                html += '<h1>Elige sus series favoritas</h1><p class="muted">Selecciona las series que le gustan. Puedes elegir hasta 60.</p>';
+                html += '<div class="setup-toolbar">' + setupButton('Continuar (' + (setupDraft.lists || []).length + ')', 'finish') +
                     setupButton(this.allAges ? 'Ver su edad' : 'Todas las edades', 'filter') + '</div>';
                 html += '<div class="setup-grid scroll-y">';
                 var lists = this.lists || [], count = 0;
@@ -1197,7 +1198,7 @@
                 if (!count) html += '<p class="setup-empty">' + (!this.lists ? 'Cargando sus series…' : 'No hay series con este filtro. Prueba «Todas las edades».') + '</p>';
                 html += '</div>';
             }
-            html += '</div><div class="setup-footer">' + setupButton('Volver', 'back') + setupButton('Seguir en el móvil', 'mobile') + '</div></div>';
+            html += '</div><div class="setup-footer">' + setupButton('Volver', 'back') + (this.step === 'lists' ? '' : setupButton('Continuar en el móvil', 'mobile')) + '</div></div>';
             var key = this.renderedStep === this.step ? Nav.currentKey() : (this.step === 'age' ? setupDraft.age : null);
             var grid = app.querySelector('.setup-grid'), scroll = grid ? grid.scrollTop : 0;
             this.renderedStep = this.step;
@@ -1238,9 +1239,18 @@
             }
             if (action === 'finish') {
                 if (!(setupDraft.lists || []).length) { toast('Elige al menos una serie'); return; }
-                openDialog({ title: 'Su tele está preparada',
-                    text: 'Podrá ver las series elegidas sin correo. Guarda la configuración desde la Zona de adultos para recuperarla o usar otra tele. Sin guardar, se conserva 30 días desde el último uso y puede perderse al borrar la app.',
-                    buttons: [{ label: 'Empezar a ver', action: function () { screens.setup.finish(); } }, { label: 'Volver' }] });
+                openDialog({ kind: 'setup', title: '¡Todo listo para empezar!',
+                    text: 'Ya puedes disfrutar de las series que has elegido.',
+                    html: '<h3>¿Quieres aprovechar todo lo que ofrece Kids TV?</h3>' +
+                        '<p>Desde el móvil podrás completar la configuración y acceder a opciones como:</p>' +
+                        '<ul class="setup-benefits"><li>Guardar tu configuración y usarla en otras teles.</li>' +
+                        '<li>Establecer límites de uso y consultar la actividad.</li>' +
+                        '<li>Crear y gestionar listas de series personalizadas.</li>' +
+                        '<li>Proteger la Zona de adultos con un PIN.</li></ul>' +
+                        '<p class="muted small">Te recomendamos hacerlo para disfrutar de todas las posibilidades de Kids TV.</p>',
+                    buttons: [{ label: 'Configurar desde el móvil', action: function () { show('pairing'); } },
+                        { label: 'Empezar a ver mis series', action: function () { screens.setup.finish(); } },
+                        { label: 'Volver' }] });
             }
         },
         finish: function () {

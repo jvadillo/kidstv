@@ -3,9 +3,9 @@ window.KIDSTV_I18N = {
     es: {
         'pair.title': 'Conecta esta tele',
         'pair.step1': 'En tu móvil u ordenador, entra en',
-        'pair.step2': 'y escribe este código:',
-        'pair.qr': 'O escanea este código con el móvil',
-        'pair.expires': 'El código cambia en {time}',
+        'pair.step2': 'Introduce este código:',
+        'pair.qr': 'Escanea el QR con tu móvil',
+        'pair.expires': 'El código caduca en {time}',
         'pair.loading': 'Pidiendo un código…',
         'pair.done': '¡Conectada! Cargando…',
         'pair.noaccount': '¿Aún no tienes cuenta? Créala gratis en esa misma dirección.',
