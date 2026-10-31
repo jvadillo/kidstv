@@ -21,17 +21,58 @@
         <button type="button" class="install-banner-close" data-pwa-dismiss aria-label="{{ __('Ahora no') }}" title="{{ __('Ahora no') }}">@include('partials.icon', ['name' => 'close'])</button>
     </section>
 
-    <section class="connect-card" aria-labelledby="connect-title">
-        <span class="connect-icon">@include('partials.icon', ['name' => 'tv'])</span>
-        <div class="grow">
-            <h2 id="connect-title">{{ __('Conecta tu televisión') }}</h2>
-            <p>{{ __('Vincúlala con un código en un minuto.') }}</p>
-        </div>
-        <a href="{{ route('devices.pair') }}" class="btn btn-accent">{{ __('Conectar') }}</a>
-    </section>
+    {{-- Primeros pasos: se deduce de los datos y desaparece solo al completarlo. El siguiente paso es el único destacado. --}}
+    @if ($nextStep)
+        @php $doneCount = collect($steps)->where('done', true)->count(); @endphp
+        <section class="getting-started" aria-labelledby="gs-title">
+            <div class="gs-head">
+                <h2 id="gs-title">{{ $doneCount === 0 ? __('Vamos a preparar la tele') : __('Casi lista') }}</h2>
+                <span class="gs-count">{{ __(':done de :total', ['done' => $doneCount, 'total' => count($steps)]) }}</span>
+            </div>
+            <div class="meter" role="meter" aria-valuemin="0" aria-valuemax="{{ count($steps) }}" aria-valuenow="{{ $doneCount }}" aria-label="{{ __('Pasos completados') }}">
+                <span style="width: {{ round($doneCount / count($steps) * 100) }}%"></span>
+            </div>
+            <ol class="gs-steps">
+                @foreach ($steps as $i => $step)
+                    @php $isNext = $step['key'] === $nextStep['key']; @endphp
+                    <li @class(['gs-step', 'is-done' => $step['done'], 'is-next' => $isNext])>
+                        @if ($isNext)
+                            <span class="gs-mark" aria-hidden="true">{{ $i + 1 }}</span>
+                            <div class="gs-body">
+                                <strong>{{ $step['title'] }}</strong>
+                                <p class="muted">{{ $step['hint'] }}</p>
+                                <div class="gs-actions">
+                                    <a href="{{ $step['href'] }}" class="btn btn-primary">{{ $step['cta'] }} @include('partials.icon', ['name' => 'right'])</a>
+                                    @if ($step['key'] === 'tv')
+                                        <form method="POST" action="{{ route('devices.browser') }}" target="_blank" data-tv-launch>
+                                            @csrf
+                                            <button class="btn btn-ghost">{{ __('Probar en este navegador') }}<span class="sr-only"> {{ __('(se abre en otra pestaña)') }}</span></button>
+                                        </form>
+                                    @endif
+                                </div>
+                            </div>
+                        @elseif ($step['done'])
+                            <span class="gs-mark" aria-hidden="true">@include('partials.icon', ['name' => 'check'])</span>
+                            <div class="gs-body"><span>{{ $step['title'] }}</span><span class="sr-only"> — {{ __('hecho') }}</span></div>
+                        @else
+                            <a href="{{ $step['href'] }}" class="gs-link">
+                                <span class="gs-mark" aria-hidden="true">{{ $i + 1 }}</span>
+                                <span class="grow">{{ $step['title'] }}</span>
+                                @include('partials.icon', ['name' => 'right'])
+                            </a>
+                        @endif
+                    </li>
+                @endforeach
+            </ol>
+        </section>
+    @endif
 
-    <h2 class="quick-actions-title">{{ __('Añadir a la videoteca') }}</h2>
-    <section class="actions-grid dashboard-actions" aria-label="{{ __('Añadir a la videoteca') }}">
+    <h2 class="quick-actions-title">{{ __('Acciones rápidas') }}</h2>
+    <section class="actions-grid dashboard-actions" aria-label="{{ __('Acciones rápidas') }}">
+        <a href="{{ route('lists.public') }}" class="action-tile tile-series">
+            @include('partials.icon', ['name' => 'library'])
+            <span>{{ __('Series') }}</span>
+        </a>
         <a href="{{ youtube_add_url() }}" class="action-tile tile-youtube">
             @include('partials.icon', ['name' => 'youtube'])
             <span>{{ __('YouTube') }}</span>
@@ -44,17 +85,15 @@
             @include('partials.icon', ['name' => 'audio'])
             <span>{{ __('Subir audio') }}</span>
         </a>
+        <a href="{{ route('activity') }}" class="action-tile tile-activity">
+            @include('partials.icon', ['name' => 'chart'])
+            <span>{{ __('Actividad') }}</span>
+        </a>
+        <a href="{{ route('account.show') }}#limite" class="action-tile tile-limit">
+            @include('partials.icon', ['name' => 'clock'])
+            <span>{{ __('Tiempo de tele') }}</span>
+        </a>
     </section>
-
-    @if ($profiles->isEmpty())
-        <section class="card card-highlight setup-card">
-            <div>
-                <h2>{{ __('Prepara la tele de tu peque') }}</h2>
-                <p class="muted">{{ __('Su nombre, sus series favoritas y listo: en menos de 2 minutos.') }}</p>
-            </div>
-            <a href="{{ route('onboarding.profile') }}" class="btn btn-primary">{{ __('Empezar') }} @include('partials.icon', ['name' => 'right'])</a>
-        </section>
-    @endif
 
     <section class="section">
         <div class="section-head">
@@ -144,12 +183,4 @@
         </div>
         <p class="small muted">{{ __(':used de :quota usados por tus vídeos y audios.', ['used' => format_bytes($storageUsed), 'quota' => format_bytes($storageQuota)]) }}</p>
     </section>
-
-    @unless ($family->hasPin())
-        <section class="card card-warning">
-            <h2>@include('partials.icon', ['name' => 'lock']) {{ __('Configura el PIN parental') }}</h2>
-            <p>{{ __('Protege la «Zona de adultos» del televisor para que los peques no puedan salir del modo infantil.') }}</p>
-            <a href="{{ route('account.pin') }}" class="btn btn-primary">{{ __('Crear PIN') }}</a>
-        </section>
-    @endunless
 @endsection

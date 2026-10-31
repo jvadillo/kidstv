@@ -181,18 +181,36 @@
 .panel .install-banner-close { flex: none; margin-top: -4px; display: grid; place-items: center; width: 40px; height: 40px; border: 0; border-radius: 50%; background: transparent; color: var(--ink-2); cursor: pointer; }
 .panel .install-banner-close:hover { background: var(--surface-2); }
 .panel .install-banner-close .icon { width: 20px; height: 20px; }
-.panel .connect-card { display: flex; align-items: center; gap: 16px; background: var(--brand-navy); color: var(--surface); border-radius: var(--radius); padding: 20px; margin: 0 0 24px; }
-.panel .connect-card h2 { font-size: 1.25rem; margin-bottom: 2px; }
-.panel .connect-card p { color: var(--hero-muted); margin: 0; font-size: .875rem; line-height: 1.35; }
-.panel .connect-icon { display: flex; padding: 14px; background: rgb(255 255 255 / 14%); border-radius: var(--radius-sm); color: var(--accent); }
-.panel .connect-icon .icon { width: 28px; height: 28px; }
-.panel .connect-card .btn { padding-inline: 16px; }
+/* Primeros pasos */
+.panel .getting-started { background: var(--surface); border-radius: var(--radius); box-shadow: var(--shadow); padding: 20px; margin: 0 0 24px; }
+.panel .gs-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 10px; }
+.panel .gs-head h2 { margin: 0; }
+.panel .gs-count { font-weight: 800; font-size: .9rem; color: var(--primary-text); background: var(--primary-soft); border-radius: var(--pill); padding: 4px 12px; white-space: nowrap; }
+.panel .getting-started .meter { height: 10px; margin-bottom: 8px; }
+.panel .gs-steps { list-style: none; margin: 0; padding: 0; }
+.panel .gs-step { border-top: 1px solid var(--line); padding: 12px 0; display: flex; gap: 14px; align-items: flex-start; }
+.panel .gs-step:first-child { border-top: 0; }
+.panel .gs-mark { flex: none; display: grid; place-items: center; width: 32px; height: 32px; border-radius: 50%; border: 2px solid var(--control-line); color: var(--ink-2); font-weight: 800; font-size: .95rem; }
+.panel .gs-mark .icon { width: 18px; height: 18px; stroke-width: 3; }
+.panel .gs-step.is-done .gs-mark { background: var(--ok); border-color: var(--ok); color: #fff; }
+.panel .gs-step.is-done .gs-body { color: var(--ink-2); padding-top: 4px; }
+.panel .gs-step.is-next .gs-mark { background: var(--primary); border-color: var(--primary); color: var(--primary-ink); }
+.panel .gs-body { flex: 1; min-width: 0; }
+.panel .gs-step.is-next .gs-body strong { font-family: var(--font-heading); font-size: 1.2rem; font-weight: 500; }
+.panel .gs-body p { margin: 4px 0 12px; line-height: 1.4; }
+.panel .gs-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.panel .gs-actions form { display: contents; }
+.panel .gs-link { flex: 1; display: flex; align-items: center; gap: 14px; min-height: var(--touch); color: var(--ink); text-decoration: none; font-weight: 700; }
+.panel .gs-link .icon { color: var(--ink-2); flex: none; }
+.panel .gs-step:has(.gs-link) { padding-block: 4px; }
 .panel .quick-actions-title { margin-bottom: 12px; }
 .panel .dashboard-actions { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin-bottom: 26px; }
 .panel .dashboard-actions .action-tile { padding: 14px 4px; min-height: 100px; gap: 6px; align-items: center; justify-content: center; text-align: center; font-size: .9rem; }
 .panel .dashboard-actions .icon { width: 24px; height: 24px; padding: 12px; border-radius: var(--radius-sm); }
 .panel .tile-youtube .icon { background: var(--yt-soft); }
 .panel .tile-audio .icon { background: var(--ok-soft); color: var(--ok); }
+.panel .tile-series .icon { background: var(--accent); color: var(--accent-ink); }
+.panel .tile-activity .icon, .panel .tile-limit .icon { background: var(--primary-soft); color: var(--primary-text); }
 .panel .btn-text { background: transparent; color: var(--primary-text); padding-inline: 4px; }
 .panel .compact-profile { padding: 12px 14px; gap: 14px; min-height: 72px; }
 .panel .compact-profile strong { font-size: 1.15rem; font-weight: 800; }
@@ -200,15 +218,12 @@
 .panel .compact-profile > .icon { color: var(--ink-2); flex: none; }
 .panel .assign-label { border-radius: var(--pill); padding: 6px 12px; color: var(--warn-strong); background: var(--warn-soft); font-size: .85rem; font-weight: 800; }
 @media (max-width: 359px) {
-    .panel .connect-card { flex-wrap: wrap; }
-    .panel .connect-card .grow { flex-basis: 60%; }
-    .panel .connect-card .btn { width: 100%; }
     .panel .dashboard-actions { gap: 8px; }
     .panel .dashboard-actions .action-tile { font-size: .8rem; }
 }
 @media (min-width: 760px) {
     .panel .dashboard-profiles { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-    .panel .connect-card { padding: 28px; }
+    .panel .getting-started { padding: 28px; }
     .panel .dashboard-actions .action-tile { min-height: 126px; font-size: 1.1rem; }
 }
 @media (min-width: 760px) and (max-width: 999px) {

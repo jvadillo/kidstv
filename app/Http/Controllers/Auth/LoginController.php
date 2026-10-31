@@ -155,9 +155,11 @@ class LoginController extends Controller
         }
 
         if ($user) {
+            // Primera vez que entra y aún sin perfiles (por ejemplo, si cerró el asistente al crear la cuenta): se retoma.
+            $firstVisit = $user->authSessions()->doesntExist() && $user->family->profiles()->doesntExist();
             $this->sessions->start($request, $user);
 
-            return redirect()->intended(route('panel'));
+            return $firstVisit ? redirect()->route('onboarding.profile') : redirect()->intended(route('panel'));
         }
 
         // Correo verificado pero sin cuenta: falta aceptar las condiciones para crearla.

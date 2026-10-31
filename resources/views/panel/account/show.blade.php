@@ -14,7 +14,7 @@
             @csrf
             @method('PUT')
             @php($limitMode = old('daily_limit_mode', $family->daily_limit_mode))
-            <fieldset class="field daily-limit" aria-describedby="daily_limit_hint">
+            <fieldset id="limite" class="field daily-limit" aria-describedby="daily_limit_hint">
                 <legend>{{ __('Límite diario de tele') }}</legend>
                 <p id="daily_limit_hint" class="hint">{{ __('Cuando quede poco tiempo, la tele avisa; al terminar, muestra una pantalla de descanso hasta el día siguiente. Lo que veas desde la Zona de adultos no cuenta.') }}</p>
                 <label class="check">

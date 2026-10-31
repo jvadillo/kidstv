@@ -42,6 +42,31 @@ class PanelRedesignTest extends TestCase
         $this->get('/panel')->assertOk()->assertSee('1 contenido')->assertSee('Sin contenidos todavía');
     }
 
+    public function test_dashboard_guides_through_the_next_missing_step_until_the_family_is_ready(): void
+    {
+        $user = $this->adult();
+        $family = $user->family;
+        $this->actingAsAdult($user);
+
+        $this->get('/panel')->assertOk()->assertSee('Vamos a preparar la tele')->assertSee('0 de 4')
+            ->assertSee('Crear perfil')->assertSee(route('onboarding.profile'), false)->assertDontSee('Probar en este navegador');
+
+        $profile = $this->profile($family, 'Nora');
+        $this->get('/panel')->assertOk()->assertSee('Casi lista')->assertSee('1 de 4')->assertSee('Ver series')->assertSee(route('lists.public'), false);
+
+        $publisher = $this->adult(['is_admin' => true]);
+        $source = $publisher->family->lists()->create(['name' => 'Serie', 'is_public' => true, 'languages' => ['es']]);
+        $this->youtubeContent($publisher->family, ['list_id' => $source->id]);
+        $family->lists()->create(['name' => 'Serie', 'source_id' => $source->id])->profiles()->attach($profile);
+        $this->get('/panel')->assertOk()->assertSee('2 de 4')->assertSee('Conecta tu televisión')->assertSee('Probar en este navegador');
+
+        $this->device($family);
+        $this->get('/panel')->assertOk()->assertSee('3 de 4')->assertSee('Crear PIN');
+
+        $family->setPin('1234');
+        $this->get('/panel')->assertOk()->assertDontSee('Casi lista')->assertDontSee('gs-steps', false)->assertSee('Acciones rápidas');
+    }
+
     public function test_admin_navigation_has_five_tabs_and_account_keeps_existing_preferences(): void
     {
         $user = $this->adult(['is_admin' => true, 'name' => 'Jon']);

@@ -65,10 +65,26 @@ class AuthFlowTest extends TestCase
         $this->get('/panel')->assertOk()->assertSee('YouTube')->assertSee(youtube_add_url(), false);
     }
 
+    public function test_first_login_without_profiles_resumes_the_wizard_only_once(): void
+    {
+        Mail::fake();
+        $user = $this->adult(['email' => 'ana@example.com']);
+
+        $mail = $this->requestCode('ana@example.com');
+        $this->post('/entrar/codigo', ['code' => $mail->code])->assertRedirect('/empezar');
+        $this->assertAuthenticatedAs($user);
+
+        // Con una sesión previa ya no se insiste: entra directo al panel.
+        $this->resetClient();
+        $mail = $this->requestCode('ana@example.com');
+        $this->post('/entrar/codigo', ['code' => $mail->code])->assertRedirect('/panel');
+    }
+
     public function test_existing_adult_logs_in_with_single_use_link(): void
     {
         Mail::fake();
         $user = $this->adult(['email' => 'ana@example.com']);
+        $this->profile($user->family);
 
         $mail = $this->requestCode('ana@example.com');
         $path = parse_url($mail->link, PHP_URL_PATH);
