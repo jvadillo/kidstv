@@ -93,7 +93,52 @@ function icon(size, white = false, padding = .07) {
     }
     return png({ width: size, height: size, pixels });
 }
-writeFileSync(join(assets, 'logo-horizontal.png'), png(resize(readPng('logoHorizontalPNG.png'), 780, 200)));
+/* Variante del logotipo horizontal para fondo oscuro: «Noko» (azul marino) pasa a blanco y la sombra
+ * clara de las letras se vuelve una sombra oscura translúcida. El isotipo y «Play» no cambian. */
+function forDarkBackground(image, shadowAlpha = .35) {
+    const { width, height } = image, pixels = Buffer.from(image.pixels);
+    const NAVY = [39, 30, 123], BLUE = [37, 150, 230], SHADOW = [240, 240, 240], TEXT_FROM = Math.round(width * .33);
+    // Cuánto tiene un color de sombra (t) si mezcla «tinta» y la sombra clara, y lo lejos que queda de esa mezcla.
+    const mix = (i, ink) => {
+        let dot = 0, len = 0, dist = 0;
+        for (let k = 0; k < 3; k++) { dot += (pixels[i + k] - ink[k]) * (SHADOW[k] - ink[k]); len += (SHADOW[k] - ink[k]) ** 2; }
+        const t = Math.max(0, Math.min(1, dot / len));
+        for (let k = 0; k < 3; k++) dist += (pixels[i + k] - ink[k] - t * (SHADOW[k] - ink[k])) ** 2;
+        return { t, dist: Math.sqrt(dist) };
+    };
+    // Zona de tinta: letras sólidas ensanchadas unos píxeles para incluir su antialias. Lo que queda fuera
+    // es sombra aunque su color se parezca a la tinta (el borde exterior de la sombra lo tiene).
+    const near = new Uint8Array(width * height), reach = Math.max(1, Math.round(width / 650));
+    for (let y = 0; y < height; y++) for (let x = TEXT_FROM; x < width; x++) {
+        const i = (y * width + x) * 4;
+        if (pixels[i + 3] <= 200 || ![NAVY, BLUE].some(ink => { const m = mix(i, ink); return m.dist < 28 && m.t < .5; })) continue;
+        for (let yy = Math.max(0, y - reach); yy <= Math.min(height - 1, y + reach); yy++) {
+            near.fill(1, yy * width + Math.max(0, x - reach), yy * width + Math.min(width, x + reach + 1));
+        }
+    }
+    for (let y = 0; y < height; y++) for (let x = TEXT_FROM; x < width; x++) {
+        const p = y * width + x, i = p * 4;
+        if (!pixels[i + 3]) continue;
+        const navy = mix(i, NAVY), blue = mix(i, BLUE);
+        let ink, shade;
+        if (navy.dist < 28 && navy.dist <= blue.dist) { ink = [255, 255, 255]; shade = navy.t; }
+        else if (blue.dist < 28) { ink = BLUE; shade = blue.t; }
+        else if (!near[p]) { ink = [0, 0, 0]; shade = 1; }
+        else continue;
+        if (!near[p]) shade = 1;
+        if (shade < .04) shade = 0;
+        // Tinta opaca sobre sombra negra translúcida.
+        const coverage = (1 - shade) + shade * shadowAlpha;
+        for (let k = 0; k < 3; k++) pixels[i + k] = Math.round(ink[k] * (1 - shade) / coverage);
+        pixels[i + 3] = Math.round(pixels[i + 3] * coverage);
+    }
+    return { width, height, pixels };
+}
+const horizontal = readPng('logoHorizontalPNG.png'), horizontalDark = forDarkBackground(horizontal);
+writeFileSync(join(assets, 'logo-horizontal.png'), png(resize(horizontal, 780, 200)));
+writeFileSync(join(assets, 'logo-horizontal-dark.png'), png(resize(horizontalDark, 780, 200)));
+// Copia a tamaño completo junto a los originales, para usarla fuera de la aplicación.
+writeFileSync(join(root, 'logos/logoHorizontalFondoOscuroPNG.png'), png(horizontalDark));
 writeFileSync(join(assets, 'logo-vertical.png'), png(resize(readPng('logoPNG.png'), 568, 460)));
 writeFileSync(join(assets, 'icon.png'), icon(256));
 writeFileSync(join(assets, 'apple-touch-icon.png'), icon(180, true));

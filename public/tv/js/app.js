@@ -709,8 +709,12 @@
                 : '<div class="who focusable" data-action="profiles" data-key="who"><img src="' + esc(K.avatar(S.profile.avatar)) + '" alt=""><span>' + esc(S.profile.name) + '</span><small>' + esc(t('catalog.change')) + '</small></div>';
 
             var html = '<div class="screen screen-catalog' + (S.adultCatalog ? ' with-banner' : '') + '">' +
-                '<header class="catalog-header">' + who +
-                    (S.adultCatalog ? '' : '<div class="btn btn-quiet btn-icon focusable" data-action="adult" data-key="adult" title="' + esc(t('adult.button')) + '">' + ICON_LOCK + '</div>') +
+                '<header class="catalog-header">' +
+                    '<div class="catalog-side">' + who + '</div>' +
+                    '<div class="catalog-brand"><img src="img/logo-horizontal-dark.png" alt="NokoPlay" width="390" height="100"></div>' +
+                    '<div class="catalog-side catalog-side-end">' +
+                        (S.adultCatalog ? '' : '<div class="btn btn-quiet btn-icon focusable" data-action="adult" data-key="adult" title="' + esc(t('adult.button')) + '">' + ICON_LOCK + '</div>') +
+                    '</div>' +
                 '</header>' +
                 (S.adultCatalog ? '<div class="adult-banner">' + esc(t('catalog.adultBanner')) + '</div>' : '') +
                 '<div class="rows' + (K.pointerUi ? ' scroll-y' : '') + '"><div class="rows-inner">' + this.rowsHtml() + '</div></div>' +
